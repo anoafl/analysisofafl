@@ -106,7 +106,7 @@ After creating a list of your own variables you want to give them a look what yo
 
 ## Plot your data
 
-“The simple graph has brought more information to the data analyst’s mind than any other device.” — John Tukey
+'The simple graph has brought more information to the data analysts mind than any other device.' John Tukey
 
 So now you have your data and its nicely organised, lets do some plotting!
 
