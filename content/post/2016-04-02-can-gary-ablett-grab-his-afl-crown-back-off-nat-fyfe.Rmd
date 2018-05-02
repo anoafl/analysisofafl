@@ -24,31 +24,31 @@ Looking just at the numbers this seems almost an unfair match-up. We have Fyfe, 
 
 It's an interesting exercise to look at how good Fyfe was last year and compare this with past superstars. To begin the debate, let's assume we want to know what proportion of a team's clearances, tackles and inside 50s a player gets.
 
-![Photo: Getty Images](/images/fyfe.png)
+![Photo: Getty Images](/img/fyfe.png)
 The best midfielders do a few things but mainly they clear the ball, apply defensive pressure and put the footy in attacking positions. 
 
 Looking at the graph below  depicting proportions of clearances and contested possessions,  a "better player" would be one that is further to the upper right. That is they have both more of x and y than most of their rivals.
 
 We can see that last year Fyfe averaged more than 20 per cent of the Dockers' contested possessions and more than 12.5 per cent of Fremantle's clearances. In short, he's as far into the top right-hand corner as anybody has ever been. Fyfe 1, Gaz 0.
 
-![Total Clearances Vs Contested Possessions](/images/ablett.png)
+![Total Clearances Vs Contested Possessions](/img/ablett.png)
 But is this even the best combination of metrics to look at? Sure it’s great to see a hard ball won, but I personally also love to see some defensive pressure. So how about this?
 
-![Pressure](/images/ablett0.png)
+![Pressure](/img/ablett0.png)
 
 This is where we can really see that West Coast's Matt Priddis is not only a clearance machine, but also a tackling one - laying more than 10 per cent of the Eagles' tackles on average per game (just think about that for a second: one in 10 tackles!). We can see that Gaz applies more of his team's tackles then Nat but with neither excelling as much as Priddis or others from the past such as Lenny Hayes and current assistant coach Brett Kirk. Matt 1, Nat 1, Gaz 0.
 
 Round one was one of the most exciting of recent times and had the second-highest average scores of the [past 12 years](http://www.afl.com.au/news/2016-03-30/home-sweet-home-in-round-one-sets-scene-for-unique-round-two). So what about an assessment of the proportion of times a player gets the ball inside the 50 compared with the proportion of time that a player clears the footy? Here we can see Gary Ablett stand out, but also current Collingwood coach Nathan Buckley (in his heyday) and Ben Cousins in 2005. Fyfe falls back into the "crowd". Matt 1, Nat 1, Gaz 1.
 
-![Setting up Teammates](/images/ablett1.png)
+![Setting up Teammates](/img/ablett1.png)
 
 But where Gary is truly able to establish himself as a standout is his proportion of effective disposals. If a player is getting a high proportion of his team's inside 50s and also effective disposals, you can guess he's having a decent impact.
 
-![Remember how good the Collingwood coach was?](/images/buckley.png)
+![Remember how good the Collingwood coach was?](/img/buckley.png)
 
 But just how much do these inside 50s count for? Our best proxy with the data is too look at goal assists and inside 50s. Again here Gary separates himself from the pack...and Fyfe.
 
-![Remember how good the Collingwood coach was?](/images/assist.png)
+![Remember how good the Collingwood coach was?](/img/assist.png)
 
 So on Saturday night we have the current champion and reigning Brownlow medallist lining up in the centre square vs the former champion looking to take back his crown.
 
