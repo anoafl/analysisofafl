@@ -44,7 +44,9 @@ Putting that model into action and the numbers paint a really interesting pictur
 
 We can see the Dockers start off the year in [amazing form](http://www.watoday.com.au/afl/afl-news/fremantle-defence-suggests-grand-final-likely-20150724-gijyup.html) but after round nine their defence levels out and their attack rating goes down and fast!
 
-![Fremantle Dockers 2015 Rating](./defence.png)
+
+ ![blahblah](/img/defence.png)
+
 
 
 
