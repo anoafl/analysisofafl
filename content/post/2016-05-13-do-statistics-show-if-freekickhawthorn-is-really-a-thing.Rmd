@@ -1,7 +1,7 @@
 ---
 title : "Do Statistics Show if Freekickhawthorn Is Really a Thing"
-author = "Robert Nguyen"
-date = 2016-05-13
+author : "Robert Nguyen"
+date : 2016-05-13
 tags: ["Hawthorn", "umpires"]
 ---
 

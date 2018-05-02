@@ -1,0 +1,14 @@
+---
+title : "Commodity Currency Crashes and Risk Premia"
+description : "A working paper with David Murakami and Ganesh Viswanath"
+
+---
+
+
+## [Commodity Currency Crashes and Risk Premia](https://drive.google.com/file/d/1X_UVCYTe10ZBDMINkCgloLgtJhEETmWq/view)
+
+Currencies of resource-rich economies such as Australia, Brazil, Canada, Norway, and South Africa are often called “commodity currencies”. Dollar exchange rates of these curren-
+cies exhibit strong correlation with commodity prices. Empirically we find that currencies with higher currency excess returns are more intensive in exporting basic commodities. How-
+ever these currencies typically crash in periods of significant negative returns to commodities,suggesting that commodity currencies inherit a risk premium due to their tendency to crash
+in "disaster" times. We model these perspectives of commodity currencies in a two-country setting with complete markets, economic growth, and disaster risk. We find the model gener-
+ates a risk premium on the home asset; foreigners need to be compensated for holding assets that depreciate in a bad state.
