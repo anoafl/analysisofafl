@@ -1,0 +1,72 @@
+---
+title : "Who Is the Afl S Triple Double King?"
+author: "Robert Nguyen"
+date : 2016-04-06
+tags: ["Player", "plots"]
+
+---
+
+Previous article can be [found here](http://www.theage.com.au/afl/afl-news/the-numbers-guy-who-is-the-afls-tripledouble-king-20160407-go0j1i.html)
+
+It might sound a bit American, but I think it's time the AFL started appreciating a bit of stat sheet stuffing.
+
+The triple-double, as popularised by the NBA, is defined as a player who achieves double digits in three of five categories: points, rebounds, assists, steals and blocked shots. Triple-doubles don't make automatically anyone great; Russell Westbrook isn't better than Steph Curry because he gets more triple-doubles. But they do confirm, how certain players can take over games both offensively and defensively.
+
+So just what would be the AFL equivalent of basketball's triple double? To go with an idea from the [Big Footy forum](https://www.bigfooty.com/forum/threads/triple-doubles-5-by-5s-and-20-20s-in-the-afl.307464/), let's look at kicks, handballs, marks, tackles and goals.
+
+To achieve this feat isn't uncommon (1434 in years 2003-2015)*  but to achieve it multiple times in a year is fairly difficult is as we can see from our leaderboard.
+
+* 10. Tom Rockliff, Brisbane, 2014
+* 7. Scott Selwood, West Coast, 2013
+* 6. Jordan Lewis, Hawthorn, 2007
+* 5. Joel Bowden, Richmond, 2007; Cameron Bruce, Melbourne, 2008; Jimmy Bartel, Geelong, 2008; Bryce Gibbs, Carlton, 2009; Darren Milburn, Geelong, 2010; Steve Johnson, Geelong, 2014; Thomas Liberatore, Bulldogs, 2014; Josh Gibson, Hawthorn, 2015; Tom Rockliff, Brisbane, 2015
+
+Tom Rockliff achieved the elusive feat of double-figure triple-doubles in a year. What this leaderboard doesn't show us is how amazingly consistent some players are year-after-year in racking up triple-doubles. 
+
+Between 2003 and 2015, here are the top 10 (well 11 actually, due to a tie) triple-double gatherers:
+
+* 24: Brendan Goddard, Dane Swan
+* 21: Tom Rockliff
+* 18: Kane Cornes, Jimmy Bartel
+* 17: Jordan Lewis
+* 15: Darren Milburn
+* 14: Matt Priddis, Corey Enright, Brett Deledio, Heath Scotland
+
+Part of the enjoyment around NBA triple-doubles, is a sense that they just don't happen that often.
+
+But across the 198 games in the 2015 AFL season, we we saw 141 of them from 93 different players. Last year 665 players played a single game so that would mean that 14 per cent of players in 2015 achieved a triple-double.
+
+Interestingly, last year triple-doubles went to their highest level since 2010.
+
+![Caption for the picture.](/img/tripledouble.png)
+
+All up that doesn't seem that special. Certainly not akin to the rarity of a triple-double in NBA.
+ 
+What are we really trying to capture here? What makes a triple-double so special in basketball is that  to achieve it you have to great in three categories. Points and assists are how good a player is offensively. Blocks and steals represent how good a player is defensively and rebounds represent a player's willingness to hustle and attack a loose ball.
+So how can we make an AFL equivalent that captures the difficulty to achieve of an NBA triple?
+
+For our offence categories let's use goals plus goal assists (i.e. double-figures if you have five goals and five goal assists). We will call this goal contribution and we will use goal contributions and inside 50s as an offensive measure. For defence let's use rebound 50s and tackles and for our hustle contested ball let's use contested possessions and clearances.
+
+How rare would this triple double be? It happened 190 times in the years 2003 to 2015.
+
+![Caption for the picture.](/img/tripledouble1.png)
+
+Retired Hawthorn premiership star Brad Sewell had the most of these triple-doubles in a single season with four in 2009. Lenny Hayes (St Kilda) and Shane Tuck (Hawthorn) both had three in 2010, as did Tom Liberatore in 2013.
+
+A total of 23 players achieved the feat twice in the season, including West Coasts Matt Priddis in 2007, 2009, 2010 and 2011.
+
+The most common triple-double involves tackles, clearances and contested possessions, which resulted in124 of the 190 instances . Our next most common triple-double was clearances, contested possessions and inside 50s, which made up 58 of them.les.
+
+But what about the really special games? The quadruple-doubles?
+
+Andrew Swallow (round eight 2012, 0 Brownlow votes), Michael Rischitelli (round seven 2011 0  votes), Chris Judd (round 15 2011, 3 votes) and Brad Sewell (round 15 2009, 3 votes) all stuffed the stat sheets with tackles, clearances, contested possessions and inside 50s (Scott Pendlebury fell a clearance short of joining the quad club in round two of 2014).
+
+So what's my favourite triple-double?
+
+Hawthorns spiritual leader Luke Hodge in 2007 got a rare triple of six goals plus four goal assists (contributed to 10 goals), 13 contested possessions and 10 inside-50s, naturally netting the three Brownlow votes.
+
+It's the only triple-double of its type since 2003. 
+
+*chosen 2003 because it's the first year we see Goal assists listed.
+
+**these counts of triple doubles include quad doubles.
