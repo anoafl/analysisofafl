@@ -1,6 +1,6 @@
 ---
 title: "Death of the Big Bag"
-author:" Robert Nguyen"
+author : " Robert Nguyen"
 date: '2017-07-06'
 
 tags: ["graphics","goalkicking","bags"]

@@ -1,0 +1,222 @@
+---
+title : "How Close Is Footy Today in Terms of Scoring Shots"
+author : "Robert Nguyen"
+date : '2017-07-08'
+tags : ["538","r","graphics"]
+
+---
+
+
+```{r setup, include=FALSE}
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(gapminder)
+library(gridExtra)
+library(lubridate)
+library(dplyr)
+knitr::opts_chunk$set(echo = TRUE)
+bg3 <- read.fwf(
+  file=url("http://afltables.com/afl/stats/biglists/bg3.txt"), 
+      skip = 1,
+  widths=c(6,13,10,18,17,18,18)) %>% 
+  slice(-1)
+
+```
+
+This year with AFL there has been a lot of talk about how this season is just weird. That it is as close as it has ever been. The question is, is it really? Taking an idea [538](https://fivethirtyeight.com/features/baseballs-mediocre-teams-are-disappearing/#fn-1) lets see if we can come up with a nice graph ourselves that paints a picture of a close or not so close competition.
+
+Lets start out with a hypothesis, if the game is as close as it has ever been in recent memory, then it follows that:
+
+* Teams aren't winning by on average a lot of scoring shots
+* Teams aren't losing by on average a lot of scoring shots.
+
+For more reading of scoring shot differential analysis and to give yourself a few more ideas you can tackle at home (now that you can get the data) I can't reccomend 
+Tony over at [matterofstats](http://www.matterofstats.com/mafl-stats-journal/assessing-team-abilities-scoring-shots-or-final-score?rq=scoring%20shots) enough. 
+
+Knowing that scoring shots are a good measure of team quality, lets see if looking at scoring shot differential follows a similar narrative to what is being talked about in the media today. 
+
+So lets do a couple of things:
+
+1. Look at average margin through time
+2. Look at scoring shot differentials through time
+
+First things first, we need to get the score shot data. We can't do anything without data. 
+
+```{r,eval=FALSE}
+library(dplyr)
+library(readr)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(readr)
+bg3 <- read.fwf(
+  file=url("http://afltables.com/afl/stats/biglists/bg3.txt"), 
+      skip = 1,
+  widths=c(6,13,10,18,17,18,18)) %>% 
+  slice(-1) ##you could just skip the first two rows, but I like showing different functions :)
+```
+
+Now that we have the data, we should always view it. Always.
+
+```{r}
+
+head(bg3)
+glimpse(bg3)
+str(bg3)
+#View(bg3)
+
+
+```
+
+
+What do you notice about $V2, it is saved as a factor variable. We know by looking at it that it is our date variable so lets change it to that. 
+
+```{r}
+bg3$V2<-dmy(bg3$V2) ###using the lubridate R package converting v2 to dates
+head(bg3)
+glimpse(bg3)
+str(bg3)
+#View(bg3)
+
+
+```
+
+Next we want to get out the scores 
+
+```{r}
+afl.games<-separate(bg3,V5, into=c("Home Goals","Home Behinds","Home Score"),sep="\\.") 
+  afl.games<-separate(afl.games,V7, into=c("Away Goals","Away Behinds","Away Score"),sep="\\.")
+
+head(afl.games)
+afl.games<-cbind(afl.games,season=year(afl.games$V2))
+glimpse(afl.games)
+str(afl.games)
+# View(afl.games)
+```
+
+After viewing the data, we can see that we would want $Home Goals$, $Away Goals$ etc to be saved as numbers instead of characters. We can do this as follows using as.numeric
+
+```{r}
+afl.games$`Home Goals`<-as.numeric(afl.games$`Home Goals`)
+afl.games$`Home Behinds`<-as.numeric(afl.games$`Home Behinds`)
+afl.games$`Home Score`<-as.numeric(afl.games$`Home Score`)
+
+afl.games$`Away Goals`<-as.numeric(afl.games$`Away Goals`)
+afl.games$`Away Behinds`<-as.numeric(afl.games$`Away Behinds`)
+afl.games$`Away Score`<-as.numeric(afl.games$`Away Score`)
+afl.games$margin<-afl.games$`Home Score`-afl.games$`Away Score`
+glimpse(afl.games)
+str(afl.games)
+```
+
+#Looking at margins
+
+Looking at this we can see we have negative margins, which makes sense as we have defined it as $Home Score$ - $Away Score$. So all it is really saying is that away teams happen to win games. 
+
+
+As we are not interested in things from only the home teams point of view, lets take the absolute value of margin.
+
+```{r}
+afl.games$margin<-abs(afl.games$margin)
+```
+
+## Lets get plotting yeah!
+
+Remember up top, we wanted to look at average margin through time.
+
+```{r}
+afl.games%>%
+  group_by(season)%>%
+  summarise(avemargin=mean(margin))  %>%
+   ggplot(aes(x=season,y=avemargin))+geom_line() +
+  ylab("Average Margin") + 
+  xlab("Season") + ggtitle("Are margins really going down?")
+
+```
+
+Looking at the plot above do you think that the average margin of games is going up or down recently? What about compared to a few years ago?
+
+#Lets look at scoring shots
+
+First step is lets create the dataset to analyse. 
+
+```{r}
+
+afl.games$home.ss.diff<-afl.games$`Home Goals`+afl.games$`Home Behinds` -afl.games$`Away Goals`-afl.games$`Away Behinds`
+
+afl.games$away.ss.diff<-afl.games$`Away Goals`+afl.games$`Away Behinds` -afl.games$`Home Goals`-afl.games$`Home Behinds`
+# head(afl.games)
+# glimpse(afl.games)
+
+home<-select(afl.games,season,V3,V4,home.ss.diff)
+away<-select(afl.games,season,V3,V6,away.ss.diff)
+head(home)
+head(away)
+
+```
+
+Looking at the above datasets (home, away) ideally you would just like to stack them on top of each other. We can do this using rbind. Before using rbind, one thing to keep in mind is that the columns should be named the same. 
+
+So lets rename the columns so that they are the same and then lets stack them on top of each other. 
+
+```{r}
+names(home)[names(home)=="season"]<-"Season"
+names(home)[names(home)=="V3"]<-"Round"
+names(home)[names(home)=="V4"]<-"Team"
+names(home)[names(home)=="home.ss.diff"]<-"ss.diff"
+
+names(away)[names(away)=="season"]<-"Season"
+names(away)[names(away)=="V3"]<-"Round"
+names(away)[names(away)=="V6"]<-"Team"
+names(away)[names(away)=="away.ss.diff"]<-"ss.diff"
+
+
+
+games<-rbind(home,away)
+head(games)
+glimpse(games)
+
+```
+What we want to do now is create a summary table whereby we can get the total scoring shot difference, the standard deviation of scoring shot differential and the average scoring shot differential by team within each season. We can do that as follows:
+
+```{r}
+games<-select(games,Season, Team,ss.diff)
+
+afl<-group_by(games,Season,Team)
+ 
+df1<-summarise(afl,total.ss.diff=sum(ss.diff),std.ss.diff=sd(ss.diff),average.ss.diff=mean(ss.diff))
+head(df1)
+glimpse(df1)
+```
+
+Now that we have the table we want, lets look at scoring shot differential, but instead of looking at it for all years, lets just look at things this side of 1999. 
+
+
+```{r}
+
+df1%>%filter(Season>1999)%>%
+  ggplot(aes(x=Season,y=average.ss.diff))+
+  geom_point() +geom_hline(yintercept = 5)+
+  geom_hline(yintercept = -5) +ylab("Average Scoring Shot Differential")
+
+```
+
+This graph is pretty interesting
+
+From it we can see at first glance
+
+* Only 3 teams have an absolute scoring shot differential average of over 5 this year which is the lowest its been in over 10 years. 
+* Only 1 team (guess who) get beaten by on average over 5 scoring shots which is the lowest its been this millenium
+
+
+Of course we shouldn't just base our conclusions from one graph. Now that you have the data, what would you graph?
+
+
+
+
+
+
+

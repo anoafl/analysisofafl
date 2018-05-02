@@ -1,0 +1,330 @@
+---
+title: "Death of the Big Bag"
+author : " Robert Nguyen"
+date: '2017-07-06'
+
+tags: ["graphics","goalkicking","bags"]
+---
+
+
+
+<p>This year just before round 16 starts the leading goalkickers are Lance Franklin and Jeremy Cameron, both of whom sit on a miserly 40 goals.</p>
+<p>If we were to double the goalkicking totals we still wouldn’t have a player reach the magical 100 mark!</p>
+<p>So what is going on in todays AFL? Are bags of goals dead? Will we ever see 100 goals kicked in a year again?</p>
+<p>Lets explore the data using R and investigate:</p>
+<div id="question---are-less-bags-being-kicked" class="section level2">
+<h2>Question - Are less bags being kicked?</h2>
+<p>First we need to think of a definition of what is a bag of goals?</p>
+<p>Thankfully TripleM is to the rescue as they have done a poll that has gained over 2500 votes and in it <a href="https://www.triplem.com.au/sport/afl/news/poll-how-many-goals-are-in-a-bag">48% of voters</a> polled thought 5 goals constitutes a bag of goals.</p>
+<p>Second step is getting the data!</p>
+<p>Thanks to the great website that is <a href="http://afltables.com/afl/stats/biglists/bg6.txt">afltables</a> we can just get a list of players and games that have kicked 5 or more goals.</p>
+<p>Hopefully you have read in the data sucessfully if not it is saved <a href="https://drive.google.com/file/d/0B2903kNbc39dRFZBNEI1Z3psWk0/view?usp=sharing">here</a></p>
+<pre class="r"><code>#I am calling the dataset bags
+library(ggplot2)
+library(dplyr)
+library(gapminder)
+bags &lt;- read_csv(&quot;insert your working directory here/bags.csv&quot;)
+##to find working directory
+getwd()</code></pre>
+<pre class="r"><code>##remember always view the data
+head(bags)</code></pre>
+<pre><code>##   Goals Behinds          Player Team Opponent           Venue      date
+## 1    18      NA    Fred Fanning   ME       SK   Junction Oval 30-Aug-47
+## 2    17       5  Jason Dunstall   HW       RI   Waverley Park  2-May-92
+## 3    17      NA Gordon Coventry   CW       FI   Victoria Park 19-Jul-30
+## 4    16       4   Peter McKenna   CW       SM   Victoria Park 23-Aug-69
+## 5    16       1    Peter Hudson   HW       ME Glenferrie Oval  3-May-69
+## 6    16      NA    Tony Lockett   SY       FI    Western Oval 13-Aug-95
+##   year
+## 1 1947
+## 2 1992
+## 3 1930
+## 4 1969
+## 5 1969
+## 6 1995</code></pre>
+<pre class="r"><code>glimpse(bags)</code></pre>
+<pre><code>## Observations: 9,134
+## Variables: 8
+## $ Goals    &lt;int&gt; 18, 17, 17, 16, 16, 16, 16, 15, 15, 15, 15, 14, 14, 1...
+## $ Behinds  &lt;int&gt; NA, 5, NA, 4, 1, NA, NA, 9, 4, NA, NA, 7, 5, 2, 2, 2,...
+## $ Player   &lt;fct&gt; Fred Fanning, Jason Dunstall, Gordon Coventry, Peter ...
+## $ Team     &lt;fct&gt; ME, HW, CW, CW, HW, SY, CW, FO, SK, SM, CW, GE, GE, H...
+## $ Opponent &lt;fct&gt; SK, RI, FI, SM, ME, FI, HW, SK, SY, ES, ES, ES, SY, F...
+## $ Venue    &lt;fct&gt; Junction Oval, Waverley Park, Victoria Park, Victoria...
+## $ date     &lt;fct&gt; 30-Aug-47, 2-May-92, 19-Jul-30, 23-Aug-69, 3-May-69, ...
+## $ year     &lt;int&gt; 1947, 1992, 1930, 1969, 1969, 1995, 1929, 1978, 1992,...</code></pre>
+<p>Now that we have our data all loaded, we notice something.</p>
+<ul>
+<li>When a player hasn’t kicked any behinds its saved as NA we would rather it be a <span class="math inline">\(0\)</span></li>
+</ul>
+<p>So lets fix that by replacing the NA with 0</p>
+<pre class="r"><code>bags[is.na(bags)]&lt;-0
+
+#check it worked
+head(bags)</code></pre>
+<pre><code>##   Goals Behinds          Player Team Opponent           Venue      date
+## 1    18       0    Fred Fanning   ME       SK   Junction Oval 30-Aug-47
+## 2    17       5  Jason Dunstall   HW       RI   Waverley Park  2-May-92
+## 3    17       0 Gordon Coventry   CW       FI   Victoria Park 19-Jul-30
+## 4    16       4   Peter McKenna   CW       SM   Victoria Park 23-Aug-69
+## 5    16       1    Peter Hudson   HW       ME Glenferrie Oval  3-May-69
+## 6    16       0    Tony Lockett   SY       FI    Western Oval 13-Aug-95
+##   year
+## 1 1947
+## 2 1992
+## 3 1930
+## 4 1969
+## 5 1969
+## 6 1995</code></pre>
+<pre class="r"><code>glimpse(bags)</code></pre>
+<pre><code>## Observations: 9,134
+## Variables: 8
+## $ Goals    &lt;int&gt; 18, 17, 17, 16, 16, 16, 16, 15, 15, 15, 15, 14, 14, 1...
+## $ Behinds  &lt;dbl&gt; 0, 5, 0, 4, 1, 0, 0, 9, 4, 0, 0, 7, 5, 2, 2, 2, 1, 0,...
+## $ Player   &lt;fct&gt; Fred Fanning, Jason Dunstall, Gordon Coventry, Peter ...
+## $ Team     &lt;fct&gt; ME, HW, CW, CW, HW, SY, CW, FO, SK, SM, CW, GE, GE, H...
+## $ Opponent &lt;fct&gt; SK, RI, FI, SM, ME, FI, HW, SK, SY, ES, ES, ES, SY, F...
+## $ Venue    &lt;fct&gt; Junction Oval, Waverley Park, Victoria Park, Victoria...
+## $ date     &lt;fct&gt; 30-Aug-47, 2-May-92, 19-Jul-30, 23-Aug-69, 3-May-69, ...
+## $ year     &lt;int&gt; 1947, 1992, 1930, 1969, 1969, 1995, 1929, 1978, 1992,...</code></pre>
+<p>To see if the amount of bags is getting lower through time lets make the equivalent of a <a href="http://www.excel-easy.com/data-analysis/pivot-tables.html">pivot table in excel</a></p>
+<p>So instead of dragging years to ‘rows’ and instead of entering in count of in ‘values’ we use <em>group_by</em> and summarise to create a table called <em>table.bags.by.year</em></p>
+<pre class="r"><code>table.bags.by.year &lt;-bags %&gt;% 
+  group_by(year) %&gt;%
+  summarise(count_bags=n()) 
+
+table.bags.by.year</code></pre>
+<pre><code>## # A tibble: 121 x 2
+##     year count_bags
+##    &lt;int&gt;      &lt;int&gt;
+##  1  1897          1
+##  2  1898          6
+##  3  1899          7
+##  4  1900          3
+##  5  1901         10
+##  6  1902          5
+##  7  1903          7
+##  8  1904          4
+##  9  1905         10
+## 10  1906          9
+## # ... with 111 more rows</code></pre>
+<p>Now the next thing we would like to do is view our table from largest <em>count_bags</em> to smallest <em>count_bags</em> we can do this as follows</p>
+<pre class="r"><code>table.bags.by.year %&gt;% 
+  arrange(desc(count_bags))</code></pre>
+<pre><code>## # A tibble: 121 x 2
+##     year count_bags
+##    &lt;int&gt;      &lt;int&gt;
+##  1  1993        181
+##  2  1992        175
+##  3  1991        174
+##  4  1987        154
+##  5  1994        151
+##  6  1995        151
+##  7  1982        138
+##  8  1996        138
+##  9  1985        136
+## 10  1978        132
+## # ... with 111 more rows</code></pre>
+<p>Looking at this table, we can see that in 1993 there was 181 instances of a bag of goals being kicked, 175 in 1992 and 174 in 1993.</p>
+<p>If we just wanted to look at the total <em>count_bags</em> kicked in a certain year we can just filter out the year as follows:</p>
+<pre class="r"><code>table.bags.by.year %&gt;% 
+  filter(year==2017)</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##    year count_bags
+##   &lt;int&gt;      &lt;int&gt;
+## 1  2017         35</code></pre>
+<p>Or maybe we want to look at the past 10 years?</p>
+<pre class="r"><code>table.bags.by.year %&gt;% 
+  filter (year&gt;2006)</code></pre>
+<pre><code>## # A tibble: 11 x 2
+##     year count_bags
+##    &lt;int&gt;      &lt;int&gt;
+##  1  2007         90
+##  2  2008        116
+##  3  2009         72
+##  4  2010         88
+##  5  2011         71
+##  6  2012         78
+##  7  2013         67
+##  8  2014         63
+##  9  2015         67
+## 10  2016         72
+## 11  2017         35</code></pre>
+<p>In the past 10 years, we have only seen one year <a href="https://en.wikipedia.org/wiki/2008_AFL_season">2008</a> where 100 + <span class="math inline">\(5\)</span> goal bags have been kicked. This year as of round 16 we only have 35 bags. We are over halfway through the season (with more AFL teams hence games compared to 2008) and even if we tripled the amount of 5+ goal hauls from here we still wouldn’t overtake 2008’s 5 goal haul!!!</p>
+</div>
+<div id="make-some-graphs" class="section level2">
+<h2>Make some graphs!</h2>
+<p>If you are like me, you are probably a bit more of a visual kind of person, so instead of looking at tables of numbers (boring!) lets look at some graphs instead.</p>
+<p>A common plot people use is a line graph to see if there is a trend over time.</p>
+<p>To do simple plots using ggplot, I would highly reccomend following this guide <a href="http://r4ds.had.co.nz/data-visualisation.html">here</a></p>
+<pre class="r"><code>  ggplot(data=table.bags.by.year)+ 
+  geom_line(mapping=aes(x=year, y=count_bags))</code></pre>
+<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>This graph is a bit misleading because of the sudden dip in 2017 as we don’t have a complete year, so lets pull that year out.</p>
+<pre class="r"><code>table.bags.by.year%&gt;% 
+  filter(year&lt;2017) %&gt;%
+  ggplot(aes(x=year,y=count_bags)) + geom_line()</code></pre>
+<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-9-1.png" width="672" /> Another good idea is to add labels to certain points of interest, below I am labelling the year 1993 as it was the year the number of bags peaked.</p>
+<pre class="r"><code>table.bags.by.year%&gt;% 
+  filter(year&lt;2017) %&gt;%
+  ggplot(aes(x=year,y=count_bags)) + geom_line() +
+  geom_text(data=subset(table.bags.by.year, year %in% c(1993)),aes(label=count_bags))</code></pre>
+<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>So graphically it clearly looks as though the amount of bags being kicked in todays game is going down. But is the game lower scoring?</p>
+<p>Well we can check that, we can look at the same graph but instead of looking at the count of bags we can look at the average totals of games.</p>
+<p>So again thanks to the great people at <a href="http://afltables.com/afl/stats/biglists/bg3.txt">afltables</a> for providing the data</p>
+<p>csv saved <a href="https://drive.google.com/file/d/0B2903kNbc39dRFZBNEI1Z3psWk0/view?usp=sharing">here</a></p>
+<pre class="r"><code>gamescores &lt;- read_csv(&quot;put your working directory here/gamescores.csv&quot;)</code></pre>
+<pre class="r"><code>##remember always view the data
+head(gamescores)</code></pre>
+<pre><code>## # A tibble: 6 x 12
+##   Date    year round home  home.g home.b home.t away  away.g away.b away.t
+##   &lt;chr&gt;  &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
+## 1 8-May~  1897 R1    Fitz~      6     13     49 Carl~      2      4     16
+## 2 8-May~  1897 R1    Coll~      5     11     41 St K~      2      4     16
+## 3 8-May~  1897 R1    Geel~      3      6     24 Esse~      7      5     47
+## 4 8-May~  1897 R1    Sout~      3      9     27 Melb~      6      8     44
+## 5 15-Ma~  1897 R2    Sout~      6      4     40 Carl~      5      6     36
+## 6 15-Ma~  1897 R2    Esse~      4      6     30 Coll~      8      2     50
+## # ... with 1 more variable: venue &lt;chr&gt;</code></pre>
+<pre class="r"><code>glimpse(gamescores)</code></pre>
+<pre><code>## Observations: 15,119
+## Variables: 12
+## $ Date   &lt;chr&gt; &quot;8-May-1897&quot;, &quot;8-May-1897&quot;, &quot;8-May-1897&quot;, &quot;8-May-1897&quot;,...
+## $ year   &lt;int&gt; 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1...
+## $ round  &lt;chr&gt; &quot;R1&quot;, &quot;R1&quot;, &quot;R1&quot;, &quot;R1&quot;, &quot;R2&quot;, &quot;R2&quot;, &quot;R2&quot;, &quot;R2&quot;, &quot;R3&quot;, &quot;...
+## $ home   &lt;chr&gt; &quot;Fitzroy&quot;, &quot;Collingwood&quot;, &quot;Geelong&quot;, &quot;South Melbourne&quot;,...
+## $ home.g &lt;int&gt; 6, 5, 3, 3, 6, 4, 3, 9, 6, 5, 12, 8, 5, 5, 2, 11, 15, 5...
+## $ home.b &lt;int&gt; 13, 11, 6, 9, 4, 6, 8, 10, 5, 9, 6, 11, 14, 11, 8, 10, ...
+## $ home.t &lt;int&gt; 49, 41, 24, 27, 40, 30, 26, 64, 41, 39, 78, 59, 44, 41,...
+## $ away   &lt;chr&gt; &quot;Carlton&quot;, &quot;St Kilda&quot;, &quot;Essendon&quot;, &quot;Melbourne&quot;, &quot;Carlto...
+## $ away.g &lt;int&gt; 2, 2, 7, 6, 5, 8, 10, 3, 5, 7, 6, 0, 3, 5, 6, 7, 3, 2, ...
+## $ away.b &lt;int&gt; 4, 4, 5, 8, 6, 2, 6, 1, 7, 8, 5, 2, 4, 3, 6, 4, 8, 9, 9...
+## $ away.t &lt;int&gt; 16, 16, 47, 44, 36, 50, 66, 19, 37, 50, 41, 2, 22, 33, ...
+## $ venue  &lt;chr&gt; &quot;Brunswick St&quot;, &quot;Victoria Park&quot;, &quot;Corio Oval&quot;, &quot;Lake Ov...</code></pre>
+<p>So what we want to see is if bags of goals are going down, does that correspond to a decrease in total points scored in games?</p>
+<p>To do this first we must come up with a new column that is the home.t+ away.t where home.t is the home score and away.t is the away score. We do this using <em>mutate</em></p>
+<pre class="r"><code>afl.games&lt;-gamescores %&gt;% 
+  mutate(total.game=home.t+away.t)
+
+head(afl.games)</code></pre>
+<pre><code>## # A tibble: 6 x 13
+##   Date    year round home  home.g home.b home.t away  away.g away.b away.t
+##   &lt;chr&gt;  &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
+## 1 8-May~  1897 R1    Fitz~      6     13     49 Carl~      2      4     16
+## 2 8-May~  1897 R1    Coll~      5     11     41 St K~      2      4     16
+## 3 8-May~  1897 R1    Geel~      3      6     24 Esse~      7      5     47
+## 4 8-May~  1897 R1    Sout~      3      9     27 Melb~      6      8     44
+## 5 15-Ma~  1897 R2    Sout~      6      4     40 Carl~      5      6     36
+## 6 15-Ma~  1897 R2    Esse~      4      6     30 Coll~      8      2     50
+## # ... with 2 more variables: venue &lt;chr&gt;, total.game &lt;int&gt;</code></pre>
+<pre class="r"><code>glimpse(afl.games)</code></pre>
+<pre><code>## Observations: 15,119
+## Variables: 13
+## $ Date       &lt;chr&gt; &quot;8-May-1897&quot;, &quot;8-May-1897&quot;, &quot;8-May-1897&quot;, &quot;8-May-18...
+## $ year       &lt;int&gt; 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 189...
+## $ round      &lt;chr&gt; &quot;R1&quot;, &quot;R1&quot;, &quot;R1&quot;, &quot;R1&quot;, &quot;R2&quot;, &quot;R2&quot;, &quot;R2&quot;, &quot;R2&quot;, &quot;R3...
+## $ home       &lt;chr&gt; &quot;Fitzroy&quot;, &quot;Collingwood&quot;, &quot;Geelong&quot;, &quot;South Melbour...
+## $ home.g     &lt;int&gt; 6, 5, 3, 3, 6, 4, 3, 9, 6, 5, 12, 8, 5, 5, 2, 11, 1...
+## $ home.b     &lt;int&gt; 13, 11, 6, 9, 4, 6, 8, 10, 5, 9, 6, 11, 14, 11, 8, ...
+## $ home.t     &lt;int&gt; 49, 41, 24, 27, 40, 30, 26, 64, 41, 39, 78, 59, 44,...
+## $ away       &lt;chr&gt; &quot;Carlton&quot;, &quot;St Kilda&quot;, &quot;Essendon&quot;, &quot;Melbourne&quot;, &quot;Ca...
+## $ away.g     &lt;int&gt; 2, 2, 7, 6, 5, 8, 10, 3, 5, 7, 6, 0, 3, 5, 6, 7, 3,...
+## $ away.b     &lt;int&gt; 4, 4, 5, 8, 6, 2, 6, 1, 7, 8, 5, 2, 4, 3, 6, 4, 8, ...
+## $ away.t     &lt;int&gt; 16, 16, 47, 44, 36, 50, 66, 19, 37, 50, 41, 2, 22, ...
+## $ venue      &lt;chr&gt; &quot;Brunswick St&quot;, &quot;Victoria Park&quot;, &quot;Corio Oval&quot;, &quot;Lak...
+## $ total.game &lt;int&gt; 65, 57, 71, 71, 76, 80, 92, 83, 78, 89, 119, 61, 66...</code></pre>
+<p>Now lets see it average total score by year in a graph.</p>
+<p>Hopefully now you are getting a feel for <em>%&gt;%</em> while it might seem a bit weird thinking about it this way. Its another way of saying take the result from the left and apply what is coming next.</p>
+<p>Below, we take afl.games dataset group it by year. After its been grouped by year (think pivot table) we summarise it by the mean of total.game. We then take that resulting pivot table and plot it using ggplot where x-axis is the year and y axis is the average total.</p>
+<pre class="r"><code>afl.games %&gt;% 
+  group_by(year)%&gt;%
+  summarise(average.total = mean(total.game)) %&gt;% 
+  ggplot(aes(x=year,y=average.total))+geom_line()</code></pre>
+<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>That is a bit annoying right for comparisions sake.</p>
+<p>Lets stack the graphs on top of each other saving you the hastle of scrolling up and down. To make things a bit more clear visually lets add some vertical lines to help our eyes out.</p>
+<pre class="r"><code>##make plot 1
+p1&lt;-table.bags.by.year%&gt;% 
+  filter(year&lt;2017) %&gt;%
+  ggplot(aes(x=year,y=count_bags)) + geom_line() +
+  geom_text(data=subset(table.bags.by.year, year %in% c(1993,2016)),aes(label=count_bags)) +
+  ylim(0,250) +
+  geom_vline(xintercept =c(1993,2016))
+
+## make plot 2
+p2&lt;-afl.games %&gt;% group_by(year)%&gt;%
+  summarise(average.total = mean(total.game)) %&gt;% 
+  ggplot(aes(x=year,y=average.total))+geom_line() +
+  ylim(0,250) +
+  geom_vline(xintercept =c(1993,2016))
+
+grid.arrange(p1, p2, nrow = 2)</code></pre>
+<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Visually what do you see?</p>
+<p>I see since 1993 it looks as though totals have remained relatively stable while the amount of bags being kicked as been on the steady decline.</p>
+<p>What about how many people in goals are kicking games. In other words what is the spread of goalkickers?</p>
+<p>Thankfully again thanks to <a href="http://afltables.com/afl/stats/biglists/bg.html">afltables</a> we have a list of all the goalkickers in games.</p>
+<p>I have saved the file <a href="https://drive.google.com/open?id=0B2903kNbc39dNENidmYwN2l2NVU">here</a></p>
+<pre class="r"><code>all_goal_kickers &lt;- read_csv(&quot;put your working directory here/all_goals.csv&quot;)</code></pre>
+<p>Usually with excel if I wanted to get a summary of a few groups in one go. (The equivalent of moving lots of variables to ‘rows’) the table would actually look horrible.</p>
+<div class="figure">
+<img src="/img/horrible.PNG" alt="I hate EXCEL" />
+<p class="caption">I hate EXCEL</p>
+</div>
+<p>Now a workaround, is to concatentate the columns you want in excel to do this in R you can use <em>paste</em></p>
+<pre class="r"><code> goal_kickers = mutate(all_goal_kickers,
+              concated_column = paste(team, opponent, venue,date, sep = &#39;_&#39;))
+# View(goal_kickers)
+goal.spread &lt;-goal_kickers %&gt;% 
+     group_by(concated_column,year) %&gt;%
+     summarise(count_spread=n())  
+head(goal.spread)</code></pre>
+<pre><code>## # A tibble: 6 x 3
+## # Groups:   concated_column [6]
+##   concated_column                year count_spread
+##   &lt;chr&gt;                         &lt;int&gt;        &lt;int&gt;
+## 1 AD_BB_Carrara_9-Aug-92         1992            9
+## 2 AD_BB_Football Park_14-Aug-94  1994            7
+## 3 AD_BB_Football Park_23-Jun-91  1991            9
+## 4 AD_BB_Football Park_26-Apr-92  1992            6
+## 5 AD_BB_Football Park_30-Jul-95  1995            6
+## 6 AD_BB_Football Park_6-Jul-96   1996            7</code></pre>
+<pre class="r"><code>##that would give the same as 
+goal.spread.2&lt;-goal_kickers%&gt;%
+  group_by(team,opponent,venue,date,year)%&gt;%
+  summarise(count_spread=n())
+head(goal.spread.2)</code></pre>
+<pre><code>## # A tibble: 6 x 6
+## # Groups:   team, opponent, venue, date [6]
+##   team  opponent venue         date       year count_spread
+##   &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;         &lt;chr&gt;     &lt;int&gt;        &lt;int&gt;
+## 1 AD    BB       Carrara       9-Aug-92   1992            9
+## 2 AD    BB       Football Park 14-Aug-94  1994            7
+## 3 AD    BB       Football Park 23-Jun-91  1991            9
+## 4 AD    BB       Football Park 26-Apr-92  1992            6
+## 5 AD    BB       Football Park 30-Jul-95  1995            6
+## 6 AD    BB       Football Park 6-Jul-96   1996            7</code></pre>
+<pre class="r"><code>##so now we can see the spread of goal kickers in each game
+
+goal.spread.2%&gt;%
+   group_by(year)%&gt;% 
+   summarise(average.spread=mean(count_spread)) %&gt;% 
+   ggplot(aes(x=year,y=average.spread))+geom_line()</code></pre>
+<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-17-1.png" width="672" /> Looking at this, it would seem as though there was an uptake in spread of goalkickers since the mid 90s that has been maintained roughly through till today.</p>
+<pre class="r"><code>p3&lt;- goal.spread.2%&gt;%
+   group_by(year)%&gt;% 
+   summarise(average.spread=mean(count_spread)) %&gt;% 
+   ggplot(aes(x=year,y=average.spread))+geom_line() +
+  geom_vline(xintercept =c(1993,2016))
+grid.arrange(p1, p2,p3 ,nrow = 3)</code></pre>
+<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>From this pretty quick and dirty run, we can see that roughly the amount of bags being kicked has gone down while totals and spread of goal kickers has remained relatively stable.</p>
+<p>What does that mean for todays game and what are some possible next steps?</p>
+<ul>
+<li>Instead of just eyeballing the graphs can we tests for statistically significant differences through time</li>
+<li>What is the value of a “Coleman” contending forward? If scores are roughly the same with less bags being kicked. This would imply that players are chipping in 2,3 goals instead of 1,2 to maintain the same rough total while not getting on the board as much individually.</li>
+</ul>
+<p>Finally, do you find this enjoyable? Does having R scripts/ datasets running all the way through and being fully reproducible make you want to do some more analysis yourself?</p>
+<p>As always hit me up for feedback.</p>
+</div>

@@ -1,0 +1,217 @@
+---
+title : "Building Your Own Brownlow Model"
+author : "Robert Nguyen"
+date : 2017-09-24
+tags : ["brownlow","regression","R","open science"]
+
+---
+
+```{r setup, include=FALSE}
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(gapminder)
+library(gridExtra)
+library(lubridate)
+library(dplyr)
+library(readxl)
+library(aod)
+library(ggplot2)
+library(knitr)
+library(ordinal)
+knitr::opts_chunk$set(echo = TRUE)
+brownlow_data <- read.csv("A:/OneDrive/rob_site/anoafl.github.io/data/brownlow_data.csv")
+
+```
+
+As some of you may be aware, this is the best time of year. Not only is it finals time but its also Brownlow week. 
+During my [honours year](http://www.maths.uwa.edu.au/students/honours) my thesis was on trying to predict who would win that [years Brownlow medal](http://www.theage.com.au/afl/brownlow-medal/perth-students-mathematical-model-to-predict-afl-brownlow-winner-20140921-10k3k1.html). I have been running the model ever since. 
+
+So instead of just giving a list of my predictions for this years count, this post is that will hopefully encourage you at home to give it a go yourself and in doing so you will learn a bit of R and a bit of stats and really what is better than that!
+
+I have uploaded the data that I personally use for my own predictions [here](https://drive.google.com/open?id=0B2903kNbc39dUjNUWkl2V1ZXTzA)
+
+
+First thing is first, lets read the data in and view it
+```{r,eval=FALSE}
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(gapminder)
+library(gridExtra)
+library(lubridate)
+library(dplyr)
+library(readxl)
+library(aod)
+library(ggplot2)
+library(knitr)
+library(ordinal)
+getwd() #make sure the brownlow_data.csv file is saved here
+brownlow_data <- read.csv("brownlow_data.csv")
+
+```
+
+```{r}
+View(brownlow_data)
+glimpse(brownlow_data)
+
+```
+
+From our first glimpse we can see that votes is an integer variable, i.e. it can be any whole number from 1 to infinity, we would much rather it be a factor variable as no one can get 4 votes, 5 votes, 6 votes in a game etc. This also helps out when we explore our data graphically later on.
+
+```{r}
+brownlow_data$votes<-as.factor(brownlow_data$votes)
+```
+
+##Nuffie ideas
+
+Variable creation is one of the most important part of the model building process. As some might say garbage in garbage out. 
+This is also in my opinion the most fun stage of the model building process. Its where you can try to implement your own mental model of the great game. 
+
+In general we want to model what our eyes see. It's just simply not possible for someone to watch all games and come up with their own 3,2,1 for each game. Even if this was possible what you are trying to predict/model isn't your own model for who is best on, but what you think the umpires opinion is for best on. 
+
+For this case we want a model that can be applied to all games across the home and away season based on what we think is predictive of polling votes. 
+
+When Tom Mitchell had over [50 touches against the magpies](http://www.afl.com.au/news/2017-05-21/bucks-clarko-split-on-mitchells-impact) there was a lot of talk around his impact. Something that some footy fans might believe in a Brownlow sense, that hes not going to poll well because he has a high handball to kick ratio. From the dataset above we don't have that as a variable. So you at home might like to create it, or any other ratio you might like. 
+
+Speaking of variable creation, Ryan Buckland has listed some [here](https://onballers.com/2017/08/24/five-new-afl-metrics-and-the-players-who-lead-them-in-2017/). You might like to add some or come up with your own. 
+
+```{r}
+brownlow_data$h2kr<-brownlow_data$handballs/brownlow_data$kicks
+brownlow_data$gr<-(brownlow_data$clangers - brownlow_data$freesAgainst)/brownlow_data$disposals
+brownlow_data$tr<-brownlow_data$tackles /brownlow_data$disposals
+brownlow_data$mgp<-brownlow_data$metersgained/brownlow_data$disposals
+brownlow_data$sfs<-brownlow_data$score.involvement -brownlow_data$goalAssists- brownlow_data$goals - brownlow_data$behinds
+```
+
+
+
+```{r}
+glimpse(brownlow_data)
+
+
+```
+
+After creating a list of your own variables you want to give them a look what you will notice is that there will be some infinate values and NaN values. We can just replace them with 0.
+
+```{r}
+
+ is.na(brownlow_data)<-sapply(brownlow_data, is.infinite)
+ brownlow_data[is.na(brownlow_data)]<-0
+ glimpse(brownlow_data)
+ 
+```
+
+## Plot your data
+
+“The simple graph has brought more information to the data analyst’s mind than any other device.” — John Tukey
+
+So now you have your data and its nicely organised, lets do some plotting!
+
+One of my personal favourite graphs for comparisons between groups is the [boxplot](https://en.wikipedia.org/wiki/Box_plot)
+
+What we are looking for is for variables where the 'box' part is increasing as you go from 0 vote category to the 3 vote category. 
+
+As an example of increasing 'boxes' lets look at SC which is the supercoach score of the player in the game. 
+
+```{r}
+p <- ggplot(brownlow_data, aes(votes, SC))
+p + geom_boxplot() + ggtitle("Supercoach Scores Vs Brownlow Votes") +ylab("Supercoach Score")
+
+```
+
+So looking at that graph, it would seem as though it makes sense to include Supercoach scores as a predictor in your own Brownlow Model. 
+
+Lets look at a variable that doesn't seem to seperate players into voting categories. 
+
+
+
+```{r}
+p <- ggplot(brownlow_data, aes(votes, gr))
+p + geom_boxplot() 
+
+```
+After exploring the variables you yourself will come up with a list of variables that you think are predictive they might be stats that are already being provided or you might be creative and create some of your own. 
+
+Whatever the case maybe lets put those variables in a model!
+
+## The model
+
+The model below is an ordinal regression model. Ordinal because there is some natural ordering to do with the voting categories. A player who gets 3 votes should have better in game statistics over a player who didn't poll. This method is commonly used in medical sciences such as prediction of a patient conditions. In this case the ordering could be considered healthy, servere, dying. The [CLM package](https://cran.r-project.org/web/packages/ordinal/ordinal.pdf) in R is used to fit such models.
+
+In our script below this will involve a few steps
+
+1. Create our dataset for modelling : This will involve selecting the variables we think might be predictive of polling well in the 2017 Brownlow Medal
+
+2. Standardising our data : for why we standardise a good read is [here](http://andrewgelman.com/2009/07/11/when_to_standar/)
+
+3. Using the CLM package we create our model which has votes as our outcome variable and our 6 predictors are 
+ + disposals
+ + contestedPossessions 
+ + score.involvement 
+ + SC (Supercoach scores)
+ + intercepts
+ + sfs  (Score Facilitation Score)
+ + mgp (Metres Gained per Disposal)
+ 
+4. Apply that model to 2017 dataset to get the predicted probabilities that a player will poll 3 votes$p3$, 2 votes$p2$, 1 vote$p1$ and no votes $p0$
+5. Come up with the expected votes for each player in a game 
+
+$expected\_votes= 0p0+1p1+2p2+3p3$
+
+6. sum up the expected votes for the year for each player to form our predicted order.
+
+```{r}
+#create our dataset for modelling
+
+dataR<-select(brownlow_data, #base dataset
+              year, matchId, Round, TeamName, playerName, #variables that you want for filtering
+              disposals, contestedPossessions,score.involvement,SC,intercepts,sfs,mgp,votes #variables that seem predictive?
+)
+
+in.sample  <- subset(dataR, year %in% c(2015:2016)) #our traning data
+
+out.sample <- subset(dataR, year == 2017) #the prediction year
+
+temp1<-scale(in.sample[,6:12]) #I am standardising the 6th column (disposals) until the 12th column (mgp)
+in.sample[,6:12]<-temp1
+# attributes(temp1)
+temp1.center<-attr(temp1,"scaled:center")
+temp1.scale<-attr(temp1,"scaled:scale")
+
+fm1<-clm(votes~ disposals +contestedPossessions+score.involvement+SC+intercepts+sfs +mgp,
+         data = in.sample)
+summary(fm1)
+
+newdata   <- out.sample[ , -ncol(out.sample)]
+
+newdata[,6:12]<-scale(newdata[,6:12],center=temp1.center,scale=temp1.scale) 
+
+pre.dict    <- predict(fm1,newdata=newdata, type='prob')
+pre.dict.m  <- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) <- c("vote.0", "vote.1", "vote.2", "vote.3")
+
+newdata.pred  <- cbind.data.frame(newdata, pre.dict.m)
+
+### Step 1: Get expected value on Votes
+newdata.pred$expected.votes <- newdata.pred$vote.1 + 2*newdata.pred$vote.2 + 3*newdata.pred$vote.3
+
+prediction  <- aggregate(expected.votes~playerName, data = newdata.pred, FUN = sum )
+
+
+predicted_order <- arrange(prediction,desc(expected.votes)) #making an ordered table
+
+```
+
+```{r,ktable}
+
+kable(predicted_order[1:10, ], caption = "Your top 10.")
+
+```
+
+So there you go, based on this simple six variable model, Patrick Dangerfield after being shockingly suspended will poll the most votes but hand over his medal to Dusty. 
+
+
+
