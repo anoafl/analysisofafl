@@ -1,0 +1,46 @@
+---
+title : "Do Statistics Show if Freekickhawthorn Is Really a Thing"
+author = "Robert Nguyen"
+date = 2016-05-13
+tags: ["Hawthorn", "umpires"]
+---
+
+Previous article can be [found here](http://www.watoday.com.au/afl/afl-news/afl-2016-do-statistics-show-if-freekickhawthorn-is-really-a-thing-20160513-goukvi.html)
+
+Hating on AFL umpires could just about be considered a national sport.
+
+In the past few weeks we've had not only [#freekickhawthorn](www.watoday.com.au/afl/afl-news/hawthorn-v-adelaide-isaac-smith-says-umpire-got-it-right-by-not-paying-free-20160423-godgbm.html) but the performance of umpires has also [been openly questioned by coaches](www.watoday.com.au/afl/afl-news/western-bulldogs-v-adelaide-crows-unhappy-with-freekick-count-20160507-goozuh).
+
+Diving into the data provides some interesting findings.  
+
+Looking at figures from [1965](http://afltables.com/afl/afl_index.html) on we can see that there seems to be more free kicks are paid to the home team than the away team. Also interestingly there are a lot less free kicks paid now than there were in the 1970s and 1980s.
+
+![Free Kicks Count From 1965](/img/freekick.png)
+
+So there you have it folks, playing at home really is an advantage to the home team (at least in the free kick count). But this doesn't really get at the heart of what irks most fans...we want to know if #freekickhawthorn is an actual thing!
+
+So lets look at home-and-away games since 2003, specifically exploring those games deemed to be "close" - ie, decided by less than a goal.
+
+In our time period there are 264 "close" games. Breaking this down further there were 115 close games where the winner of the game also won the free kick count.
+
+A quick glance at the leaderboard of close winners who also won free kick counts is topped by Geelong, followed by West Coast, Port, Richmond and Carlton.
+
+![Free Kick Leaderboard](/img/freekick2.png)
+
+Breaking this up a bit further, we can see how many of those close wins were at home as opposed to away.
+
+Interestingly at this stage it would seem like Geelong wins a lot of their close games at home, while the Eagles have more of a 50/50 split.
+
+But another question could be about close losses combined with losing the free kick count?
+
+Here we have a table showing games were the team both loses the free kick count and the close game (these are perhaps the most frustrating ones for fans).
+
+![No Free, No Win](/img/freekick1.png)
+
+And we can see some results that won't please too many Adelaide fans...or West Coast fans for that matter.
+
+But the Eagles don't lose close games at home where they also lose the free kick count (maybe some controversial late free kicks going in West Coast's favour!).
+
+This seems to make some sense when we think about the last three controversial finishes to AFL games: the Hawks at home against Saints and Adelaide and the Bulldogs against Adelaide at home.
+
+Thanks to some great work we can also see that the Bulldogs have the best ever free-kick deferential after seven games, with Hawthorn [nowhere in sight](https://twitter.com/TheArcFooty/status/729839379171008514/photo/1?ref_src=twsrc%5Etfw&ref_url=http%3A%2F%2Fwww.theage.com.au%2Fafl%2Fafl-news%2Fafl-2016-do-statistics-show-if-freekickhawthorn-is-really-a-thing-20160513-goukvi.html).
