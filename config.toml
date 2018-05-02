@@ -5,6 +5,7 @@ languageCode = "en-us"
 copyright = "Robert Nguyen"
 #disqusShortname = "XXX"
 #googleAnalytics = "XXX"
+math = true
 
 [Author]
     name = "Robert Nguyen"

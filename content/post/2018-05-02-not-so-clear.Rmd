@@ -17,7 +17,7 @@ What about the less obvious, do teams that win contested possessions win more th
 
 Let’s look at some of the commentator favorites like clearances and contested possessions it be great to look at meters gained but you know Champion isn’t into releasing that kind of thing…..
 
-The purpose of model selection is to choose a model from all possible models with desirable properties. Usually this would involve minimising the `$description loss + \lambda \cdot Model complexity$` 
+The purpose of model selection is to choose a model from all possible models with desirable properties. Usually this would involve minimising the `$description loss + \lambda \cdot Model complexity$`
 
 We want to have a trade off between descriptive power and complexity. We don’t want our model to overfit (useless) or have so many variables that while accuracy is good, usability is poor.
 

@@ -1,0 +1,30 @@
+---
+title : "How Different Is Finals Football to Home and Away Footy"
+author: "Robert Nguyen"
+date : 2016-09-07
+tags : ["finals footy", "home and away"]
+
+---
+
+
+
+We are entering what will perhaps be the closest finals series in recent memories. Up until the very last game the order of the finals series was being shaped. It wasn’t until halfway through the very last game of the home and away season did the Hawks lock in there top 4 spot. Amazing.
+
+Finals footy, hard contested footy. Lots of tackles hard ball gets, the pressure is on and there's just nothing like it. The atmosphere of the crowd, the knowing that there might be a next week to go to the footy. Finals footy holds a special place in people’s memories.  But just how different are home and away games from finals?
+
+We have all heard the narrative that finals footy is won at the coal face that finals footy is won by winning the clearances, by winning the hard contested ball and the one percenters. That the games will be closer and lower scoring but do these tales play out in the numbers or are they more fairy tales like the Dockers 2016 premiership hopes.
+
+![Caption for the picture.](/img/finals.png)
+![Caption for the picture.](/img/finals1.png)
+
+Looking at AFL since 2002 to 2015, we can see some pretty interesting narratives. Games are not only closer on average for finals 32 points vs 36 for the home and away season but they are also lower scoring 86 to 92 on average.
+
+Teams are scoring less, margins are less and this is reflected in the drop in inside 50 differentials (difference in scoring opportunities) by 18%.
+
+Interestingly the tackle differential of the winning team has decreased by 58%, even though we are seeing 4% more tackles being made in these high pressure games.
+
+But what about the coal face, the clearances, contested ball and the one percenters, here we see some pretty interesting things.
+
+Teams that win finals have increased their contested possession differential by 19% even though total contested possessions only increases by 2%. The clearance differential increases by 35% even though there are only 4% more total clearances during a game and their one percenter differential increases by 83% while total one percenters in finals games only increases by 8%.
+
+All up, this shapes for an incredibly exciting finals series. Can't wait.

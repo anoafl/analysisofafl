@@ -1,0 +1,71 @@
+---
+title: "Building a free team rating system for AFL"
+author: "Robert Nguyen"
+date: '2017-03-20'
+
+tags: ["r", "ELO","team ratings"]
+---
+
+
+Building a team rating system for AFL has become awfully popular of late. My personal favourite is the MatterofStats which you can read about here [http://www.matterofstats.com](http://www.matterofstats.com). But it is not just Tony at MOS but there has been great content coming from  [http://plussixoneblog.com/](http://plussixoneblog.com/) , [https://thearcfooty.com/](https://thearcfooty.com/), [http://www.theroar.com.au/author/ryanbuckland7/](http://www.theroar.com.au/author/ryanbuckland7/) and [https://hurlingpeoplenow.wordpress.com/](http://www.theroar.com.au/author/ryanbuckland7/)  just to name a few.
+
+So if you are reading this blog, you are probably in the wrong space…. But if you want to start building out your own ELO rating system for AFL well then stayed tuned.
+
+The following will be a step by step guide to building out a basic ELO rating system using R.
+
+So to begin with, you need well R which you can download from [here](https://cran.r-project.org/bin/windows/base/).
+The next thing I would recommend is an easier UI to use R, for this most people use R studio which you can download [here](https://www.rstudio.com/) 
+
+To build out an ELO system we need data, for this I use [http://afltables.com/afl/stats/biglists/bg3.txt](http://afltables.com/afl/stats/biglists/bg3.txt)
+
+Now for the fun stuff, once you have the data and R installed into your computer you can go about building your very own AFL ELO model. Yep no strings attached for free, from free websites! Maybe you want to make some money or maybe you just want to win a tipping comp with mates.
+
+Below is some R script which will hopefully get you started, once you get started reach out if you have any questions.
+
+```{r , eval=FALSE}
+getwd() #this is your working directory, its where you should save your data/code
+setwd("insert your directory here") #this is if you are organised and want to save your data somehwere
+install.packages("PlayerRatings") #this is the R package that someone very friendly built
+library(PlayerRatings) #this is loading the package so we can build out the ratings
+install.packages("dplyr") #this is part of the hadleyverse and will help you manipulate your data
+library(dplyr)
+ 
+##now you will need to download the data, for this basic step I will assume you have already downloaded your data and cleaned it
+#however if you haven't go to here to download a manipulated dataset from afltables
+#this manipulated dataset https://drive.google.com/open?id=0B2903kNbc39daC1VSUktanZPZFk
+#this dataset has been manipulated to make running the ELO as quick as possible.
+#when you download the dataset *public afl data* instead of downloads move it to the same folder that gets printed when you do getwd()
+```
+
+Now that you have done above, I want to get you excited, and the easiest way is to just run something and it works, its tactile, its there ready for you to see and interpret. It’s there for you to digest and critique. It’s there and you can manipulate it anyway you want.
+
+Say you want to use scoring shots instead of points scored. Or say you want to use a different amount of games to train your ELO. You can do it all here. Lets begin.
+
+Assuming you ran the above R script and it worked, to get out a quick ELO rating all you have to do is run below.
+
+```{r, eval=FALSE}
+df<-read.csv("public afl data.csv")
+ 
+x<-select(df,Week,HomeTeam, AwayTeam, Score)
+x$Score<-as.numeric(x$Score)
+x$HomeTeam<-as.character(x$HomeTeam)
+x$AwayTeam<-as.character(x$AwayTeam)
+x$Week<-as.numeric(x$Week)
+elo(x)
+```
+And there you have it your own ELO rating system. Well someone elses but you can edit from here.
+
+Lets say you found this blog because you are a bit of a numbers nut. Being a numbers nut you think to yourself, hey I think that it makes more sense to have a higher/lower k factor than what I usually hear people use.
+
+Well then, let me get you started.
+
+```{r, eval=FALSE}
+elo(x, status = NULL, init = 2200, gamma = 5, kfac = 1,
+ history = FALSE, sort = TRUE)
+```
+Play around with kfac see what happens as you increase it from 0 to 5 to 10 to 20 to 25 etc. For those of you who want to know more about the parameters you can now edit. Please read this [https://cran.r-project.org/web/packages/PlayerRatings/PlayerRatings.pdf](https://cran.r-project.org/web/packages/PlayerRatings/PlayerRatings.pdf)
+Play around with all the parameters, see what you come up with as making the most sense.
+
+There you go, go forth numbers nuts and build out your own ELO system using free software and data.
+
+Remember numbers are there to help narrate the story you wish to tell. So please now that you can do it go ahead I’d love to see some more ELOs floating around!
