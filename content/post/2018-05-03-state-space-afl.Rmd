@@ -1,5 +1,5 @@
 ---
-title : " State Space Afl"
+title : "State Space AFL"
 author: "Robert Nguyen"
 date : 2018-05-03
 tags : ["State Space"]
