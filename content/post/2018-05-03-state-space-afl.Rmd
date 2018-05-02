@@ -1,9 +1,8 @@
 ---
 title : " State Space Afl"
-author : "Robert Nguyen"
-date : '2018-05-03'
+author: "Robert Nguyen"
+date : 2018-05-03
 tags : ["State Space"]
-
 ---
 
 Ever read a post and went damn! I really wonder how that would work for AFL . 
