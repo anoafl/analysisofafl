@@ -1,4 +1,4 @@
-baseurl = "https://gracious-neumann-d12574.netlify.com/"
+baseurl = "https://analysisofafl.netlify.com/"
 title = "Analysis of AFL"
 theme = "ghostwriter"
 languageCode = "en-us"
