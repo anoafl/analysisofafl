@@ -17,7 +17,7 @@ Strongly influenced by [Turkington](https://www.amazon.com/Instrumental-Variable
 
 Prefers GLM to machine learning.
 
-Love a beer, wine and unexplained variation.
+Love a [beer](https://littlecreatures.com.au/agegate/), [wine](https://www.fourthwavewine.com.au/takeittothegrave-home) and unexplained variation.
 
 Analysis and writing done while listening to [dark side of the moon](https://www.youtube.com/watch?v=YI67GAQYsRc)
 
