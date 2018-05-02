@@ -1,7 +1,7 @@
 ---
-title: "Test Change"
-author: "Frida Gomam"
-date: 2015-07-23T21:13:14-05:00
+title: "Perth student's mathematical model to predict AFL Brownlow winner "
+author: "Simon White"
+date: 2014-09-22
 categories: ["R"]
 tags: ["R Markdown", "plot", "regression"]
 ---
@@ -10,28 +10,69 @@ tags: ["R Markdown", "plot", "regression"]
 knitr::opts_chunk$set(collapse = TRUE)
 ```
 
-# R Markdown
+Previous article can be [found here](http://www.theage.com.au/afl/brownlow-medal/perth-students-mathematical-model-to-predict-afl-brownlow-winner-20140921-10k3k1.html)
+To some extent, every footy fan is an amateur mathematician. After all, you can't keep score without at least knowing the six-times table.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+But Robert Nguyen is a slightly rarer beast. The West Coast supporter from Bull Creek is an actual mathematician and has used his skills to devise a statistical model that can be used to predict the winner of the AFL's Brownlow Medal.
 
-You can embed an R code chunk like this:
+Early next month, 23-year-old Nguyen - who is completing an honours course in applied statistics at the University of Western Australia - will submit a thesis entitled Taking Home Charlie.
 
-```{r cars}
-summary(cars)
-fit <- lm(dist ~ speed, data = cars)
-fit
-```
+Whatever happens, it will likely be one of the more quirky academic studies produced across the country. But first he hopes the results of Monday's night's medal count will give further credence to the science behind his model (more on the maths involved in a minute).
 
-# Including Plots
+In short, Nguyen predicts Gold Coast skipper Gary Ablett to win a third Brownlow despite missing seven games with injury. He reckons Freo's ineligible star Nat Fyfe will poll the second-most votes despite a five-game absence of his own, while Collingwoood's Dayne Beams is the best smokey (a 12 shot by Nguyen's reckoning, currently at  67  with the TAB).
 
-You can also embed plots. See Figure \@ref(fig:pie) for example:
 
-```{r pie, fig.cap='A fancy pie chart.', tidy=FALSE}
-par(mar = c(0, 1, 0, 1))
-pie(
-  c(280, 60, 20),
-  c('Sky', 'Sunny side of pyramid', 'Shady side of pyramid'),
-  col = c('#0292D8', '#F7EA39', '#C4B632'),
-  init.angle = -50, border = NA
-)
-```
+West Coast's Matt Priddis is in the mix but Geelong captain and pronounced pre-count betting favourite Joel Selwood doesn't feature in his top-five. Sydney gun Josh Kennedy doesn't make the top 10 and is predicted to be outpolled by less high-profile teammate Luke Parker.
+
+"I just thought it was an interesting thing to see if it was possible to do," Nguyen explained of his decision to combine his passion for football and statistics.
+
+"I think the multis [for the Brownlow] are very good value. My model would have got the trifecta last year.
+
+"Dayne Beams is really interesting. He didn't poll well last year but in 2012 he got more votes than [big name teammate] Scott Pendlebury."
+
+Given Nguyen's study involves basically a year's work and will result in a likely 50-page thesis, a detailed explanation of the accompanying mathematics is probably beyond the scope of this story and definitely out of the intellectual league of this author.
+
+But here's a (very) layman's version. For each brownlow count for the past five years, Nguyen has taken a "web scrape" of the preceding five years of stats from individual AFL games. The stats are then lined up with the Brownlow votes for each of those games, enabling the identification of statistical patterns that might correlate to votes awarded.
+
+Using those patterns - and the statistical model they form the basis of -  it is possible to then "run" the actual game stats for a given year and come up with "expected standardised game votes" to predict a Brownlow outcome. To ensure random fluctuations are minimised, Nguyen runs each season through his computer 10,000 times.
+
+Just in case any of that sounds overly complicated - and I think I almost fried my own brain writing it - here are some relevant facts to consider.
+
+Retrospectively running Nguyen's model over the previous five AFL seasons successfuly picked four winners: Gary Ablett in 2009, Dane Swan in 2011, Jobe Watson in 2012 and Ablett again in 2013.
+
+In 2010, when Chris Judd surprisingly won a second Brownlow, the Nguyen model had the ex-West Coast star and now Carlton champ at only No. 10. But in 2011, when Judd was favourite but finished just equal fifth, Nguyen didn't have him rated in his top five.
+
+"I was just saying the other day with 2010, if Judd had got suspended for elbowing Matthew Pavlich, I would actually have got it right - because Gary Ablett, who my model picked to win, finished with the second-most votes," Nguyen quipped.
+
+With his honours committments finished, Nguyen will leave the academic world next year to take up a job with the Commonwealth Bank.
+
+He's open to the idea of commercial interest in his Brownlow model and would relish the opportunity to run it with the inclusion of some more complex statistics.
+
+For example, at the moment the model includes win or loss results in games (a player IS more likely to get votes if his team wins) but not more advanced data like involvement in score chains or areas of the field on which possessions are collected. It also does not take into account umpire identity, meaning the predictions don't factor in whether certain umpires are more likely to reward particular statistical returns.
+
+Irrespective of the outcome of Monday night's count, Nguyen is confident of the soundness of the method behind his model.
+
+A previous study in Brownlow predicting by Melbourne's Swinburne University in the early 2000s combined statistical data with other factors such as whether a player was of distinctive appearance (e.g blonde or red hair) or was the captain of his club.
+
+"Even if Gary Ablett doesn't win, it would still be four from [the past] six years - so I don't think that's too bad," Nguyen said of his own model.
+
+## The Nguyen model predicted top 10 - 2014 Brownlow Medal: 
+
+1. Gary Ablett (Nguyen's projected odds to poll most votes  4.67 , actual WA TAB odds to win 4)
+2. Nathan Fyfe (6, ineligible)
+3. Matthew Priddis (9.80,  17 )
+4. Dayne Beams ( 12 ,  67 )
+5. Scott Pendlebury ( 12,  17 )
+6. Joel Selwood ( 16.75 ,  2.70 )
+7. Jordan Lewis ( 22 ,  9.75 )
+8. Robbie Gray ( 19 ,  6 )
+9. Tom Rockliff ( 19 , ineligible)
+10. Luke Parker ( 27 ,  101 )
+
+## Previous Brownlow "predictions" under the Nguyen model (with actual placings in bracket):
+
+* 2009: Gary Ablett (1st), Dane Swan (eq 16th), Nick Dal Santo (eq 6th), Jonathan Brown (eq 4th), Leigh Montagna (eq 14th)
+* 2010: Gary Ablett (2nd), Dane Swan (3rd), Luke Hodge (eq 9th), Brent Harvey (eq 16th), Lance Franklin (eq  25th)
+* 2011: Dane Swan (1st), Matthew Boyd (eq 4th), Sam Mitchell (2nd), Marc Murphy (eq 9th), Scott Pendlebury (eq 4th)
+* 2012: Jobe Watson (1st), Josh Kennedy (eq 8th), Gary Ablett (6th), Scott Thompson (eq 4th), Dane Swan (eq 4th)
+* 2013: Gary Ablett (1st), Joel Selwood (2nd), Dane Swan (3rd), Nat Fyfe (11th), Steve Johnson (4th) 
