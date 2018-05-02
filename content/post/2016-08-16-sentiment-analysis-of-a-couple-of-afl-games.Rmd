@@ -1,0 +1,29 @@
+---
+title : "Sentiment Analysis of a Couple of Afl Games"
+author  : "Robert Nguyen"
+date : 2016-08-16
+tags : ["Sentiment Analysis"]
+
+---
+Probably should work on shorter titles, but hey its my blog my rules!
+
+Code used can be found [here](https://drive.google.com/open?id=0B2903kNbc39dMXdIZDY2NXlFRmM).
+
+So I was at #aflgiantseagles game watching my team the eagles play and boy was it a great game. But as I was watching devastated as Chris Masten turned the ball over, it was thankfully soon followed by euphoria as Naitanui kicked that wonderful last kick winner of the wrong side of the boot if you don’t mind.
+
+My friend and I were sitting the GWS members stand, and one of them commented near the end as the game was lost (or so I thought) that we seemed pretty upbeat for losers (boy we showed them). But also that I bet it would be different if you were Tigers fans right now.
+
+So lets see, I wonder how tweets in Tigers games vary to the Eagles games?
+
+Well we can see that below.
+
+![Caption for the picture.](/img/tweet1.png)
+![Caption for the picture.](/img/tweet2.png)
+
+Any questions around why I choose which package, if I were to be honest, I bookmarked this [site here a while ago](http://www.matthewjockers.net/2015/02/02/syuzhet/). Long story short I use pocket to save things I’d like to try. I was working my through the reading list and feeling a bit guilty. About not posting anything. Hence the post.
+
+Here are some pics from the footy.
+![Caption for the picture.](/img/footy.png)
+![Caption for the picture.](/img/footy1.png)
+![Caption for the picture.](/img/footy2.png)
+![Caption for the picture.](/img/footy3.png)
