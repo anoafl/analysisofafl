@@ -2,20 +2,33 @@
 title: "Perth student's mathematical model to predict AFL Brownlow winner "
 author: "Simon White"
 date: 2014-09-22
-categories: ["R"]
-tags: ["R Markdown", "plot", "regression"]
+categories: ["Brownlow"]
+tags: ["Brownlow" ,"regression"]
 ---
 
 
 
-<p>Previous article can be <a href="http://www.theage.com.au/afl/brownlow-medal/perth-students-mathematical-model-to-predict-afl-brownlow-winner-20140921-10k3k1.html">found here</a> To some extent, every footy fan is an amateur mathematician. After all, you can’t keep score without at least knowing the six-times table.</p>
+<p>Previous article can be <a href="http://www.theage.com.au/afl/brownlow-medal/perth-students-mathematical-model-to-predict-afl-brownlow-winner-20140921-10k3k1.html">found here</a></p>
+<p>To some extent, every footy fan is an amateur mathematician. After all, you can’t keep score without at least knowing the six-times table.</p>
 <p>But Robert Nguyen is a slightly rarer beast. The West Coast supporter from Bull Creek is an actual mathematician and has used his skills to devise a statistical model that can be used to predict the winner of the AFL’s Brownlow Medal.</p>
+<div class="figure">
+<img src="/img/a23cc223ceb8186c965c6118edaf61a9a4d99bd6.jpg" alt="Gary again? Photo: Michael Clayton-Jones" />
+<p class="caption">Gary again? Photo: Michael Clayton-Jones</p>
+</div>
 <p>Early next month, 23-year-old Nguyen - who is completing an honours course in applied statistics at the University of Western Australia - will submit a thesis entitled Taking Home Charlie.</p>
 <p>Whatever happens, it will likely be one of the more quirky academic studies produced across the country. But first he hopes the results of Monday’s night’s medal count will give further credence to the science behind his model (more on the maths involved in a minute).</p>
+<div class="figure">
+<img src="/img/f91e51ae6f0c709dc3bf83c821fcae4b72828341.jpg" alt="Robert Nguyen’s model has predicted the top three of the past two Brownlow Medals." />
+<p class="caption">Robert Nguyen’s model has predicted the top three of the past two Brownlow Medals.</p>
+</div>
 <p>In short, Nguyen predicts Gold Coast skipper Gary Ablett to win a third Brownlow despite missing seven games with injury. He reckons Freo’s ineligible star Nat Fyfe will poll the second-most votes despite a five-game absence of his own, while Collingwoood’s Dayne Beams is the best smokey (a 12 shot by Nguyen’s reckoning, currently at 67 with the TAB).</p>
 <p>West Coast’s Matt Priddis is in the mix but Geelong captain and pronounced pre-count betting favourite Joel Selwood doesn’t feature in his top-five. Sydney gun Josh Kennedy doesn’t make the top 10 and is predicted to be outpolled by less high-profile teammate Luke Parker.</p>
 <p>“I just thought it was an interesting thing to see if it was possible to do,” Nguyen explained of his decision to combine his passion for football and statistics.</p>
 <p>“I think the multis [for the Brownlow] are very good value. My model would have got the trifecta last year.</p>
+<div class="figure">
+<img src="/img/91ee7f961b837f6bfa676a14bd04114b9539f655.jpg" alt="Photo: Getty Images" />
+<p class="caption">Photo: Getty Images</p>
+</div>
 <p>“Dayne Beams is really interesting. He didn’t poll well last year but in 2012 he got more votes than [big name teammate] Scott Pendlebury.”</p>
 <p>Given Nguyen’s study involves basically a year’s work and will result in a likely 50-page thesis, a detailed explanation of the accompanying mathematics is probably beyond the scope of this story and definitely out of the intellectual league of this author.</p>
 <p>But here’s a (very) layman’s version. For each brownlow count for the past five years, Nguyen has taken a “web scrape” of the preceding five years of stats from individual AFL games. The stats are then lined up with the Brownlow votes for each of those games, enabling the identification of statistical patterns that might correlate to votes awarded.</p>
@@ -32,26 +45,56 @@ tags: ["R Markdown", "plot", "regression"]
 <p>“Even if Gary Ablett doesn’t win, it would still be four from [the past] six years - so I don’t think that’s too bad,” Nguyen said of his own model.</p>
 <div id="the-nguyen-model-predicted-top-10---2014-brownlow-medal" class="section level2">
 <h2>The Nguyen model predicted top 10 - 2014 Brownlow Medal:</h2>
-<ol style="list-style-type: decimal">
-<li>Gary Ablett (Nguyen’s projected odds to poll most votes 4.67 , actual WA TAB odds to win 4)</li>
-<li>Nathan Fyfe (6, ineligible)</li>
-<li>Matthew Priddis (9.80, 17 )</li>
-<li>Dayne Beams ( 12 , 67 )</li>
-<li>Scott Pendlebury ( 12, 17 )</li>
-<li>Joel Selwood ( 16.75 , 2.70 )</li>
-<li>Jordan Lewis ( 22 , 9.75 )</li>
-<li>Robbie Gray ( 19 , 6 )</li>
-<li>Tom Rockliff ( 19 , ineligible)</li>
-<li>Luke Parker ( 27 , 101 )</li>
-</ol>
+<pre class="r"><code>data.frame(stringsAsFactors=FALSE,
+                 Player = c(&quot;Gary Ablett&quot;, &quot;Nathan Fyfe&quot;, &quot;Matthew Priddis&quot;,
+                            &quot;Dayne Beams&quot;, &quot;Scott Pendlebury&quot;, &quot;Joel Selwood&quot;,
+                            &quot;Jordan Lewis&quot;, &quot;Robbie Gray&quot;, &quot;Tom Rockliff&quot;,
+                            &quot;Luke Parker&quot;),
+   Nguyen.Prjected.Odds = c(4.76, 6, 9.8, 12, 12, 16, 22, 19, 19, 27),
+     Actual.WA.TAB.ODDS = c(&quot;4&quot;, &quot;ineligible&quot;, &quot;17&quot;, &quot;67&quot;, &quot;17&quot;, &quot;2.7&quot;, &quot;9.75&quot;,
+                            &quot;6&quot;, &quot;ineligible&quot;, &quot;101&quot;)
+)
+##              Player Nguyen.Prjected.Odds Actual.WA.TAB.ODDS
+## 1       Gary Ablett                 4.76                  4
+## 2       Nathan Fyfe                 6.00         ineligible
+## 3   Matthew Priddis                 9.80                 17
+## 4       Dayne Beams                12.00                 67
+## 5  Scott Pendlebury                12.00                 17
+## 6      Joel Selwood                16.00                2.7
+## 7      Jordan Lewis                22.00               9.75
+## 8       Robbie Gray                19.00                  6
+## 9      Tom Rockliff                19.00         ineligible
+## 10      Luke Parker                27.00                101</code></pre>
 </div>
 <div id="previous-brownlow-predictions-under-the-nguyen-model-with-actual-placings-in-bracket" class="section level2">
 <h2>Previous Brownlow “predictions” under the Nguyen model (with actual placings in bracket):</h2>
-<ul>
-<li>2009: Gary Ablett (1st), Dane Swan (eq 16th), Nick Dal Santo (eq 6th), Jonathan Brown (eq 4th), Leigh Montagna (eq 14th)</li>
-<li>2010: Gary Ablett (2nd), Dane Swan (3rd), Luke Hodge (eq 9th), Brent Harvey (eq 16th), Lance Franklin (eq 25th)</li>
-<li>2011: Dane Swan (1st), Matthew Boyd (eq 4th), Sam Mitchell (2nd), Marc Murphy (eq 9th), Scott Pendlebury (eq 4th)</li>
-<li>2012: Jobe Watson (1st), Josh Kennedy (eq 8th), Gary Ablett (6th), Scott Thompson (eq 4th), Dane Swan (eq 4th)</li>
-<li>2013: Gary Ablett (1st), Joel Selwood (2nd), Dane Swan (3rd), Nat Fyfe (11th), Steve Johnson (4th)</li>
-</ul>
+<pre class="r"><code>
+data.frame(stringsAsFactors=FALSE,
+          V1 = c(2009L, 2010L, 2011L, 2012L, 2013L),
+          V2 = c(&quot;Gary Ablett (1st)&quot;, &quot;Gary Ablett (2nd)&quot;, &quot;Dane Swan (1st)&quot;,
+                 &quot;Jobe Watson (1st)&quot;, &quot;Gary Ablett (1st)&quot;),
+          V3 = c(&quot;Dane Swan (eq 16th)&quot;, &quot;Dane Swan (3rd)&quot;,
+                 &quot;Matthew Boyd (eq 4th)&quot;, &quot;Josh Kennedy (eq 8th)&quot;,
+                 &quot;Joel Selwood (2nd)&quot;),
+          V4 = c(&quot;Nick Dal Santo (eq 6th)&quot;, &quot;Luke Hodge (eq 9th)&quot;,
+                 &quot;Sam Mitchell (2nd)&quot;, &quot;Gary Ablett (6th)&quot;, &quot;Dane Swan (3rd)&quot;),
+          V5 = c(&quot;Jonathan Brown (eq 4th)&quot;, &quot;Brent Harvey (eq 16th)&quot;,
+                 &quot;Marc Murphy (eq 9th)&quot;, &quot;Scott Thompson (eq 4th)&quot;,
+                 &quot;Nat Fyfe (11th)&quot;),
+          V6 = c(&quot;Leigh Montagna (eq 14th)&quot;, &quot;Lance Franklin (eq 25th)&quot;,
+                 &quot;Scott Pendlebury (eq 4th)&quot;, &quot;Dane Swan (eq 4th)&quot;,
+                 &quot;Steve Johnson (4th)&quot;)
+)
+##     V1                V2                    V3                      V4
+## 1 2009 Gary Ablett (1st)   Dane Swan (eq 16th) Nick Dal Santo (eq 6th)
+## 2 2010 Gary Ablett (2nd)       Dane Swan (3rd)     Luke Hodge (eq 9th)
+## 3 2011   Dane Swan (1st) Matthew Boyd (eq 4th)      Sam Mitchell (2nd)
+## 4 2012 Jobe Watson (1st) Josh Kennedy (eq 8th)       Gary Ablett (6th)
+## 5 2013 Gary Ablett (1st)    Joel Selwood (2nd)         Dane Swan (3rd)
+##                        V5                        V6
+## 1 Jonathan Brown (eq 4th)  Leigh Montagna (eq 14th)
+## 2  Brent Harvey (eq 16th)  Lance Franklin (eq 25th)
+## 3    Marc Murphy (eq 9th) Scott Pendlebury (eq 4th)
+## 4 Scott Thompson (eq 4th)        Dane Swan (eq 4th)
+## 5         Nat Fyfe (11th)       Steve Johnson (4th)</code></pre>
 </div>
