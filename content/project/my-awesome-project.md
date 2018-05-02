@@ -1,20 +1,25 @@
 +++
-title = "My awesome project"
-description = "Description of my awesome project."
-date = 2014-11-18T02:13:50Z
-author = "My name"
+title = "fitzRoy"
+description = "An AFL R package to do cool AFL things"
+date = 2017
+author = "Robert Nguyen"
 +++
 
 ## About project
 
-Aenean ipsum justo, semper eu nisl ut, pretium tincidunt sem. Praesent et diam sit amet lacus lobortis dictum a id lacus. Quisque hendrerit sit amet turpis eu varius. Ut id lorem ac felis ultrices tincidunt. Pellentesque consequat arcu ac fringilla imperdiet. Phasellus pellentesque, sapien non pulvinar blandit, sapien ante aliquet felis, vel porttitor sapien ante in lacus. Fusce non urna aliquet, malesuada nibh vel, luctus urna. Phasellus ut lacus molestie, varius purus quis, malesuada lorem.
+The goal of fitzRoy is to provide a set of functions that allows for users to easily get access to AFL data from sources such as [afltables.com](https://afltables.com/afl/afl_index.html) and [footywire.com](https://www.footywire.com/). There are also tools for processing and cleaning that data. Future versions will include basic [ELO](https://fivethirtyeight.com/tag/elo-ratings/) processing functions.
+
+It was started by [James Day](https://twitter.com/jamesday87) and I over a beer at a the [old fitzroy hotel](http://www.oldfitzroy.com.au/) which may or may not have been named after the now [defunct AFL team](https://en.wikipedia.org/wiki/Fitzroy_Football_Club)
 
 ## Install
 
-```bash
-go get -u -v github.com/spf13/hugo
+```{r}
+# install.packages("devtools")
+devtools::install_github("jimmyday12/fitzRoy")
+library(fitzRoy)
+
 ```
 
 ## Docs
 
-https://godoc.org/github.com/spf13/hugo
+https://github.com/jimmyday12/fitzRoy

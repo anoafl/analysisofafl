@@ -46,10 +46,7 @@ copyright = "Robert Nguyen"
     url = "/project/"
     weight = 2
 
-[[menu.main]]
-    name = "Contact"
-    url = "/page/contact/"
-    weight = 3
+
 
 [[menu.main]]
     name = "About"

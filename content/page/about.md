@@ -1,14 +1,24 @@
 +++
 title = "About"
 date = 2015-04-03T02:13:50Z
-author = "My Name"
+author = "Robert Nguyen"
 description = "Things about me."
 +++
 
 ## About
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean nec dolor in magna lobortis egestas. Suspendisse eu erat tempor, tristique neque eu, convallis nulla. Curabitur vel bibendum lacus, at semper mauris. Suspendisse aliquet commodo ex, sed sagittis metus aliquam id. Maecenas feugiat rutrum lorem vel imperdiet. Nullam ornare lectus ut enim finibus, et porttitor mi tincidunt. Aenean lacinia, leo quis vehicula eleifend, quam libero sagittis erat, at euismod augue mauris et sapien. Sed id vehicula lectus, sit amet auctor ipsum. Nunc sed massa vel ex condimentum aliquam in a enim. Cras enim sem, tristique eu enim ac, congue commodo mi. Integer quis orci at dolor blandit eleifend.
 
-## School
+Blogs called analysis of AFL, expect analysis of AFL.
 
-Sed quis pulvinar nisi, sed dapibus lacus. Mauris tempus ex ut ipsum facilisis interdum. Integer feugiat urna sed feugiat tempor. Quisque dictum vestibulum feugiat. Nunc nec est volutpat lorem imperdiet egestas sit amet ut orci. Aliquam venenatis neque ipsum, a placerat lectus cursus at. Donec pellentesque tellus hendrerit faucibus posuere. Etiam gravida consequat lectus, volutpat consectetur velit convallis nec. Praesent sagittis luctus dignissim.
+
+Just an average junior footballer who gave up a not so promising AFL career and instead embarked on a statistical adventure. After chopping and changing majors more than [Scott Cummings](http://afltables.com/afl/stats/players/S/Scott_Cummings.html) changed AFL teams, I ended up doing honours in statistics. Now after working in banking and pharmaceuticals I am doing a PhD in statistics at [UNSW under David Warton](http://web.maths.unsw.edu.au/~dwarton/).
+
+Strongly influenced by [Turkington](https://www.amazon.com/Instrumental-Variables-Econometric-Society-Monographs/dp/0521385822%3FSubscriptionId%3DAKIAJRRWTH346WSPOAFQ%26tag%3Dprabook0b-20%26linkCode%3Dsp1%26camp%3D2025%26creative%3D165953%26creativeASIN%3D0521385822), [Fisher](https://www.adelaide.edu.au/library/special/mss/fisher/), [Murray](http://www.web.uwa.edu.au/person/kevin.murray) and [Turlach](http://staffhome.ecm.uwa.edu.au/~00043886/).
+
+Prefers GLM to machine learning.
+
+Love a beer, wine and unexplained variation.
+
+Analysis and writing done while listening to [dark side of the moon](https://www.youtube.com/watch?v=YI67GAQYsRc)
+
+Feel free to email me on <analysisofafl@gmail.com>
