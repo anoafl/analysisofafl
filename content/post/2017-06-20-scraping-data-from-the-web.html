@@ -1,4 +1,124 @@
+---
+title: "Scraping Data from the Web"
+author: "Robert Nguyen"
+date: '2017-06-20'
+
+tags: ["R","Web scraping", "open science"]
+---
 
 
 
-<p>+++ title = “2017 06 20 Scraping Data From the Web” description = “” author = “” date = 2018-05-02T22:24:59+10:00 tags = [] draft = true +++</p>
+<p>On a personal note, I think one of the biggest drawbacks in loving AFL and wanting to do analysis in AFL is that good data just isn’t readily available for analysis. There are a few main things preventing analysis of AFL from growing within Australia. If we take out the <a href="https://thearcfooty.com/2016/09/05/the-afl-needs-to-go-beyond-the-box-score/">obvious data access issues</a> another drawback is that even the basic data access is limiting.</p>
+<p>For one to get access to “boxscores” short of emailing the great folks at <a href="http://afltables.com/afl/afl_index.html">afltables</a> or <a href="http://www.footywire.com/">footywire</a> you just can’t get access that is readily available. The only people who are able to get access are those that learn or get someone else to web-scrape for them.</p>
+<p>This has many drawbacks for the AFL community at large. Which I won’t go into here.</p>
+<p>So what I propose here to do, is go through a short example just getting one round of data from Wikipedia, and one games worth of data from footywire it won’t be the most efficient way of getting the data that is not the aim of this exercise of mine. The aim of this is to show a few different ways you can get the data and clean it up so that you at home can answer questions you have about footy.</p>
+<div id="first-you-need-to-set-yourself-up." class="section level1">
+<h1>First you need to set yourself up.</h1>
+<p>First you need to set up R and R studio.</p>
+<p>You can download them using the links below</p>
+<p><a href="https://www.r-project.org/">R statistical software</a></p>
+<p><a href="https://www.rstudio.com/">Nice user friendly GUI for R</a> once you have installed them both we can start scraping!</p>
+<div id="step-1-start-a-new-script" class="section level2">
+<h2>Step 1 Start a new Script</h2>
+<p><img src="/img/scrape.png" alt="Caption for the picture." /> <img src="/img/scrape0.png" alt="Caption for the picture." /> From there we need to install the packages to scrape the data we want!</p>
+</div>
+<div id="step-2-installing-the-relevant-packages" class="section level2">
+<h2>Step 2 Installing the relevant packages</h2>
+<p>In the bottom left hand corner you should be able to see the install button, this helps you install all the packages you will need below.</p>
+<div class="figure">
+<img src="/img/scrape1.png" alt="Caption for the picture." />
+<p class="caption">Caption for the picture.</p>
+</div>
+<p>Enter in the packages you need one by one and click install! <img src="/img/scrape2.png" alt="Caption for the picture." /></p>
+<p>Once you have done it for the following packages, stringr, XML, rvest, tidyr and dplyr you can just use library (see below) or just tick the check box in the bottom right</p>
+<pre class="r"><code>library(stringr)
+library(XML)
+library(rvest)
+library(tidyr)
+library(dplyr)</code></pre>
+<div class="figure">
+<img src="/img/scrape3.png" alt="Caption for the picture." />
+<p class="caption">Caption for the picture.</p>
+</div>
+</div>
+<div id="step-3-go-to-the-website-get-some-data" class="section level2">
+<h2>Step 3 Go to the website get some data</h2>
+<p>Lets say you want to be able to scrape Wikipedia for AFL data. This example will use 2016</p>
+<p><img src="/img/scrape4.png" alt="Caption for the picture." /> For the first part of the example I will use Wikipedia to get a round of AFL data. <img src="/img/scrape5.png" alt="Caption for the picture." /></p>
+<pre class="r"><code>#the first step is getting the html (data) in from the page (&quot;https://en.wikipedia.org/wiki/2016_AFL_season&quot;)
+afl_season&lt;-read_html(&quot;https://en.wikipedia.org/wiki/2016_AFL_season&quot;, encoding = &quot;UTF-8&quot;)
+#once you have all the html, you want to find the tables
+tables&lt;-html_table(afl_season, fill = TRUE)
+tables #this will print all the tables in your console window</code></pre>
+<p>When you do that you will end up with something like below. What you want to focus on here is the [[19]] this means that the Round 18 data you see is the table 19!</p>
+<div class="figure">
+<img src="/img/scrape6.png" alt="Caption for the picture." />
+<p class="caption">Caption for the picture.</p>
+</div>
+<p>As an example lets start from the beginning and get round 1 of AFL data, this would be table 2</p>
+<pre class="r"><code>table.example&lt;-tables[[2]] ##just looking at round 1
+names(table.example) #see the variable names 
+str(table.example) #see the data structure
+View(table.example) #view the data!!!</code></pre>
+<div class="figure">
+<img src="/img/scrape7.png" alt="Caption for the picture." />
+<p class="caption">Caption for the picture.</p>
+</div>
+<p>Thats great, what we can see is that X1 seems to contain the dates, X2 contains the winning team name and score etc.</p>
+<p>The number to the left correspond to the rows, think about it as rows in an excel sheet. So really our data starts in row 3</p>
+<div class="figure">
+<img src="/img/scrape8.png" alt="Caption for the picture." />
+<p class="caption">Caption for the picture.</p>
+</div>
+<p>So now we have the data, all we have to do is get it into a format that we want and then we can do all the fun analysis type things like maybe I don’t know building your own ELO.</p>
+</div>
+<div id="step-4-cleaning-the-data-the-really-fun-stuff" class="section level2">
+<h2>Step 4 Cleaning the data (The really fun stuff)</h2>
+<p>Our table here is table.example but it contains rows we do not want (rows 1,2,12) so we delete them.</p>
+<pre class="r"><code>df1&lt;-table.example[-c(1,2,12),]
+View(df1)
+#we also want some sort of label for the round
+df1$round&lt;-&quot;Round 1&quot; ##add a label so I know what round it is</code></pre>
+<p>From here we can see we don’t really want the columns X3 or X5 or in other words we want to select columns X1 ,X2, X4, X5 and our newly created round.</p>
+<pre class="r"><code>df2&lt;-select(df1, X1, X2, X4,X5,round) #just getting the columns that I want</code></pre>
+<p>For the cleaning of the data we use what is called “regular expressions” I am following the <a href="https://rstudio-pubs-static.s3.amazonaws.com/74603_76cd14d5983f47408fdf0b323550b846.html">tutorial here</a></p>
+<p>I want to separate out time from the day of the game I can do so like below</p>
+<pre class="r"><code>df3&lt;-extract(df2, X1, into = c(&quot;Date&quot;, &quot;Time&quot;), &quot;([^(]+)\\s+\\(([:graph:]+).&quot;) ### seperates the date and the time
+ View(df3)</code></pre>
+<div class="figure">
+<img src="/img/scrape9.png" alt="Caption for the picture." />
+<p class="caption">Caption for the picture.</p>
+</div>
+<p>So now if we view df3 the table isn’t looking too bad, I would probably want to create a new column for winning/losing team goals, behind and total. Separate out the ground from the crowd size and then we have one rounds of scores.</p>
+<pre class="r"><code> #getting the winning score
+ 
+df4&lt;-extract(df3, X2, into = c(&quot;winning team&quot;, &quot;winning Score&quot;), &quot;([^(]+)\\s+\\(([0-9]+).&quot;)
+#what this does is take the numbers but only the numbers in the () #prettycoolay</code></pre>
+<div class="figure">
+<img src="/img/scrape10.png" alt="Caption for the picture." />
+<p class="caption">Caption for the picture.</p>
+</div>
+<p>Next we would want to get the losing teams score</p>
+<pre class="r"><code> df5&lt;-extract(df4, X4, into = c(&quot;losing team&quot;, &quot;Score&quot;), &quot;([^(]+)\\s+\\(([0-9]+).&quot;) ##getting the losing score
+ 
+View(df5)</code></pre>
+<p>Now lets separate the Venue from the crowd</p>
+<pre class="r"><code>df6&lt;-separate(df5,X5,into=c(&quot;Venue&quot;,&quot;Crowd&quot;),sep=&#39;[(]crowd:&#39;,remove=TRUE,convert=FALSE)
+df6$Crowd&lt;-gsub(&quot;\\)&quot;,&quot;&quot;,df6$Crowd)
+View(df6)</code></pre>
+<p>Now lets separate out the behinds.</p>
+<pre class="r"><code>df7&lt;-separate(df6, &#39;winning team&#39;,into=c(&quot;winning.team&quot;,&quot;winning.behinds&quot;),sep=&quot;\\.&quot;) 
+df8&lt;-separate(df7,&#39;losing team&#39;, into = c(&quot;losing.team&quot;,&quot;losing.behinds&quot;),sep=&quot;\\.&quot;)
+View(df8)</code></pre>
+<p>Now for the finale the GOALS!</p>
+<pre class="r"><code>df9&lt;-separate(df8, winning.team, c(&quot;winning.team&quot;, &quot;winning.goals&quot;), &quot;(?&lt;=[a-z]) ?(?=[0-9])&quot;)
+df10&lt;-separate(df9, losing.team, c(&quot;losing.team&quot;, &quot;losing.goals&quot;), &quot;(?&lt;=[a-z]) ?(?=[0-9])&quot;)
+View(df10)</code></pre>
+<div class="figure">
+<img src="/img/scrape11.png" alt="Caption for the picture." />
+<p class="caption">Caption for the picture.</p>
+</div>
+<p>Now I understand that it might seem a bit overwhelming especially if you are new to R. My next blog post I will try and go through the lines and break them down a bit more into smaller chunks</p>
+<p>But hopefully this is enough to get the juices flowing.</p>
+</div>
+</div>

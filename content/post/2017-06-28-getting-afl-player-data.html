@@ -1,0 +1,399 @@
+---
+title: "Getting AFL Player Data"
+author: "Robert Nguyen"
+date: '2017-06-28'
+tags: ["R","Web scraping", "open science", "supercoach", "DFS"]
+
+---
+
+
+
+<p>Hello and welcome to my new and improved blog. I have moved all my work from wordpress to github. This was done for a few reasons.</p>
+<ol style="list-style-type: decimal">
+<li>Goal is to have reproducible work that readers can go away and play with themselves</li>
+<li>To get feedback on better ways of communication of how to use R and to get better at it myself.</li>
+<li>So that more people can get their hands on AFL data and do analysis they themselves find interesting.</li>
+</ol>
+<p>So this week in AFL we have a couple of big milestones coming up. That of <a href="http://www.collingwoodfc.com.au/news/2017-06-26/pendlebury-impressed-by-vfl-standouts">Scott Pendlebury</a> and <a href="http://www.theage.com.au/afl/afl-news/gary-ablett-likely-to-return-for-game-300-against-north-melbourne-20170625-gwyf27.html">Gary Ablett</a>. Usually with milestones and more so with big ones its always nice to do a player comparision. The following won’t be the most efficient way to do things (its not meant to be) but what it will hopefully show you is enough that if you were to have a go the steps to making it more efficient aren’t too far.</p>
+<p>So the aim of this blog post is to</p>
+<ol style="list-style-type: decimal">
+<li>Use some of the earlier leanings from other posts on how to scrape data using R</li>
+<li>Scrape player data using R</li>
+<li>Use some basic tidyverse to see some possibility interesting cuts of game data (of course hopefully from this you can cut data yourself to answer your questions).</li>
+</ol>
+<div id="the-set-up" class="section level2">
+<h2>The set up</h2>
+<p>We will be using R, so hopefully you already have the necessary packages installed, if not please see my earlier post on installing the right packages in R and setting yourself up with R Studio.</p>
+<pre class="r"><code>library(stringr)
+library(XML)
+library(rvest)
+library(tidyr)
+library(dplyr)
+library(ggplot2)</code></pre>
+</div>
+<div id="what-data-are-we-after" class="section level2">
+<h2>What data are we after?</h2>
+<p>The data we want to get is the player data for every game that Scott Pendlebury and Gary Ablett have played in As a rule of thumb, when getting all the players data, a better way going forward might just to be to get all the data for all games for the time period since their respective debuts so we can not only compare Scott to Gary, but them to their peers. One of my favourite sites along with <a href="http://afltables.com/afl/afl_index.html">afltables</a> is <a href="http://www.footywire.com/">footywire</a></p>
+<p>In this reproducible example I will be scraping <a href="http://www.footywire.com/afl/footy/ft_match_statistics?mid=9415">game data</a> from footywire.</p>
+<p><img src="/img/playerscrape1.PNG" alt="Screenshot of footywire game data" /> From this site, what we would like to get a hold of is the top table of Adelaide statistics and the bottom table of Hawthorn statistics.</p>
+<p>Looking at the image above we would want to not only get that game but all games from this year and last and the year before that etc.</p>
+<p>Assuming we have the packages loaded, lets see how we can get the data!</p>
+<div class="figure">
+<img src="/img/playerscrape2.PNG" alt="Screenshot of footywire site" />
+<p class="caption">Screenshot of footywire site</p>
+</div>
+<pre class="r"><code> main.page&lt;-read_html(x=&quot;http://www.footywire.com/afl/footy/ft_match_list?year=2007&quot;)
+main.page</code></pre>
+<pre><code>## {xml_document}
+## &lt;html&gt;
+## [1] &lt;head&gt;\n&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset= ...
+## [2] &lt;body onload=&quot;pushContent(&#39;Fixture&#39;, &#39;2007&#39;);showMemberStatusWithUrl ...</code></pre>
+<pre class="r"><code>#just like the previous post, this will read all the html into R</code></pre>
+<p>If we were to manually do it, what we would do is we would click on each of the scores to go to the games. For example if we clicked on <a href="http://www.footywire.com/afl/footy/ft_match_statistics?mid=2911">62-93</a> it would take us to the page that contains the data from the Melbourne V St Kilda game Round 1 2007.</p>
+<p>Now that sounds a bit tedius, so what we want to do at a high level is write some R code that allows us to click through on all the games for the year, go to the page and download the player statistics.</p>
+</div>
+<div id="step-1-get-all-relevant-urls" class="section level2">
+<h2>Step 1 Get all relevant URLS</h2>
+<p>To do that we need the script below.</p>
+<pre class="r"><code>urls&lt;-main.page %&gt;% ###get main page then we get links from main page
+  html_nodes(&quot;.data:nth-child(5) a&quot;)%&gt;%
+  html_attr(&quot;href&quot;) #extract the urls
+
+head(urls)</code></pre>
+<pre><code>## [1] &quot;ft_match_statistics?mid=2911&quot; &quot;ft_match_statistics?mid=2912&quot;
+## [3] &quot;ft_match_statistics?mid=2913&quot; &quot;ft_match_statistics?mid=2915&quot;
+## [5] &quot;ft_match_statistics?mid=2914&quot; &quot;ft_match_statistics?mid=2916&quot;</code></pre>
+<p>Now that we have done that we have all the URLS!</p>
+<p>The part that must be looking very weird is the</p>
+<pre class="r"><code> html_nodes(&quot;.data:nth-child(5) a&quot;)%&gt;%
+  html_attr(&quot;href&quot;) #extract the urls</code></pre>
+<p>So let me explain how I got that, another way to think about html_nodes is that its basically a way to get all the elements I want. Think about that in terms of, instead of clicking all the scores one by one to open a new page I just want them all at once.</p>
+<p>So we use this chrome extension called <a href="https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=en">selector gadget</a> Once installed it will appear in your chrome like below.</p>
+<p><img src="/img/playerscrape4.PNG" alt="Selector Gadget" /> Once you have that installed its easy enough to use.</p>
+<div class="figure">
+<img src="/img/playerscrape5.PNG" alt="Selector Gadget" />
+<p class="caption">Selector Gadget</p>
+</div>
+<p>Looking at it, if you hover your mouse over the score from the Melbourne, Saints game in round 1 what do you get? Click on the score from the game and you will see this.</p>
+<div class="figure">
+<img src="/img/playerscrape6.png" alt="Selector Gadget" />
+<p class="caption">Selector Gadget</p>
+</div>
+<p>Now you can see that its highlighted what we want (all the scores) but it has also highlighted a lot of things we don’t want like the leading disposal winners, leading goal kickers the teams etc.</p>
+<p>So our next click will be on something we don’t want say a leading possession getter like L.Montagna</p>
+<div class="figure">
+<img src="/img/playerscrape67png.PNG" alt="Selector Gadget" />
+<p class="caption">Selector Gadget</p>
+</div>
+<p>There we go that is how we got the “.<a href="data:nth-child(5)" class="uri">data:nth-child(5)</a> a” not that hard right?</p>
+<p>Now what about the href?</p>
+<p>That looks complex but let me show you how to get it!</p>
+<p>Right click on the score of the Melbourne, St kilda game and you will get something like below, click on inspect</p>
+<div class="figure">
+<img src="/img/playerscrape7.png" alt="Selector Gadget" />
+<p class="caption">Selector Gadget</p>
+</div>
+<p>It should take you to a screen like</p>
+<div class="figure">
+<img src="/img/playerscrape8.PNG" alt="Selector Gadget" />
+<p class="caption">Selector Gadget</p>
+</div>
+<p>What do you notice about what is highlighted, we have the href which is a way to select all attributes that start with the string and if we look at the string, its leads us to the <a href="http://www.footywire.com/afl/footy/ft_match_statistics?mid=2911">data in the Melbourne, St Kilda game</a>!!</p>
+</div>
+<div id="step-two-another-example---lets-get-the-scores" class="section level2">
+<h2>Step Two Another example - Lets get the scores!</h2>
+<p>OK so what we now have is the URLS to all the pages! Now lets get all the scores (match scores) that are related to the URLS we have just scraped</p>
+<pre class="r"><code>scores&lt;-main.page%&gt;%
+    html_nodes(&quot;.data:nth-child(5) a&quot;)%&gt;%
+    html_text() ## gets us the scores
+head(scores)</code></pre>
+<pre><code>## [1] &quot;62-93&quot;   &quot;79-82&quot;   &quot;105-121&quot; &quot;73-74&quot;   &quot;69-44&quot;   &quot;74-105&quot;</code></pre>
+<p>So now we have all the links, hopefully doing the score example you have gotten a better idea about how to pull different bits of data from the web!</p>
+<p>Now lets align the score data with the urls, this might not make a lot of sense now but it will hopefully later on.</p>
+<pre class="r"><code>matchstats&lt;-data.frame(scores=scores,urls=urls,stringsAsFactors = FALSE)
+ head(matchstats)</code></pre>
+<pre><code>##    scores                         urls
+## 1   62-93 ft_match_statistics?mid=2911
+## 2   79-82 ft_match_statistics?mid=2912
+## 3 105-121 ft_match_statistics?mid=2913
+## 4   73-74 ft_match_statistics?mid=2915
+## 5   69-44 ft_match_statistics?mid=2914
+## 6  74-105 ft_match_statistics?mid=2916</code></pre>
+<p>Evaluating that we get something like above.</p>
+<p>Which if we look closely is the score from the game (link) next to the URL of the game!</p>
+<p>What we notice about the url is that the only thing that changes is the number at the end, so lets separate this out. (This makes things easier down the track)</p>
+<pre class="r"><code>x1&lt;- matchstats%&gt;%
+      separate(urls,c(&quot;urls&quot;,&quot;ID&quot;),sep=&quot;=&quot;)
+head(x1)</code></pre>
+<pre><code>##    scores                    urls   ID
+## 1   62-93 ft_match_statistics?mid 2911
+## 2   79-82 ft_match_statistics?mid 2912
+## 3 105-121 ft_match_statistics?mid 2913
+## 4   73-74 ft_match_statistics?mid 2915
+## 5   69-44 ft_match_statistics?mid 2914
+## 6  74-105 ft_match_statistics?mid 2916</code></pre>
+</div>
+<div id="step-three-get-the-data" class="section level2">
+<h2>Step Three Get the Data</h2>
+<pre class="r"><code>default.url &lt;-  &quot;http://www.footywire.com/afl/footy/ft_match_statistics?mid=&quot;
+    basic  &lt;-  data.frame()
+    for (i in x1$ID) {
+      i=i
+    print(i) ##prints data as it runs so we don&#39;t wait till end
+    sel.url      &lt;-  paste(default.url, i, sep=&quot;&quot;) ##paste forms the url, try a test case when i=2999 and run and see what happens
+    htmlcode     &lt;- readLines(sel.url) ###in the same test case type htmlcode hit enter
+    export.table &lt;- readHTMLTable(htmlcode) ##like the example before, gets all the tables
+    top.table    &lt;- as.data.frame(export.table[13]) ##looking at tables, 13 is the top one
+    bot.table    &lt;- as.data.frame(export.table[17]) ## 17 is the bottom table
+    ind.table    &lt;- rbind(top.table, bot.table) ##rbind, binds the top table to the bottom table
+    ind.table$MatchId &lt;- rep(i, nrow(ind.table)) ##this is adding a match ID which is the unique end of the url
+    print(summary(ind.table))
+    basic  &lt;- rbind(basic, ind.table)
+    }
+basic</code></pre>
+<p><img src="/img/playerscrape12.PNG" alt="R output" /> To see what the script does run below this runs everything as a once off allowing you to see what happens line by line.</p>
+<pre class="r"><code> default.url &lt;-  &quot;http://www.footywire.com/afl/footy/ft_match_statistics?mid=&quot;
+    basic  &lt;-  data.frame()
+    # for (i in x1$ID) {
+      i=2999
+      print(i) ##prints data as it runs so we don&#39;t wait till end
+      sel.url      &lt;-  paste(default.url, i, sep=&quot;&quot;) ##paste forms the url, try a test case when i=2999 and run and see what happens
+      sel.url
+      htmlcode     &lt;- readLines(sel.url) ###in the same test case type htmlcode hit enter
+      htmlcode
+      export.table &lt;- readHTMLTable(htmlcode) ##like the example before, gets all the tables
+      export.table
+      top.table    &lt;- as.data.frame(export.table[13]) ##looking at tables, 13 is the top one
+      top.table
+      bot.table    &lt;- as.data.frame(export.table[17]) ## 17 is the bottom table
+      bot.table
+      ind.table    &lt;- rbind(top.table, bot.table) ##rbind, binds the top table to the bottom table
+      ind.table
+      ind.table$MatchId &lt;- rep(i, nrow(ind.table)) ##this is adding a match ID which is the unique end of the url
+      ind.table
+      print(summary(ind.table))
+      basic  &lt;- rbind(basic, ind.table)
+      basic
+      # }
+basic</code></pre>
+<p>In this case scores which just happened to be the link which we click on to go to the relevant game. We couldn’t use something like clicking on any of the teams, because this would take us through to the team page. For example if we clicked on Melbourne we would go <a href="http://www.footywire.com/afl/footy/th-melbourne-demons">here</a>.</p>
+<p>But we can see its relevance from the way our table looks like. What we would also want is not only the player statistics, but we would want maybe a column for their team that they are in?</p>
+<p>We can use the following to get the team names and then relate them to the urls and combine them with the scores.</p>
+<pre class="r"><code>    main.page&lt;-read_html(x=&quot;http://www.footywire.com/afl/footy/ft_match_list?year=2007&quot;)
+  
+  urls&lt;-main.page %&gt;% ###get main page then we get links from main page
+    html_nodes(&quot;.data:nth-child(5) a&quot;)%&gt;%
+    html_attr(&quot;href&quot;) #extract the urls
+  head(urls)</code></pre>
+<pre><code>## [1] &quot;ft_match_statistics?mid=2911&quot; &quot;ft_match_statistics?mid=2912&quot;
+## [3] &quot;ft_match_statistics?mid=2913&quot; &quot;ft_match_statistics?mid=2915&quot;
+## [5] &quot;ft_match_statistics?mid=2914&quot; &quot;ft_match_statistics?mid=2916&quot;</code></pre>
+<pre class="r"><code>  scores&lt;-main.page%&gt;%
+    html_nodes(&quot;.data:nth-child(5) a&quot;)%&gt;%
+    html_text()
+  head(scores)</code></pre>
+<pre><code>## [1] &quot;62-93&quot;   &quot;79-82&quot;   &quot;105-121&quot; &quot;73-74&quot;   &quot;69-44&quot;   &quot;74-105&quot;</code></pre>
+<pre class="r"><code>  team.names&lt;-main.page%&gt;%
+    html_nodes(&quot;.data:nth-child(2)&quot;)%&gt;%
+    html_text()
+  head(team.names)</code></pre>
+<pre><code>## [1] &quot;\nMelbourne\nv \nSt Kilda\n&quot;         
+## [2] &quot;\nNorth Melbourne\nv \nCollingwood\n&quot;
+## [3] &quot;\nFremantle\nv \nPort Adelaide\n&quot;    
+## [4] &quot;\nSydney\nv \nWest Coast\n&quot;          
+## [5] &quot;\nBrisbane\nv \nHawthorn\n&quot;          
+## [6] &quot;\nAdelaide\nv \nEssendon\n&quot;</code></pre>
+<pre class="r"><code>  matchstats&lt;-data.frame(team.names=team.names,scores=scores,urls=urls,stringsAsFactors = FALSE)
+  head(matchstats)</code></pre>
+<pre><code>##                             team.names  scores
+## 1          \nMelbourne\nv \nSt Kilda\n   62-93
+## 2 \nNorth Melbourne\nv \nCollingwood\n   79-82
+## 3     \nFremantle\nv \nPort Adelaide\n 105-121
+## 4           \nSydney\nv \nWest Coast\n   73-74
+## 5           \nBrisbane\nv \nHawthorn\n   69-44
+## 6           \nAdelaide\nv \nEssendon\n  74-105
+##                           urls
+## 1 ft_match_statistics?mid=2911
+## 2 ft_match_statistics?mid=2912
+## 3 ft_match_statistics?mid=2913
+## 4 ft_match_statistics?mid=2915
+## 5 ft_match_statistics?mid=2914
+## 6 ft_match_statistics?mid=2916</code></pre>
+<p>Ideally we would want columns for the home team, away team, home score and away score.</p>
+<p>We can do that with the following script:</p>
+<pre class="r"><code>main.page&lt;-read_html(x=&quot;http://www.footywire.com/afl/footy/ft_match_list?year=2007&quot;)
+
+urls&lt;-main.page %&gt;% ###get main page then we get links from main page
+  html_nodes(&quot;.data:nth-child(5) a&quot;)%&gt;%
+  html_attr(&quot;href&quot;) #extract the urls
+
+scores&lt;-main.page%&gt;%
+  html_nodes(&quot;.data:nth-child(5) a&quot;)%&gt;%
+  html_text()
+
+team.names&lt;-main.page%&gt;%
+  html_nodes(&quot;.data:nth-child(2)&quot;)%&gt;%
+  html_text()
+
+
+matchstats&lt;-data.frame(team.names=team.names,scores=scores,urls=urls,stringsAsFactors = FALSE)
+head(matchstats)</code></pre>
+<pre><code>##                             team.names  scores
+## 1          \nMelbourne\nv \nSt Kilda\n   62-93
+## 2 \nNorth Melbourne\nv \nCollingwood\n   79-82
+## 3     \nFremantle\nv \nPort Adelaide\n 105-121
+## 4           \nSydney\nv \nWest Coast\n   73-74
+## 5           \nBrisbane\nv \nHawthorn\n   69-44
+## 6           \nAdelaide\nv \nEssendon\n  74-105
+##                           urls
+## 1 ft_match_statistics?mid=2911
+## 2 ft_match_statistics?mid=2912
+## 3 ft_match_statistics?mid=2913
+## 4 ft_match_statistics?mid=2915
+## 5 ft_match_statistics?mid=2914
+## 6 ft_match_statistics?mid=2916</code></pre>
+<pre class="r"><code>x1&lt;- matchstats%&gt;%
+  separate(urls,c(&quot;urls&quot;,&quot;ID&quot;),sep=&quot;=&quot;)
+# x1 lets you see what you have just done
+x2&lt;-x1%&gt;%separate(team.names,c(&quot;Home&quot;,&quot;Away&quot;),sep=&quot;\nv&quot;)
+
+# View(x2) another way to see what you have done
+x3&lt;-x2%&gt;%separate(scores,c(&quot;home.score&quot;,&quot;away.score&quot;),sep=&quot;-&quot;)
+head(x3) ##looking at our final ID set</code></pre>
+<pre><code>##                Home               Away home.score away.score
+## 1       \nMelbourne       \nSt Kilda\n         62         93
+## 2 \nNorth Melbourne    \nCollingwood\n         79         82
+## 3       \nFremantle  \nPort Adelaide\n        105        121
+## 4          \nSydney     \nWest Coast\n         73         74
+## 5        \nBrisbane       \nHawthorn\n         69         44
+## 6        \nAdelaide       \nEssendon\n         74        105
+##                      urls   ID
+## 1 ft_match_statistics?mid 2911
+## 2 ft_match_statistics?mid 2912
+## 3 ft_match_statistics?mid 2913
+## 4 ft_match_statistics?mid 2915
+## 5 ft_match_statistics?mid 2914
+## 6 ft_match_statistics?mid 2916</code></pre>
+<p>Of course you can work through the page yourself and add in items like the venue or the date, maybe you want the leading possession winner for the game etc.</p>
+<p>Hopefully after all that you end up with something like below:</p>
+<pre class="r"><code>View(x3)</code></pre>
+<div class="figure">
+<img src="/img/playerscrape14.PNG" alt="R output" />
+<p class="caption">R output</p>
+</div>
+<p>In x3, we have a column called ID. In our basic dataset (the scraped player data we scraped earlier) we have an ID column called match ID. This is important because it means we can match the home team, away team and scores column to the players.</p>
+<p>Why would you want to do that, maybe you want to see how a player performs against interstate teams only, so you need to have a record of not only the players in game statistics but the opposition. You might want to keep the scores because you have a feeling about players that just step up in close games. So you need the opposition and the playing teams scores.</p>
+<p>So lets get started, our first step is we need to add a column for the top.table representing the home.team, the bot.table representing the away team. To do that we just add in 2 lines from what we did earlier and run the following.</p>
+<pre class="r"><code>default.url &lt;-  &quot;http://www.footywire.com/afl/footy/ft_match_statistics?mid=&quot;
+basic  &lt;-  data.frame()
+for (i in x3$ID) {
+  
+  i=i #matchID
+  
+  print(i) ##prints data as it runs so we don&#39;t wait till end
+  sel.url      &lt;-  paste(default.url, i, sep=&quot;&quot;) ##paste forms the url, try a test case when i=2999 and run and see what happens
+  # sel.url
+  htmlcode     &lt;- readLines(sel.url) ###in the same test case type htmlcode hit enter
+  # htmlcode
+  export.table &lt;- readHTMLTable(htmlcode) ##like the example before, gets all the tables
+  # export.table
+  top.table    &lt;- as.data.frame(export.table[13]) ##looking at tables, 13 is the top one
+  top.table
+  
+  top.table$team &lt;- &quot;home.team&quot;
+
+  bot.table    &lt;- as.data.frame(export.table[17]) ## 17 is the bottom table
+  bot.table$team&lt;-&quot;away.team&quot;
+  ind.table    &lt;- rbind(top.table, bot.table) ##rbind, binds the top table to the bottom table
+  ind.table$MatchId &lt;- rep(i, nrow(ind.table)) ##this is adding a match ID which is the unique end of the url
+  print(summary(ind.table))
+  basic  &lt;- rbind(basic, ind.table)
+  basic
+  
+}
+
+View(basic)</code></pre>
+<p>If we do that we get something lovely like below</p>
+<div class="figure">
+<img src="/img/playerscrape15.PNG" alt="R output" />
+<p class="caption">R output</p>
+</div>
+<p>Now lets just add in who the home team was, the away team was and the scores.</p>
+</div>
+<div id="merging-the-datasets" class="section level2">
+<h2>Merging the datasets</h2>
+<p>So this might seem a little bit tricky, but you will need to understand some new terms. I think a great source of information is <a href="http://stat545.com/bit001_dplyr-cheatsheet.html#left_joinpublishers-superheroes">stat545 website</a>.</p>
+<p>From here it looks as though a left join starting with basic should work.</p>
+<pre class="r"><code>dim(basic)
+##we do dim because we want to know how many 
+#rows(observations) our dataset has
+b&lt;-left_join(basic,x3, by =c(&quot;MatchId&quot;=&quot;ID&quot;))
+View(b)
+dim(b)</code></pre>
+<p>If all runs smoothly we should end up with some output like below</p>
+<div class="figure">
+<img src="/img/playerscrape16.PNG" alt="R output" />
+<p class="caption">R output</p>
+</div>
+<div class="figure">
+<img src="/img/playerscrape17.PNG" alt="R output" />
+<p class="caption">R output</p>
+</div>
+<p>We can see we have maintained our 8140 rows but we have added an additional 5 columns to our dataset and we have called it b.</p>
+<p>So if you have been able to follow those instructions, the end output should be a completed dataset from 2007 that contains all of the player data in game from footywire. Hopefully you can now go away and get other years data!</p>
+</div>
+<div id="exploring-the-newly-scraped-data" class="section level2">
+<h2>Exploring the newly scraped data</h2>
+<p>So now you have got to the fun stuff, exploratory data analysis.</p>
+<p>You want to explore your data before you go and do any modelling. Exploring your data has many benefits including but not limited too:</p>
+<ol style="list-style-type: decimal">
+<li>Helping generate questions about your data</li>
+<li>Helping you identify trends</li>
+<li>Helping you understand variance of your variables</li>
+<li>Helping you spot anything weird about your data (missing values, incorrectly entered data, data that doesn’t make domain sense)</li>
+</ol>
+<p>Hopefully you have gotten all the AFL data you want now, for this exploration I will be using the player data from <a href="https://drive.google.com/file/d/0B2903kNbc39deVg4QW0yQURVWUU/view?usp=sharing">2009 to 2016</a>. The reason I have chosen 2009 is because its Garys first Brownlow and the year Pendlebury first topped the <a href="https://en.wikipedia.org/wiki/Scott_Pendlebury">Brownlow count for Collingwood</a>.</p>
+<pre class="r"><code>library(dplyr)
+library(ggplot2)
+playerdata&lt;- read_csv(&quot;C:/Users/put rest of the path to the file here/playerdata2009_20016.csv&quot;)
+str(playerdata) ##one way to view your data
+glimpse(playerdata) ##another way to view your data</code></pre>
+<p><img src="/img/playerscrape19.PNG" alt="R output" /> <img src="/img/playerscrape20.PNG" alt="R output" /></p>
+<p>We want to understand our data, or at the very least get to know it better. As we get to know the data better we can start to drill down on the more interesting aspects of the data.</p>
+<p>So if our goal is to get to know our data better one of the best ways is to look at the data visually. So lets plot some nice graphs.</p>
+<p>Remember our goal at the start of this post (I know its long) was to explore Gary Ablett vs Scott Pendlebury</p>
+<p>We will do this in the following order</p>
+<ol style="list-style-type: decimal">
+<li>Filter out Gary and Scott</li>
+<li>plot their SC scores (because who hasn’t had them in their teams over the years)</li>
+</ol>
+<pre class="r"><code>post&lt;-c(&quot;Scott Pendlebury&quot;,&quot;Gary Jnr Ablett&quot;) ##create a list of the players
+##we want to filter out
+
+data&lt;-filter(playerdata,NULL.Player %in% post) ##filter out the players!
+
+View(data)##view the data always!</code></pre>
+<div class="figure">
+<img src="/img/playerscrape21.PNG" alt="R output" />
+<p class="caption">R output</p>
+</div>
+<p>So now we have the dataset data that contains the gameday statistics for Gary Ablett and Scott Pendlebury, lets think of something interesting to see. From a personal standpoint, love SC and DT so lets look at their distribution of scores for Supercoach.</p>
+<pre class="r"><code>ggplot(data,aes(x=NULL.SC))+geom_density()</code></pre>
+<div class="figure">
+<img src="/img/playerscraper22.png" alt="Denisty of Supercoach scores of Ablett and Pendlebury" />
+<p class="caption">Denisty of Supercoach scores of Ablett and Pendlebury</p>
+</div>
+<p>That’s pretty interesting, but what if we looked at the densities of Ablett and Pendlebury on the same graph?</p>
+<pre class="r"><code>ggplot(data,aes(x=NULL.SC,colour=NULL.Player))+geom_density()</code></pre>
+<div class="figure">
+<img src="/img/playerscraper222.png" alt="Denisty of Supercoach scores of Ablett and Pendlebury" />
+<p class="caption">Denisty of Supercoach scores of Ablett and Pendlebury</p>
+</div>
+<p>What can we tell from that graph?</p>
+<p>What about this graph instead?</p>
+<pre class="r"><code>ggplot(data,aes(x=NULL.Player,y=NULL.SC))+geom_boxplot()</code></pre>
+<div class="figure">
+<img src="/img/players222.png" alt="Boxplot of Supercoach scores of Ablett and Pendlebury" />
+<p class="caption">Boxplot of Supercoach scores of Ablett and Pendlebury</p>
+</div>
+</div>

@@ -1,0 +1,313 @@
+---
+title: "Death of the Big Bag"
+author:" Robert Nguyen"
+date: '2017-07-06'
+
+tags: ["graphics","goalkicking","bags"]
+---
+
+
+```{r setup, include=FALSE}
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(gapminder)
+library(gridExtra)
+knitr::opts_chunk$set(echo = TRUE)
+bags <- read.csv("A:/OneDrive/rob_site/anoafl.github.io/data/bags.csv")
+gamescores <- read_csv("A:/OneDrive/rob_site/anoafl.github.io/data/gamescores.csv")
+all_goal_kickers <- read_csv("A:/OneDrive/rob_site/anoafl.github.io/data/all_goals.csv")
+
+```
+
+This year just before round 16 starts the leading goalkickers are Lance Franklin and Jeremy Cameron, both of whom sit on a miserly 40 goals. 
+
+If we were to double the goalkicking totals we still wouldn't have a player reach the magical 100 mark!
+
+So what is going on in todays AFL? Are bags of goals dead? Will we ever see 100 goals kicked in a year again? 
+
+Lets explore the data using R and investigate:
+
+## Question - Are less bags being kicked?
+
+First we need to think of a definition of what is a bag of goals?
+
+Thankfully TripleM is to the rescue as they have done a poll that has gained over 2500 votes and in it [48% of voters](https://www.triplem.com.au/sport/afl/news/poll-how-many-goals-are-in-a-bag) polled thought 5 goals constitutes a bag of goals. 
+
+Second step is getting the data!
+
+Thanks to the great website that is [afltables](http://afltables.com/afl/stats/biglists/bg6.txt) we can just get a list of players and games that have kicked 5 or more goals.
+
+Hopefully you have read in the data sucessfully if not it is saved [here](https://drive.google.com/file/d/0B2903kNbc39dRFZBNEI1Z3psWk0/view?usp=sharing)
+
+
+```{r,eval=FALSE}
+
+#I am calling the dataset bags
+library(ggplot2)
+library(dplyr)
+library(gapminder)
+bags <- read_csv("insert your working directory here/bags.csv")
+##to find working directory
+getwd()
+
+```
+
+
+```{r}
+##remember always view the data
+head(bags)
+glimpse(bags)
+
+```
+
+Now that we have our data all loaded, we notice something. 
+
+* When a player hasn't kicked any behinds its saved as NA we would rather it be a $0$
+
+So lets fix that by replacing the NA with 0 
+
+```{r}
+bags[is.na(bags)]<-0
+
+#check it worked
+head(bags)
+glimpse(bags)
+
+```
+
+To see if the amount of bags is getting lower through time lets make the equivalent of a [pivot table in excel](http://www.excel-easy.com/data-analysis/pivot-tables.html)
+
+So instead of dragging years to 'rows' and instead of entering in count of in 'values' 
+we use *group_by* and summarise to create a table called *table.bags.by.year* 
+
+```{r}
+
+table.bags.by.year <-bags %>% 
+  group_by(year) %>%
+  summarise(count_bags=n()) 
+
+table.bags.by.year
+
+```
+
+Now the next thing we would like to do is view our table from largest *count_bags* to smallest *count_bags* we can do this as follows
+
+```{r}
+
+table.bags.by.year %>% 
+  arrange(desc(count_bags))
+
+   
+```
+
+Looking at this table, we can see that in 1993 there was 181 instances of a bag of goals being kicked, 175 in 1992 and 174 in 1993. 
+
+If we just wanted to look at the total *count_bags* kicked in a certain year we can just filter out the year as follows:
+
+```{r}
+
+table.bags.by.year %>% 
+  filter(year==2017)
+
+```
+
+
+Or maybe we want to look at the past 10 years?
+
+```{r}
+table.bags.by.year %>% 
+  filter (year>2006)
+
+```
+
+In the past 10 years, we have only seen one year [2008](https://en.wikipedia.org/wiki/2008_AFL_season) where 100 +  $5$ goal bags have been kicked. This year as of round 16 we only have 35 bags. We are over halfway through the season (with more AFL teams hence games compared to 2008) and even if we tripled the amount of 5+ goal hauls from here we still wouldn't overtake 2008's 5 goal haul!!!
+
+## Make some graphs!
+
+If you are like me, you are probably a bit more of a visual kind of person, so instead of looking at tables of numbers (boring!) lets look at some graphs instead.
+
+A common plot people use is a line graph to see if there is a trend over time. 
+
+To do simple plots using ggplot, I would highly reccomend following this guide [here](http://r4ds.had.co.nz/data-visualisation.html)
+
+
+
+```{r}
+
+  ggplot(data=table.bags.by.year)+ 
+  geom_line(mapping=aes(x=year, y=count_bags))
+   
+
+```
+
+
+This graph is a bit misleading because of the sudden dip in 2017 as we don't have a complete year, so lets pull that year out.
+
+```{r}
+
+table.bags.by.year%>% 
+  filter(year<2017) %>%
+  ggplot(aes(x=year,y=count_bags)) + geom_line()
+
+```
+Another good idea is to add labels to certain points of interest, below I am labelling the year 1993 as it was the year the number of bags peaked.
+
+```{r}
+
+table.bags.by.year%>% 
+  filter(year<2017) %>%
+  ggplot(aes(x=year,y=count_bags)) + geom_line() +
+  geom_text(data=subset(table.bags.by.year, year %in% c(1993)),aes(label=count_bags))
+
+```
+
+So graphically it clearly looks as though the amount of bags being kicked in todays game is going down. But is the game lower scoring?
+
+Well we can check that, we can look at the same graph but instead of looking at the count of bags we can look at the average totals of games.
+
+So again thanks to the great people at  [afltables](http://afltables.com/afl/stats/biglists/bg3.txt) for providing the data
+
+csv saved [here](https://drive.google.com/file/d/0B2903kNbc39dRFZBNEI1Z3psWk0/view?usp=sharing) 
+
+```{r,eval=FALSE}
+
+gamescores <- read_csv("put your working directory here/gamescores.csv")
+
+```
+
+```{r}
+##remember always view the data
+head(gamescores)
+glimpse(gamescores)
+
+```
+
+So what we want to see is if bags of goals are going down, does that correspond to a decrease in total points scored in games?
+
+To do this first we must come up with a new column that is the home.t+ away.t where home.t is the home score and away.t is the away score. We do this using *mutate*
+
+```{r}
+
+afl.games<-gamescores %>% 
+  mutate(total.game=home.t+away.t)
+
+head(afl.games)
+glimpse(afl.games)
+
+```
+
+Now lets see it average total score by year in a graph. 
+
+Hopefully now you are getting a feel for *%>%* while it might seem a bit weird thinking about it this way. Its another way of saying take the result from the left and apply what is coming next. 
+
+Below, we take afl.games dataset group it by year. After its been grouped by year (think pivot table) we summarise it by the mean of total.game. We then take that resulting pivot table and plot it using ggplot where x-axis is the year and y axis is the average total.
+
+```{r}
+
+afl.games %>% 
+  group_by(year)%>%
+  summarise(average.total = mean(total.game)) %>% 
+  ggplot(aes(x=year,y=average.total))+geom_line()
+
+```
+
+That is a bit annoying right for comparisions sake. 
+
+Lets stack the graphs on top of each other saving you the hastle of scrolling up and down. To make things a bit more clear visually lets add some vertical lines to help our eyes out.
+
+```{r}
+
+##make plot 1
+p1<-table.bags.by.year%>% 
+  filter(year<2017) %>%
+  ggplot(aes(x=year,y=count_bags)) + geom_line() +
+  geom_text(data=subset(table.bags.by.year, year %in% c(1993,2016)),aes(label=count_bags)) +
+  ylim(0,250) +
+  geom_vline(xintercept =c(1993,2016))
+
+## make plot 2
+p2<-afl.games %>% group_by(year)%>%
+  summarise(average.total = mean(total.game)) %>% 
+  ggplot(aes(x=year,y=average.total))+geom_line() +
+  ylim(0,250) +
+  geom_vline(xintercept =c(1993,2016))
+
+grid.arrange(p1, p2, nrow = 2)
+```
+
+Visually what do you see? 
+
+I see since 1993 it looks as though totals have remained relatively stable while the amount of bags being kicked as been on the steady decline. 
+
+What about how many people in goals are kicking games. In other words what is the spread of goalkickers?
+
+Thankfully again thanks to [afltables](http://afltables.com/afl/stats/biglists/bg.html) we have a list of all the goalkickers in games. 
+
+I have saved the file [here](https://drive.google.com/open?id=0B2903kNbc39dNENidmYwN2l2NVU)
+
+
+```{r,eval=FALSE}
+
+all_goal_kickers <- read_csv("put your working directory here/all_goals.csv")
+
+```
+
+Usually with excel if I wanted to get a summary of a few groups in one go. (The equivalent of moving lots of variables to 'rows') the table would actually look horrible. 
+
+
+![I hate EXCEL](/img/horrible.PNG)
+
+Now a workaround, is to concatentate the columns you want in excel to do this in R you can use *paste*
+
+
+```{r}
+ goal_kickers = mutate(all_goal_kickers,
+              concated_column = paste(team, opponent, venue,date, sep = '_'))
+# View(goal_kickers)
+goal.spread <-goal_kickers %>% 
+     group_by(concated_column,year) %>%
+     summarise(count_spread=n())  
+head(goal.spread)
+
+##that would give the same as 
+goal.spread.2<-goal_kickers%>%
+  group_by(team,opponent,venue,date,year)%>%
+  summarise(count_spread=n())
+head(goal.spread.2)
+##so now we can see the spread of goal kickers in each game
+
+goal.spread.2%>%
+   group_by(year)%>% 
+   summarise(average.spread=mean(count_spread)) %>% 
+   ggplot(aes(x=year,y=average.spread))+geom_line()
+```
+Looking at this, it would seem as though there was an uptake in spread of goalkickers since the mid 90s that has been maintained roughly through till today.
+
+
+
+```{r}
+
+p3<- goal.spread.2%>%
+   group_by(year)%>% 
+   summarise(average.spread=mean(count_spread)) %>% 
+   ggplot(aes(x=year,y=average.spread))+geom_line() +
+  geom_vline(xintercept =c(1993,2016))
+grid.arrange(p1, p2,p3 ,nrow = 3)
+
+```
+
+From this pretty quick and dirty run, we can see that roughly the amount of bags being kicked has gone down while totals and spread of goal kickers has remained relatively stable. 
+
+What does that mean for todays game and what are some possible next steps? 
+
+* Instead of just eyeballing the graphs can we tests for statistically significant differences through time
+* What is the value of a "Coleman" contending forward? If scores are roughly the same with less bags being kicked. This would imply that players are chipping in 2,3 goals instead of 1,2 to maintain the same rough total while not getting on the board as much individually.
+
+
+Finally, do you find this enjoyable? Does having R scripts/ datasets running all the way through and being fully reproducible make you want to do some more analysis yourself? 
+
+As always hit me up for feedback.
+
+
