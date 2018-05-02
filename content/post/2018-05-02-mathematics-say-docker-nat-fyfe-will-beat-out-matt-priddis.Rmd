@@ -12,19 +12,19 @@ Previous article can be [found here](http://www.theage.com.au/afl/afl-news/brown
 
 For Robert Nguyen, Monday night's Brownlow Medal count will have a decided aspect of de ja vu about it.
 
-![Photo: Getty Images](/images/2015b1.png)
+![Nat Fyfe in action in last year's Qualifying Final against Sydney. Photo: Getty Images](/img/2015b1.png)
 
 You might remember Nguyen from the lead-up to the 2014 count. He's the young Perth whiz who devised a statistical model to predict the winner of the Brownlow and was writing a university thesis on it.
 
 Last year, Nguyen's model tipped Gary Ablett (finished equal third) to poll strongly early and hold on in front of the ineligible Nat Fyfe (second) and Eagles midfielder and eventual winner Matthew Priddis.
 
-This year, it's predicting $1.95$ favourite Fyfe to poll $26$ votes and win on the back of his (and Fremantle's) blistering start to the year - despite a downturn in form and fitness over the season's second half. 
+This year, it's predicting $1.95 favourite Fyfe to poll $26 votes and win on the back of his (and Fremantle's) blistering start to the year - despite a downturn in form and fitness over the season's second half. 
 
-Priddis ($25$ expected votes) is forecast to be runner-up, with departing Adelaide star Patrick Dangerfield ($24$ expected votes), Sydney's Josh Kennedy and West Coast's Andrew Gaff (both $22$) also in the mix.
+Priddis (25 expected votes) is forecast to be runner-up, with departing Adelaide star Patrick Dangerfield (24 expected votes), Sydney's Josh Kennedy and West Coast's Andrew Gaff (both 22) also in the mix.
 
 "Last year was one of the closest counts I could remember - and the three players my model calculated as having the best odds of winning filled out the top three," Nguyen said.
 
-"I really think Fyfe can do it this year - I think he can build a big enough lead. By my calculations, his odds should be $1.59$ and he's $2$ [with some betting agencies] so that's actually good value."
+"I really think Fyfe can do it this year - I think he can build a big enough lead. By my calculations, his odds should be $1.59 and he's $2 [with some betting agencies] so that's actually good value."
 
 A layman's explanation of the Nguyen method goes a little like this: for each Brownlow count for the past five years, Nguyen has taken a "web scrape" of the preceding five years of stats from individual AFL games. The stats are then lined up with the Brownlow votes for each of those games, enabling the identification of statistical patterns that might correlate to votes awarded.
 
@@ -32,13 +32,19 @@ Using those patterns - and the statistical model they form the basis of -  it is
 
 His last two attempts have identified the three placegetters (in 2013 in exact order) and the model has found four of the last six winners.
 
-In 2014 Nguyen and his calculations had Priddis polling in $13$ games (which turned out to be true) but didn't expect him to poll as many three-votes (four) as he did.
+In 2014 Nguyen and his calculations had Priddis polling in 13 games (which turned out to be true) but didn't expect him to poll as many three-votes (four) as he did.
 
 That outcome makes fellow Eagle Gaff one of Monday night's most interesting contenders.
 
-"I've got Gaff polling in the most games of anyone - $14$. So if he has a few best-on-grounds he could be a big danger," Nguyen said.
+"I've got Gaff polling in the most games of anyone - 14. So if he has a few best-on-grounds he could be a big danger," Nguyen said.
+
+![Photo: Paul Kane ](/img/93cdb14fbb3b16cfbcb53b4ee19b6d5361326f44.jpg)
 
 Sydney's Kennedy is also an attractive proposition. Teammate Daniel Hannebery ranks higher in Brownlow Medal markets but Kennedy - $2.80 with the WA TAB to poll the most votes of any Swan - fares better under Nguyen's model.
+
+
+![SYDNEY, AUSTRALIA - SEPTEMBER 19: Josh Kennedy of the Swans walks out during the First AFL Semi Final match between the Sydney Swans and the North Melbourne Kangaroos at ANZ Stadium on September 19, 2015 in Sydney, Australia. (Photo by Ryan Pierse/Getty Images) ](/img/049bcac0e4c6c2034536628fe20e2131b2a0886e.jpg)
+
 
 "Against Fremantle in the first week of the finals, it was the 11th game in a row Kennedy had more than 30 possessions," Nguyen said.
 
@@ -52,20 +58,44 @@ The 25-year-old says he's actively looking for drinking partners in the Harbour 
 
 ## 2015 Nguyen Model predictions:
 
-1. Nat Fyfe - 26 votes, 12 games polled, projected odds $1.59$, WA TAB odds $1.95$
-2. Matt Priddis - 25, 10, $3.98$, $4$
-3. Patrick Dangerfield - 24, 12. $4.94$, $7.50$
-4. Josh Kennedy - 22, 11, $6.30$, $14$
-5. Andrew Gaff - 22, 14, $7.11$, $18$
+```{r}
+data.frame(stringsAsFactors=FALSE,
+                   Player = c("Nat Fyfe", "Matt Priddis",
+                              "Patrick Dangerfield", "Josh Kennedy",
+                              "Andrew Gaff"),
+          Predicted.Votes = c(26L, 25L, 24L, 22L, 22L),
+   Predicted.games.polled = c(12L, 10L, 12L, 11L, 14L),
+              Nguyen.Odds = c(1.59, 3.98, 4.94, 6.3, 7.11),
+              WA.TAB.ODDS = c(1.95, 4, 7.5, 14, 18)
+)
+
+
+```
 
 ## 2014 predictions:
 
-1. Gary Ablett - 26 votes predicted, 22 votes polled, finished equal third
-2. Nathan Fyfe - 25 votes predicted, 25 votes polled, finished second
-3. Matt Priddis - 24 votes predicted, 26 votes polled, finished first
+```{r}
 
+data.frame(stringsAsFactors=FALSE,
+   Predicted.Finish = c("Gary Ablett", "Nathan Fyfe", "Matt Priddis"),
+    Predicted.Votes = c("26 ", "25 ",
+                        "24 "),
+       Actual.Votes = c("22 ", "25 ", "26 "),
+      Actual.Finish = c("equal third", "second",
+                        " first")
+)
+
+
+```
 ## 2013 predictions:
 
-1. Gary Ablett: 30 votes predicted, 28 votes polled, finished first
-2. Joel Selwood: 26 votes predicted, 27 votes polled, finished second
-3. Dane Swan: 24 votes predicted, 26 polled, finished third.
+```{r}
+data.frame(stringsAsFactors=FALSE,
+   Predicted.Finish = c("Gary Ablett", "Joel Selwood", "Dane Swan"),
+    Predicted.Votes = c(30L, 26L, 24L),
+       Actual.Votes = c(28L, 27L, 26L),
+      Actual.Finish = c("first", "second", "third")
+)
+
+
+```
