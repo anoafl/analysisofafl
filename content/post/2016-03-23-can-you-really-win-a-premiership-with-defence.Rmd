@@ -1,0 +1,50 @@
+---
+title:  "Can You Really Win a Premiership With Defence"
+author: "Robert Nguyen"
+date: 2015-07-23
+categories: ["AFL Modelling"]
+tags: ["Attack Ratings", "plots", "Defence Ratings"]
+---
+
+Previous article can be [found here](http://www.watoday.com.au/afl/afl-news/afl-2016-can-you-really-win-a-premiership-with-defence-20160322-gnokkd.html)
+We all love a good debate over a few beers. Or chardonnays, if you are an Eagles supporter (like me).
+
+To read this column and get full banter benefit, I'd ask you to keep a couple of things in mind.
+
+1. Statistical models by definition are an abstraction from reality and numbers can only tell part of the story...the rest of the story is yours to tell.
+
+2. If you end up reading this in Sydney, feel free to seek me out and buy me a beer (I will not say no to AFL/stats talk + beer)
+
+This weeks' debate to be had over beers and possibly tears: does defence really win premierships?
+
+It is a common theme and has been talked about on some great AFL statistics blogs, including my [personal favorite](http://www.matterofstats.com/mafl-stats-journal/2015/11/5/on-the-relative-importance-of-offensive-and-defensive-ability-in-vflafl-history?rq=MoSSBOD). 
+
+     
+
+We all love a good debate over a few beers. Or chardonnays, if you are an Eagles supporter (like me).
+
+To read this column and get full banter benefit, I'd ask you to keep a couple of things in mind.
+
+
+1.  Statistical models by definition are an abstraction from reality and numbers can only tell part of the story...the rest of the story is yours to tell.
+
+2. If you end up reading this in Sydney, feel free to seek me out and buy me a beer (I will not say no to AFL/stats talk + beer)
+Related Content
+
+   
+
+This weeks' debate to be had over beers and possibly tears: does defence really win premierships?
+
+It is a common theme and has been talked about on some great AFL statistics blogs, including my personal favorite. 
+
+
+If we did a simple [Elo rating](https://en.wikipedia.org/wiki/Elo_rating_system) for offence and defence in the AFL, my model would work as follows: say we have West Coast playing the Hawks at Subiaco, the Eagles' predicted score is the average home score (of all AFL teams) plus the Eagles' attack rating, minus the Hawks' defensive rating. The Hawks' predicted score would be the average score (of away teams) plus their away offensive rating minus the Eagles' defense rating.
+
+Putting that model into action and the numbers paint a really interesting picture of the 2015 season.
+
+We can see the Dockers start off the year in [amazing form](http://www.watoday.com.au/afl/afl-news/fremantle-defence-suggests-grand-final-likely-20150724-gijyup.html) but after round nine their defence levels out and their attack rating goes down and fast!
+
+![Fremantle Dockers 2015 Rating](./defence.png)
+
+
+
