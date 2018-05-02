@@ -1,0 +1,30 @@
+---
+title : " State Space Afl"
+author : "Robert Nguyen"
+date : '2018-05-03'
+tags : ["State Space"]
+
+---
+
+Ever read a post and went damn! I really wonder how that would work for AFL . 
+
+Well that was me a couple of weeks ago reading this [fantastic post](http://statsbylopez.netlify.com/post/a-state-space-model-to-evaluate-sports-teams/) and as most people know a good post is a fantastic post when it is reproducible. 
+
+```{r}
+
+library(tidyverse) 
+library(rjags)
+library(gsheet)
+library(lubridate)
+library(stringr)
+library(knitr)
+library(ggplot2)
+
+logit <- function(p) { 
+  out <- log(p/(1 - p))
+  return(out)
+}
+
+
+```
+

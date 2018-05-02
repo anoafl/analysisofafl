@@ -1,0 +1,40 @@
+---
+title : " State Space Afl"
+author : "Robert Nguyen"
+date : '2018-05-03'
+tags : ["State Space"]
+
+---
+
+
+
+<p>Ever read a post and went damn! I really wonder how that would work for AFL .</p>
+<p>Well that was me a couple of weeks ago reading this <a href="http://statsbylopez.netlify.com/post/a-state-space-model-to-evaluate-sports-teams/">fantastic post</a> and as most people know a good post is a fantastic post when it is reproducible.</p>
+<pre class="r"><code>library(tidyverse) </code></pre>
+<pre><code>## -- Attaching packages ------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
+## v tibble  1.4.2     v dplyr   0.7.4
+## v tidyr   0.8.0     v stringr 1.3.0
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts ---------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(rjags)</code></pre>
+<pre><code>## Loading required package: coda</code></pre>
+<pre><code>## Linked to JAGS 4.3.0</code></pre>
+<pre><code>## Loaded modules: basemod,bugs</code></pre>
+<pre class="r"><code>library(gsheet)
+library(lubridate)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;lubridate&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     date</code></pre>
+<pre class="r"><code>library(stringr)
+library(knitr)
+library(ggplot2)
+
+logit &lt;- function(p) { 
+  out &lt;- log(p/(1 - p))
+  return(out)
+}</code></pre>

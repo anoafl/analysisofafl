@@ -156,10 +156,10 @@ In our script below this will involve a few steps
  + sfs  (Score Facilitation Score)
  + mgp (Metres Gained per Disposal)
  
-4. Apply that model to 2017 dataset to get the predicted probabilities that a player will poll 3 votes$p3$, 2 votes$p2$, 1 vote$p1$ and no votes $p0$
+4. Apply that model to 2017 dataset to get the predicted probabilities that a player will poll 3 votes `*p3`, 2 votes`*p2`, 1 vote`*p1` and no votes `p0`
 5. Come up with the expected votes for each player in a game 
 
-$expected\_votes= 0p0+1p1+2p2+3p3$
+`expected_votes= 0*p0+1*p1+2*p2+3*p3`
 
 6. sum up the expected votes for the year for each player to form our predicted order.
 
