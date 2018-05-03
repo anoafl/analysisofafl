@@ -1,7 +1,7 @@
 ---
 title : "State Space AFL"
 author: "Robert Nguyen"
-date : 2018-05-02
+date : 2018-05-01
 tags : ["State Space"]
 ---
 
@@ -14,10 +14,8 @@ Well that was me a couple of weeks ago reading this [fantastic post](http://stat
 library(tidyverse) 
 library(rjags)
 library(gsheet)
-library(lubridate)
 library(stringr)
 library(knitr)
-library(ggplot2)
 
 logit <- function(p) { 
   out <- log(p/(1 - p))
