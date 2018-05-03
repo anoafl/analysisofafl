@@ -43,10 +43,7 @@ afl_bookies$true.away.prob<-1/((afl_bookies$Away.Odds.Close*afl_bookies$overroun
 
 qplot((afl_bookies$true.home.prob+afl_bookies$true.away.prob),geom="histogram")
 
-# afl_bookies$date<-dmy(afl_bookies$date)
-# names(afl_bookies)
-# afl_bookies <- afl_bookies %>% separate(date, c("year", "month", "day"), "-") %>% 
-#   mutate(date = ymd(paste(year, month, day)))
+
 
 min.day <- min(afl_bookies$date)
 afl_bookies <- afl_bookies %>%
