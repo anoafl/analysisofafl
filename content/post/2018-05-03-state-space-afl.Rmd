@@ -10,18 +10,117 @@ Ever read a post and went damn! I really wonder how that would work for AFL .
 Well that was me a couple of weeks ago reading this [fantastic post](http://statsbylopez.netlify.com/post/a-state-space-model-to-evaluate-sports-teams/) and as most people know a good post is a fantastic post when it is reproducible. 
 
 ```{r}
-
 library(tidyverse) 
 library(rjags)
 library(gsheet)
 library(stringr)
 library(knitr)
+library(lubridate)
 
 logit <- function(p) { 
   out <- log(p/(1 - p))
   return(out)
 }
 
+url<-"https://docs.google.com/spreadsheets/d/1U95IzGYJGOzQgLZVmUk6PPsGPLJoyJ2-Ry2dEY3sU3A/edit?usp=sharing"
+afl_bookies<-read.csv(text=gsheet2text(url, format='csv'), stringsAsFactors=FALSE)
+
+
+names(afl_bookies)
+colnames(afl_bookies)[1] <- "date"
+afl_bookies$date<-dmy(afl_bookies$date)
+
+afl_bookies$overround<-(1/afl_bookies$Home.Odds.Close) + (1/afl_bookies$Away.Odds.Close)
+summary(afl_bookies$overround)
+plot(afl_bookies$overround)
+plot(afl_bookies$overround-1)
+qplot(afl_bookies$overround,geom="histogram", bins=100)
+afl_bookies$overround<-afl_bookies$overround-1
+
+
+afl_bookies$true.home.prob<-1/((afl_bookies$Home.Odds.Close*afl_bookies$overround)+afl_bookies$Home.Odds.Close)
+afl_bookies$true.away.prob<-1/((afl_bookies$Away.Odds.Close*afl_bookies$overround)+afl_bookies$Away.Odds.Close)
+
+qplot((afl_bookies$true.home.prob+afl_bookies$true.away.prob),geom="histogram")
+
+# afl_bookies$date<-dmy(afl_bookies$date)
+# names(afl_bookies)
+# afl_bookies <- afl_bookies %>% separate(date, c("year", "month", "day"), "-") %>% 
+#   mutate(date = ymd(paste(year, month, day)))
+
+min.day <- min(afl_bookies$date)
+afl_bookies <- afl_bookies %>%
+  mutate(day = date - min.day, week = as.numeric(floor(day/7) + 1))
+
+tab.out <- head(afl_bookies, 4) %>% select(date, Home.Team, Away.Team, true.home.prob)
+kable(tab.out)
+
+
+y <- logit(afl_bookies$true.home.prob)
+w <- afl_bookies$week
+w
+#create a design matrix 
+Teams <- sort(as.character(unique(c(as.character(afl_bookies$Home.Team)))))
+
+#Defining the number of things
+nTeams <- length(Teams)
+nWeeks <- max(afl_bookies$week)
+n <- nrow(afl_bookies)
+
+#Defining the design matrix
+x <- matrix(0, nrow = dim(afl_bookies)[1], ncol = length(Teams))
+for (i in 1:dim(afl_bookies)[1]) {
+  x[i, which(as.character(afl_bookies[i,"home"]) == Teams)] <- (1)
+  x[i, which(as.character(afl_bookies[i,"away"]) == Teams)] <- (-1)
+} 
+
+
+model.string <-"
+model { 
+for (i in 1:n) {
+y[i] ~ dnorm(mu[i], tauGame)
+mu[i] <- alpha + inprod(theta[w[i],],x[i,])
+}
+for (j in 1:nTeams){
+theta[1,j] ~ dnorm(0, tauSeason)
+}
+for (www in 2:nWeeks) {  
+for (j in 1:nTeams) {
+theta[www,j] ~ dnorm(gammaWeek*theta[www-1,j], tauWeek)
+}
+}
+alpha ~ dnorm(0,0.0001)
+tauGame ~ dunif(0,1000) #uncertainty in outcome for each game
+tauWeek ~ dunif(0,1000) 
+tauSeason ~ dunif(0,1000) #variance parameter for the first week of the season
+gammaWeek ~ dunif(0,1.5)
+}
+"
+model.spec<-textConnection(model.string)
+
+library(rjags)
+n.chains <- 3 
+n.adapt <- n.update <- n.draws <- 1000
+
+posteriorDraws = c('alpha','theta')
+thin <- 5
+jags <- jags.model(model.spec,
+                   data = list('y' = y,'x' = x, 'w' = w, 'n' = n,'nTeams' = nTeams,'nWeeks' = nWeeks), 
+                   n.chains = n.chains, n.adapt = n.adapt)
+
+update(jags, n.update)
+z <- jags.samples(jags, posteriorDraws, n.draws, thin = thin)
+
+colours <- c("#7fc97f", "#beaed4", "#fdc086")
+hfas <- data.frame(round(z$alpha[,,], 3))  %>% mutate(draw = 1:n())
+hfas %>% ggplot(aes(draw, X1)) +
+  geom_line(colour = colours[1]) + 
+  geom_line(data = hfas, aes(draw, X2), colour = colours[2]) + 
+  geom_line(data = hfas, aes(draw, X3), colour = colours[3]) + 
+  xlab("Draw") + 
+  ggtitle("Home advantage (logit scale)") + 
+  ylab("") + 
+  theme_bw()
 
 ```
 
