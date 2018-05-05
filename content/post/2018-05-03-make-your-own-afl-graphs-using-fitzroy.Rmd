@@ -1,0 +1,13 @@
+---
+title : "FitzRoy"
+author : "Robert Nguyen"
+date : 2018-05-04
+tags : ["fitzRoy", "graphics","R","open science"]
+---
+
+I don't know if anyone knows this, but I love sports. 
+
+A key barrier to entry for the growth of the AFL analytics community is simply [data access](http://figuringfooty.com/2016/08/17/4-things-stopping-analytics-from-providing-afl-club-success-part-1/) which prevents not only people having a go at writing, but it also prevents current media having [reproducible content](http://figuringfooty.com/2016/08/24/2-things-holding-back-quality-footy-writing-and-analysis/). Whereas in [overseas sports](https://www.theatlantic.com/entertainment/archive/2015/06/nba-data-analytics/396776/) where data access is easier the sports analytics community has grown substantially compared to the [AFL](https://thearcfooty.com/2016/09/05/the-afl-needs-to-go-beyond-the-box-score/). By having an R package with online lessons on creating common fan analyst team rating systems like ELO, power ratings, Pythagorean and Massey. We hope that by having access to the data with reproducible tangible examples this will engage people who otherwise might have put learning statistical modelling and R into their personal *this is too hard* bucket. 
+
+
+One of the main drivers of building [fitzRoy](https://github.com/jimmyday12/fitzRoy) with [James](https://twitter.com/plusSixOneblog) was to reduce the [barriers to entry](https://twitter.com/plusSixOneblog/status/992228008374091776) for learning R through AFL. 

@@ -1,0 +1,91 @@
+---
+title : "Make Your Own AFL Graph"
+author : "Robert Nguyen"
+date : 2018-05-04
+tags : ["fitzRoy", "graphics","R","open science"]
+
+---
+
+>"The greatest value of a picture is when it forces us to notice what we never expected to see." - J. W. Tukey (1977)
+
+To learn a new skill I think there needs to be 2 main drivers
+
+ + An interest in a topic 
+ + easy to get to tangible wins to encourage deeper understanding
+ 
+Hopefully you have stumbled across this blog because you have an interest in footy and because you want to start analysing the game yourself. So lets gets started. 
+
+The graph you are going to be able to create by the end of this post, is a cummulative line chart showing how quickly a player racks up a certain stat. For an example of a final product you can have a loock at a [graph](https://twitter.com/anoafl/status/992235792121516032) produced by Matt Cowgill. 
+
+To get started using R you can download R from [here](https://www.r-project.org) and a nice Rstudio from [here](https://www.rstudio.com/products/rstudio/download/).
+
+Once you have those both installed, lets get cracking. 
+
+```{r, eval=FALSE}
+install.packages("tidyverse")
+install.packages("devtools")
+devtools::install_github("jimmyday12/fitzRoy")
+library(fitzRoy)
+library(tidyverse)
+
+```
+
+```{r, echo=FALSE}
+library(fitzRoy)
+library(tidyverse)
+```
+
+```{r}
+
+df<-fitzRoy::afldata
+df%>%filter(Season>1990)%>%
+  group_by(ID) %>%
+  mutate(games_played=row_number())%>%
+  mutate(cummulativefrees=cumsum(Frees.For))%>%
+
+ggplot(aes(x=games_played, y=cummulativefrees, group = ID)) + geom_line() +xlab("Games Played") +ylab("Cummulative Count of Free kicks received") 
+
+```
+
+Hopefully you are able to run the script above and get the same graph. If not #makemeauseR and tweet [at me](https://twitter.com/anoafl) and I will lend a hand. Alternively there are great open slack groups like the [R4DS](https://medium.com/@kierisi/r4ds-the-next-iteration-d51e0a1b0b82) where members are some of the most helpful going around!
+
+
+So now you have hopefully the quick win out the way and you are now a bit more keen on diving in and seeing how this all works. 
+
+# Step One 
+
+Get the data -- [fitzRoy](https://jimmyday12.github.io/fitzRoy/index.html) hopefully makes this an easier job because the data is already stored in a [tidy format](https://www.jstatsoft.org/article/view/v059i10/v59i10.pdf)
+
+But its not just enough to have data, after all whats the point? You want to do some analyse and visualise data because you have a question in mind, you are driven to look into something that you find interesting. 
+
+So with that in mind, lets see if there is a relationship between `Contested.Marks` and `Weight`. 
+
+```{r,eval=FALSE}
+
+# install.packages("devtools")
+devtools::install_github("jimmyday12/fitzRoy")
+library(fitzRoy)
+library(tidyverse)
+df<-fitzRoy::afldata
+```
+
+Now that you have your dataframe `df` you can see that it collection of variables (columns) and observations of those variables (rows) `df` looking at some of these variables in `df` 
+
+* `Weight` 
+* `Contested.Marks`
+
+# Step Two - Create your plot
+
+```{r}
+df%>%
+ggplot(aes(x=Weight, y=Contested.Marks, group = ID)) + geom_point() 
+```
+
+Let me explain some of the commands going on here. 
+
+`df` is what we called our dataframe before, this is followed by the 'pipe' operator `%>%`. In simple terms it takes the output of one `df` and inserts it into the `ggplot` In short this "chaining" allows you to pass a result onto the next function. 
+For the above example we first create a dataframe called `df` (how creative) the next line we take this data and this dataframe `df` becomes the data we will base our plot off. 
+
+`aes` 
+
+

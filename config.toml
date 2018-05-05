@@ -46,8 +46,11 @@ math = true
     name = "Projects"
     url = "/project/"
     weight = 2
+[[menu.main]]
 
-
+    name = "fitzRoy"
+    url = "/fitzRoy/"
+    weight = 3
 
 [[menu.main]]
     name = "About"
