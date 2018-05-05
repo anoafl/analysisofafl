@@ -66,6 +66,6 @@ ggplot(aes(x=Weight, y=Contested.Marks, group = ID)) + geom_point() </code></pre
 <pre><code>## Warning: Removed 2 rows containing missing values (geom_point).</code></pre>
 <p><img src="/fitzRoy/2018-05-04-make-your-own-afl-graphs_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <p>Let me explain some of the commands going on here.</p>
-<p><code>df</code> is what we called our dataframe before, this is followed by the ‘pipe’ operator <code>%&gt;%</code>. In simple terms it takes the output of one <code>df</code> and inserts it into the <code>ggplot</code> In short this “chaining” allows you to pass a result onto the next function. For the above example we first create a dataframe called <code>df</code> (how creative) the next line we take this data and this dataframe <code>df</code> becomes the data we will base our plot off.</p>
-<p><code>aes</code></p>
+<p><code>df</code> is what we called our dataframe before, this is followed by the ‘pipe’ operator <code>%&gt;%</code>. In simple terms it takes the output of one <code>df</code> and inserts it into the next <code>ggplot</code> In short this “chaining” allows you to pass a result onto the next function. For the above example we first create a dataframe called <code>df</code> (how creative) the next line we take this data and this dataframe <code>df</code> becomes the data we will base our plot off.</p>
+<p><code>aes</code> is the mapping attributes</p>
 </div>
