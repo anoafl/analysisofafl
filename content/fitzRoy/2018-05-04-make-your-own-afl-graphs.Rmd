@@ -83,9 +83,9 @@ ggplot(aes(x=Weight, y=Contested.Marks, group = ID)) + geom_point()
 
 Let me explain some of the commands going on here. 
 
-`df` is what we called our dataframe before, this is followed by the 'pipe' operator `%>%`. In simple terms it takes the output of one `df` and inserts it into the `ggplot` In short this "chaining" allows you to pass a result onto the next function. 
+`df` is what we called our dataframe before, this is followed by the 'pipe' operator `%>%`. In simple terms it takes the output of one `df` and inserts it into the next `ggplot` In short this "chaining" allows you to pass a result onto the next function. 
 For the above example we first create a dataframe called `df` (how creative) the next line we take this data and this dataframe `df` becomes the data we will base our plot off. 
 
-`aes` 
+`aes` is the mapping attributes
 
 
