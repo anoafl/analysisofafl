@@ -15,7 +15,7 @@ To learn a new skill I think there needs to be 2 main drivers
  
 Hopefully you have stumbled across this blog because you have an interest in footy and because you want to start analysing the game yourself. So lets gets started. 
 
-The graph you are going to be able to create by the end of this post, is a cummulative line chart showing how quickly a player racks up a certain stat. For an example of a final product you can have a loock at a [graph](https://twitter.com/anoafl/status/992235792121516032) produced by Matt Cowgill. 
+The graph you are going to be able to create by the end of this post, is a cummulative line chart showing how quickly a player racks up a certain stat. For an example of a final product you can have a look at a [graph](https://twitter.com/anoafl/status/992235792121516032) produced by Matt Cowgill. 
 
 To get started using R you can download R from [here](https://www.r-project.org) and a nice Rstudio from [here](https://www.rstudio.com/products/rstudio/download/).
 
