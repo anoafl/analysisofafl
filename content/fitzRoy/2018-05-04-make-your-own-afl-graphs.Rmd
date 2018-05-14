@@ -62,7 +62,7 @@ So now you have hopefully the quick win out the way and you are now a bit more k
  + each variable is a column 
  + each observation is a row
 
-# Step One 
+# Anothe example a little explanation
 
 Get the data -- [fitzRoy](https://jimmyday12.github.io/fitzRoy/index.html) hopefully makes this an easier job because the data is already stored in a [tidy format](https://www.jstatsoft.org/article/view/v059i10/v59i10.pdf)
 
@@ -84,7 +84,7 @@ Now that you have your dataframe `df` you can see that it collection of variable
 * `Weight` 
 * `Contested.Marks`
 
-# Step Two - Create your plot
+# Bit more ploting explanation
 
 ```{r}
 df%>%
@@ -113,7 +113,7 @@ Facet is a more general case of common [conditioned or trellis plots](https://ww
 
 * Question -  I want to visualise the MAE of the [squiggle](http://squiggle.com.au/) tipsters.
 
-Thankfully, fitzRoy has easy to use functions to get the squiggle data!
+Thankfully, [fitzRoy](https://github.com/jimmyday12/fitzRoy) has easy to use functions to get the squiggle data!
 
 ```{r}
 library(fitzRoy)
