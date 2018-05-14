@@ -176,8 +176,8 @@ ggplot(aes(x=games_played, y=cummulativefrees, group = ID)) + geom_line() +xlab(
 <li>each observation is a row</li>
 </ul>
 </div>
-<div id="step-one" class="section level1">
-<h1>Step One</h1>
+<div id="anothe-example-a-little-explanation" class="section level1">
+<h1>Anothe example a little explanation</h1>
 <p>Get the data – <a href="https://jimmyday12.github.io/fitzRoy/index.html">fitzRoy</a> hopefully makes this an easier job because the data is already stored in a <a href="https://www.jstatsoft.org/article/view/v059i10/v59i10.pdf">tidy format</a></p>
 <p>But its not just enough to have data, after all whats the point? You want to do some analyse and visualise data because you have a question in mind, you are driven to look into something that you find interesting.</p>
 <p>So with that in mind, lets see if there is a relationship between <code>Contested.Marks</code> and <code>Weight</code>.</p>
@@ -192,8 +192,8 @@ df&lt;-fitzRoy::afldata</code></pre>
 <li><code>Contested.Marks</code></li>
 </ul>
 </div>
-<div id="step-two---create-your-plot" class="section level1">
-<h1>Step Two - Create your plot</h1>
+<div id="bit-more-ploting-explanation" class="section level1">
+<h1>Bit more ploting explanation</h1>
 <pre class="r"><code>df%&gt;%
 ggplot(aes(x=Weight, y=Contested.Marks)) +
   geom_point() + facet_wrap(~Playing.for)</code></pre>
@@ -219,39 +219,39 @@ ggplot(aes(x=Weight, y=Contested.Marks)) +
 <ul>
 <li>Question - I want to visualise the MAE of the <a href="http://squiggle.com.au/">squiggle</a> tipsters.</li>
 </ul>
-<p>Thankfully, fitzRoy has easy to use functions to get the squiggle data!</p>
+<p>Thankfully, <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> has easy to use functions to get the squiggle data!</p>
 <pre class="r"><code>library(fitzRoy)
 tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
 <pre><code>## Getting data from https://api.squiggle.com.au/?q=tips</code></pre>
 <pre class="r"><code>head(tips) </code></pre>
-<pre><code>##           venue sourceid correct year   err confidence round ateamid
-## 1        M.C.G.        1       1 2017 42.00       50.0     1      14
-## 2        M.C.G.        3       1 2017    NA       58.0     1      14
-## 3        M.C.G.        4       0 2017 48.39       56.7     1      14
-## 4        M.C.G.        4       1 2017  3.69       62.7     1      18
-## 5        M.C.G.        1       1 2017  3.00       62.0     1      18
-## 6 Adelaide Oval        1       1 2017 53.00       50.0     1       9
-##                    ateam                date margin hteamid hconfidence
-## 1               Richmond 2017-03-23 19:20:00   1.00       3        50.0
-## 2               Richmond 2017-03-23 19:20:00     NA       3        42.0
-## 3               Richmond 2017-03-23 19:20:00   5.39       3        56.7
-## 4       Western Bulldogs 2017-03-24 19:50:00  10.31       4        37.3
-## 5       Western Bulldogs 2017-03-24 19:50:00  17.00       4        38.0
-## 6 Greater Western Sydney 2017-03-26 15:20:00   3.00       1        50.0
-##            source gameid             updated              tip    bits
-## 1        Squiggle      1 2017-07-11 13:59:46         Richmond  0.0000
-## 2  Figuring Footy      1 2017-04-10 12:18:02         Richmond  0.2141
-## 3 Matter of Stats      1 2017-07-11 13:59:46          Carlton -0.2076
-## 4 Matter of Stats      2 2017-07-11 13:59:46 Western Bulldogs  0.3265
-## 5        Squiggle      2 2017-07-11 13:59:46 Western Bulldogs  0.3103
-## 6        Squiggle      8 2017-07-11 13:59:46         Adelaide  0.0000
-##   tipteamid       hteam
-## 1        14     Carlton
-## 2        14     Carlton
-## 3         3     Carlton
-## 4        18 Collingwood
-## 5        18 Collingwood
-## 6         1    Adelaide</code></pre>
+<pre><code>##   hconfidence round                date correct gameid sourceid    bits
+## 1        50.0     1 2017-03-23 19:20:00       1      1        1  0.0000
+## 2        42.0     1 2017-03-23 19:20:00       1      1        3  0.2141
+## 3        56.7     1 2017-03-23 19:20:00       0      1        4 -0.2076
+## 4        37.3     1 2017-03-24 19:50:00       1      2        4  0.3265
+## 5        38.0     1 2017-03-24 19:50:00       1      2        1  0.3103
+## 6        50.0     1 2017-03-26 15:20:00       1      8        1  0.0000
+##   year hteamid tipteamid             updated              tip   err
+## 1 2017       3        14 2017-07-11 13:59:46         Richmond 42.00
+## 2 2017       3        14 2017-04-10 12:18:02         Richmond    NA
+## 3 2017       3         3 2017-07-11 13:59:46          Carlton 48.39
+## 4 2017       4        18 2017-07-11 13:59:46 Western Bulldogs  3.69
+## 5 2017       4        18 2017-07-11 13:59:46 Western Bulldogs  3.00
+## 6 2017       1         1 2017-07-11 13:59:46         Adelaide 53.00
+##                    ateam margin confidence ateamid          source
+## 1               Richmond   1.00       50.0      14        Squiggle
+## 2               Richmond     NA       58.0      14  Figuring Footy
+## 3               Richmond   5.39       56.7      14 Matter of Stats
+## 4       Western Bulldogs  10.31       62.7      18 Matter of Stats
+## 5       Western Bulldogs  17.00       62.0      18        Squiggle
+## 6 Greater Western Sydney   3.00       50.0       9        Squiggle
+##           venue       hteam
+## 1        M.C.G.     Carlton
+## 2        M.C.G.     Carlton
+## 3        M.C.G.     Carlton
+## 4        M.C.G. Collingwood
+## 5        M.C.G. Collingwood
+## 6 Adelaide Oval    Adelaide</code></pre>
 <div id="getting-data-in-the-right-format" class="section level2">
 <h2>Getting data in the right format</h2>
 <p>What do I actually want to visualise here?</p>
