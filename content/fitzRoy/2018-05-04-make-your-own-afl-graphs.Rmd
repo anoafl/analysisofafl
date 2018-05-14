@@ -62,7 +62,7 @@ So now you have hopefully the quick win out the way and you are now a bit more k
  + each variable is a column 
  + each observation is a row
 
-# Anothe example a little explanation
+# Another example a little explanation
 
 Get the data -- [fitzRoy](https://jimmyday12.github.io/fitzRoy/index.html) hopefully makes this an easier job because the data is already stored in a [tidy format](https://www.jstatsoft.org/article/view/v059i10/v59i10.pdf)
 
@@ -96,6 +96,7 @@ Let me explain some of the commands going on here.
 
 `df` is what we called our dataframe before, this is followed by the 'pipe' operator `%>%`. In simple terms it takes the output of one `df` and inserts it into the next `ggplot` In short this "chaining" allows you to pass a result onto the next function. 
 For the above example we first create a dataframe called `df` (how creative) the next line we take this data and this dataframe `df` becomes the data we will base our plot off. 
+
 
 # `aes`
 

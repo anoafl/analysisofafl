@@ -135,7 +135,7 @@ $(document).ready(function () {
 <li>easy to get to tangible wins to encourage deeper understanding</li>
 </ul>
 <p>Hopefully you have stumbled across this blog because you have an interest in footy and because you want to start analysing the game yourself. So lets gets started.</p>
-<p>The graph you are going to be able to create by the end of this post, is a cummulative line chart showing how quickly a player racks up a certain stat. For an example of a final product you can have a loock at a <a href="https://twitter.com/anoafl/status/992235792121516032">graph</a> produced by Matt Cowgill.</p>
+<p>The graph you are going to be able to create by the end of this post, is a cummulative line chart showing how quickly a player racks up a certain stat. For an example of a final product you can have a look at a <a href="https://twitter.com/anoafl/status/992235792121516032">graph</a> produced by Matt Cowgill.</p>
 <p>To get started using R you can download R from <a href="https://www.r-project.org">here</a> and a nice Rstudio from <a href="https://www.rstudio.com/products/rstudio/download/">here</a>.</p>
 <p>Once you have those both installed, lets get cracking.</p>
 <pre class="r"><code>install.packages(&quot;tidyverse&quot;)
@@ -224,34 +224,34 @@ ggplot(aes(x=Weight, y=Contested.Marks)) +
 tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
 <pre><code>## Getting data from https://api.squiggle.com.au/?q=tips</code></pre>
 <pre class="r"><code>head(tips) </code></pre>
-<pre><code>##   hconfidence round                date correct gameid sourceid    bits
-## 1        50.0     1 2017-03-23 19:20:00       1      1        1  0.0000
-## 2        42.0     1 2017-03-23 19:20:00       1      1        3  0.2141
-## 3        56.7     1 2017-03-23 19:20:00       0      1        4 -0.2076
-## 4        37.3     1 2017-03-24 19:50:00       1      2        4  0.3265
-## 5        38.0     1 2017-03-24 19:50:00       1      2        1  0.3103
-## 6        50.0     1 2017-03-26 15:20:00       1      8        1  0.0000
-##   year hteamid tipteamid             updated              tip   err
-## 1 2017       3        14 2017-07-11 13:59:46         Richmond 42.00
-## 2 2017       3        14 2017-04-10 12:18:02         Richmond    NA
-## 3 2017       3         3 2017-07-11 13:59:46          Carlton 48.39
-## 4 2017       4        18 2017-07-11 13:59:46 Western Bulldogs  3.69
-## 5 2017       4        18 2017-07-11 13:59:46 Western Bulldogs  3.00
-## 6 2017       1         1 2017-07-11 13:59:46         Adelaide 53.00
-##                    ateam margin confidence ateamid          source
-## 1               Richmond   1.00       50.0      14        Squiggle
-## 2               Richmond     NA       58.0      14  Figuring Footy
-## 3               Richmond   5.39       56.7      14 Matter of Stats
-## 4       Western Bulldogs  10.31       62.7      18 Matter of Stats
-## 5       Western Bulldogs  17.00       62.0      18        Squiggle
-## 6 Greater Western Sydney   3.00       50.0       9        Squiggle
-##           venue       hteam
-## 1        M.C.G.     Carlton
-## 2        M.C.G.     Carlton
-## 3        M.C.G.     Carlton
-## 4        M.C.G. Collingwood
-## 5        M.C.G. Collingwood
-## 6 Adelaide Oval    Adelaide</code></pre>
+<pre><code>##   ateamid       hteam margin gameid                  ateam
+## 1      14     Carlton   1.00      1               Richmond
+## 2      14     Carlton     NA      1               Richmond
+## 3      14     Carlton   5.39      1               Richmond
+## 4      18 Collingwood  10.31      2       Western Bulldogs
+## 5      18 Collingwood  17.00      2       Western Bulldogs
+## 6       9    Adelaide   3.00      8 Greater Western Sydney
+##                tip hconfidence hteamid   err sourceid confidence
+## 1         Richmond        50.0       3 42.00        1       50.0
+## 2         Richmond        42.0       3    NA        3       58.0
+## 3          Carlton        56.7       3 48.39        4       56.7
+## 4 Western Bulldogs        37.3       4  3.69        4       62.7
+## 5 Western Bulldogs        38.0       4  3.00        1       62.0
+## 6         Adelaide        50.0       1 53.00        1       50.0
+##                  date             updated correct year tipteamid    bits
+## 1 2017-03-23 19:20:00 2017-07-11 13:59:46       1 2017        14  0.0000
+## 2 2017-03-23 19:20:00 2017-04-10 12:18:02       1 2017        14  0.2141
+## 3 2017-03-23 19:20:00 2017-07-11 13:59:46       0 2017         3 -0.2076
+## 4 2017-03-24 19:50:00 2017-07-11 13:59:46       1 2017        18  0.3265
+## 5 2017-03-24 19:50:00 2017-07-11 13:59:46       1 2017        18  0.3103
+## 6 2017-03-26 15:20:00 2017-07-11 13:59:46       1 2017         1  0.0000
+##            source         venue round
+## 1        Squiggle        M.C.G.     1
+## 2  Figuring Footy        M.C.G.     1
+## 3 Matter of Stats        M.C.G.     1
+## 4 Matter of Stats        M.C.G.     1
+## 5        Squiggle        M.C.G.     1
+## 6        Squiggle Adelaide Oval     1</code></pre>
 <div id="getting-data-in-the-right-format" class="section level2">
 <h2>Getting data in the right format</h2>
 <p>What do I actually want to visualise here?</p>
