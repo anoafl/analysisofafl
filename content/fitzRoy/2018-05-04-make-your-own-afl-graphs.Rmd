@@ -52,6 +52,16 @@ Hopefully you are able to run the script above and get the same graph. If not #m
 
 So now you have hopefully the quick win out the way and you are now a bit more keen on diving in and seeing how this all works. 
 
+# Why use ggplot2
+
+* The writing of the code helps you think about how your data drives the visualisation journey
+* easy to use and make changes if you want to see different variables, timeframes etc
+
+# Before you plot checklist
+* data is tidy
+ + each variable is a column 
+ + each observation is a row
+
 # Step One 
 
 Get the data -- [fitzRoy](https://jimmyday12.github.io/fitzRoy/index.html) hopefully makes this an easier job because the data is already stored in a [tidy format](https://www.jstatsoft.org/article/view/v059i10/v59i10.pdf)
@@ -78,7 +88,8 @@ Now that you have your dataframe `df` you can see that it collection of variable
 
 ```{r}
 df%>%
-ggplot(aes(x=Weight, y=Contested.Marks, group = ID)) + geom_point() 
+ggplot(aes(x=Weight, y=Contested.Marks)) +
+  geom_point() + facet_wrap(~Playing.for)
 ```
 
 Let me explain some of the commands going on here. 
@@ -86,6 +97,93 @@ Let me explain some of the commands going on here.
 `df` is what we called our dataframe before, this is followed by the 'pipe' operator `%>%`. In simple terms it takes the output of one `df` and inserts it into the next `ggplot` In short this "chaining" allows you to pass a result onto the next function. 
 For the above example we first create a dataframe called `df` (how creative) the next line we take this data and this dataframe `df` becomes the data we will base our plot off. 
 
-`aes` is the mapping attributes
+# `aes`
+
+`aes`-- Aesthetic mappings describe how variables in the data are mapped to visual properties (aesthetics)  of geoms. Aesthetics are things such as xy and colours `x=Weight, y=Contested.Marks` `colour=Playing.For`
+
+# `geom`
+
+Geoms are the geometric objects displayed in the plot. Here `geom_` controls the type of [plot](http://ggplot2.tidyverse.org/reference/) you want. For example `geom_point` will give you a scatterplot, `geom_line` a line graph
+
+# `facet`
+
+Facet is a more general case of common [conditioned or trellis plots](https://www.stat.auckland.ac.nz/~ihaka/787/lectures-trellis.pdf). Faceting creates small multiples of different subsets of a dataset. These plots come in handy when you want to compare if patterns are the same or different across conditions `facets` 
+
+# Putting it all together
+
+* Question -  I want to visualise the MAE of the [squiggle](http://squiggle.com.au/) tipsters.
+
+Thankfully, fitzRoy has easy to use functions to get the squiggle data!
+
+```{r}
+library(fitzRoy)
+tips <- get_squiggle_data("tips")
+head(tips) 
+
+```
+
+## Getting data in the right format
 
 
+What do I actually want to visualise here?  
+
+I would like to see the data for this year 2018 `filter(year>2017)` that shows me for a given round and tipster `group_by(round, source)` of the squiggle tipsters by round and tipster  their average MAE for that round by said tipster  `summarise(MAE_by_round=mean(err))`
+
+```{r}
+
+ tips%>%
+  filter(year>2017)%>%
+   group_by(round, source)%>%
+   summarise(MAE_by_round=mean(err))
+   
+```
+
+Now that we have our data in the right format for plotting lets you know get plotting!
+
+```{r}
+tips%>%
+  filter(year>2017)%>%
+   group_by(round, source)%>%
+   summarise(MAE_by_round=mean(err))%>%
+  ggplot(aes(x=round, y=MAE_by_round))+ 
+  geom_point()
+
+```
+
+So what can we see here? We can see the  average MAE by tipster by round for 2018. The problem is we can't identify which tipster is who. So how can we do that? Just add colour.
+
+```{r}
+tips%>%
+  filter(year>2017)%>%
+   group_by(round, source)%>%
+   summarise(MAE_by_round=mean(err))%>%
+  ggplot(aes(x=round, y=MAE_by_round))+ 
+  geom_point(aes(colour=source))
+```
+
+Ok now that we have added some colour things are still hard to see, so what if we joined each point for the respective tipster?
+
+```{r}
+tips%>%
+  filter(year>2017)%>%
+   group_by(round, source)%>%
+   summarise(MAE_by_round=mean(err))%>%
+  ggplot(aes(x=round, y=MAE_by_round))+ 
+  geom_point(aes(colour=source)) +
+  geom_line(aes(group=source, colour=source))
+
+```
+
+Ok so now things are a bit clearer but still not as clear as we would like. Its hard to get a feel for each individual tipster because all the points are fairly close which makes our lines close together so disentanglement becomes difficult. This is where faceting or small multiples comes in handy.
+
+```{r}
+
+tips%>%
+  filter(year>2017)%>%
+   group_by(round, source)%>%
+   summarise(MAE_by_round=mean(err))%>%
+  ggplot(aes(x=round, y=MAE_by_round))+ 
+  geom_point(aes(colour=source)) +
+  geom_line(aes(group=source, colour=source)) +facet_wrap(~source)
+
+```
