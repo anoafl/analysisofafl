@@ -36,4 +36,4 @@ df2%&gt;%
 <p><img src="/fitzRoy/2018-05-15-visualisation-of-fantasy-points_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
 <p>Does that look like a good bet? You be the judge!</p>
 <p>Now let me explain things in a bit more depth</p>
-<p><code>df&lt;-fitzRoy::get_footywire_stats(9514:9576)</code> gets the most recent 2018 data from <a href="https://www.footywire.com">footywire</a> <code>df1&lt;-fitzRoy::player_stats</code> gets data that is in the <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> package</p>
+<p><em><code>df&lt;-fitzRoy::get_footywire_stats(9514:9576)</code> gets the most recent 2018 data from <a href="https://www.footywire.com">footywire</a> </em><code>df1&lt;-fitzRoy::player_stats</code> gets data that is in the <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> package *<code>df2&lt;-rbind(df1, df)</code> binds the datasets together rowise (i.e. stacks df1 on df) <a href="https://www.datacamp.com/community/tutorials/pipe-r-tutorial"><code>%&gt;%</code></a></p>

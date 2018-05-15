@@ -14,6 +14,9 @@ df3%>%
   geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
   geom_hline(yintercept =109) +ggtitle("Conor Blakely AF scores")+
   ylab("AF Score")
+
+
+
  
 
 df3%>%
@@ -59,4 +62,27 @@ library(tidyverse)
    ggplot(aes(x=round, y=MAE_by_round))+ 
    geom_point(aes(colour=source)) +
    geom_line(aes(group=source, colour=source)) +facet_wrap(~source)
+ 
+ 
+ df2%>%
+   select(Player, AF, Date, Status)%>%
+   filter(Player %in% c("Connor Blakely"))%>%
+   ggplot(aes(x=Date, y=AF, colour=Status))+
+   geom_point(aes(),size=3)+
+   geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
+   geom_hline(yintercept =109) +ggtitle("Conor Blakely AF scores")+
+   ylab("AF Score") +ylim(0,150) +geom_text(aes(label=AF), vjust=-2)
+ 
+ 
+ df2%>%
+   select(Player, AF, Date, Status)%>%
+   filter(Player %in% c("Connor Blakely"))%>%
+   ggplot(aes(x=Date, y=AF, colour=Status))+
+   geom_point()+
+   geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
+   geom_hline(yintercept =109) +ggtitle("Conor Blakely AF scores")+
+   ylab("AF Score") +ylim(0,150) +geom_text(aes(label=AF),vjust=-1)
+ 
+ 
+ 
  

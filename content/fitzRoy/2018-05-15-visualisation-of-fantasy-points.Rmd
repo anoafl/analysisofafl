@@ -6,7 +6,9 @@ date : 2018-05-15
 tags : ["fitzRoy", "graphics","R","open science"]
 ---
 
-Recently I was on twitter and saw this [tweet here](https://twitter.com/chriseddy999/status/994920249148432384). Being a Conor Blakely fan I thought to myself I wonder if those are actualy good odds and if I could visualise this. 
+Recently I was on twitter and saw this [tweet here](https://twitter.com/chriseddy999/status/994920249148432384). Being a Connor Blakely fan I thought to myself I wonder if those are actualy good odds and if I could visualise this. 
+
+So what is the theme of the thread, well it seems as though Chris and SgtButane think that Connor is likely to get more than 110 fantasy points and that he has a better fantasy record at home vs away. 
 
 ```{r}
 library(tidyverse)
@@ -35,5 +37,7 @@ Now let me explain things in a bit more depth
 *`df<-fitzRoy::get_footywire_stats(9514:9576)` gets the most recent 2018 data from [footywire](https://www.footywire.com)
 *`df1<-fitzRoy::player_stats` gets data that is in the [fitzRoy](https://github.com/jimmyday12/fitzRoy) package
 *`df2<-rbind(df1, df)` binds the datasets together rowise (i.e. stacks df1 on df)
-[`%>%`](https://www.datacamp.com/community/tutorials/pipe-r-tutorial)
+*[`%>%`](https://www.datacamp.com/community/tutorials/pipe-r-tutorial)
+* `select(Player, AF, Date, Status)%>%` allows us to select the columns we want
+* `geom_point(aes(),size=3)+` lolli of our lollipop 
 
