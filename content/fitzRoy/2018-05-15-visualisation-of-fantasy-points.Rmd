@@ -1,0 +1,36 @@
+---
+title : "Visualisation of Fantasy Points"
+description : ""
+author : "Robert Nguyen"
+date : 2018-05-15
+tags : ["fitzRoy", "graphics","R","open science"]
+---
+
+Recently I was on twitter and saw this [tweet here](https://twitter.com/chriseddy999/status/994920249148432384). Being a Conor Blakely fan I thought to myself I wonder if those are actualy good odds and if I could visualise this. 
+
+```{r}
+library(tidyverse)
+library(fitzRoy)
+
+df<-fitzRoy::get_footywire_stats(9514:9576)
+df1<-fitzRoy::player_stats
+df2<-rbind(df1, df) 
+df2%>%
+   select(Player, AF, Date, Status)%>%
+   filter(Player %in% c("Connor Blakely"))%>%
+   ggplot(aes(x=Date, y=AF, colour=Status))+
+   geom_point()+
+   geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
+   geom_hline(yintercept =109) +ggtitle("Conor Blakely AF scores")+
+   ylab("AF Score") +ylim(0,150) +geom_text(aes(label=AF),vjust=-1)
+ 
+ 
+
+```
+
+Does that look like a good bet? You be the judge!
+
+Now let me explain things in a bit more depth
+
+`df<-fitzRoy::get_footywire_stats(9514:9576)` gets the most recent 2018 data from [footywire](https://www.footywire.com)
+`df1<-fitzRoy::player_stats` gets data that is in the [fitzRoy](https://github.com/jimmyday12/fitzRoy) package

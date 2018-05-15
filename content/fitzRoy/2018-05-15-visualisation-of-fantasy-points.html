@@ -1,0 +1,38 @@
+---
+title : "2018 05 15 Visualisation of Fantasy Points"
+description : ""
+author : "Robert Nguyen"
+date : 2018-05-15
+tags : ["fitzRoy", "graphics","R","open science"]
+---
+
+
+
+<p>Recently I was on twitter and saw this <a href="https://twitter.com/chriseddy999/status/994920249148432384">tweet here</a>. Being a Conor Blakely fan I thought to myself I wonder if those are actualy good odds and if I could visualise this.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
+## v tibble  1.4.2     v dplyr   0.7.4
+## v tidyr   0.8.0     v stringr 1.3.0
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts ---------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(fitzRoy)
+
+df&lt;-fitzRoy::get_footywire_stats(9514:9576)</code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre class="r"><code>df1&lt;-fitzRoy::player_stats
+df2&lt;-rbind(df1, df) 
+
+df2%&gt;%
+  select(Player, AF, Date, Status)%&gt;%
+  filter(Player %in% c(&quot;Connor Blakely&quot;))%&gt;%
+  ggplot(aes(x=Date, y=AF, colour=Status))+
+  geom_point(aes(),size=3)+
+  geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
+  geom_hline(yintercept =109) +ggtitle(&quot;Conor Blakely AF scores&quot;)+
+  ylab(&quot;AF Score&quot;)</code></pre>
+<p><img src="/fitzRoy/2018-05-15-visualisation-of-fantasy-points_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>Looks like a pretty good bet!</p>
