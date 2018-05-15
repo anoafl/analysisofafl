@@ -8,7 +8,8 @@ tags : ["fitzRoy", "graphics","R","open science"]
 
 
 
-<p>Recently I was on twitter and saw this <a href="https://twitter.com/chriseddy999/status/994920249148432384">tweet here</a>. Being a Conor Blakely fan I thought to myself I wonder if those are actualy good odds and if I could visualise this.</p>
+<p>Recently I was on twitter and saw this <a href="https://twitter.com/chriseddy999/status/994920249148432384">tweet here</a>. Being a Connor Blakely fan I thought to myself I wonder if those are actualy good odds and if I could visualise this.</p>
+<p>So what is the theme of the thread, well it seems as though Chris and SgtButane think that Connor is likely to get more than 110 fantasy points and that he has a better fantasy record at home vs away.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## -- Attaching packages ------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
@@ -35,5 +36,3 @@ df2%&gt;%
    ylab(&quot;AF Score&quot;) +ylim(0,150) +geom_text(aes(label=AF),vjust=-1)</code></pre>
 <p><img src="/fitzRoy/2018-05-15-visualisation-of-fantasy-points_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
 <p>Does that look like a good bet? You be the judge!</p>
-<p>Now let me explain things in a bit more depth</p>
-<p><em><code>df&lt;-fitzRoy::get_footywire_stats(9514:9576)</code> gets the most recent 2018 data from <a href="https://www.footywire.com">footywire</a> </em><code>df1&lt;-fitzRoy::player_stats</code> gets data that is in the <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> package *<code>df2&lt;-rbind(df1, df)</code> binds the datasets together rowise (i.e. stacks df1 on df) <a href="https://www.datacamp.com/community/tutorials/pipe-r-tutorial"><code>%&gt;%</code></a></p>
