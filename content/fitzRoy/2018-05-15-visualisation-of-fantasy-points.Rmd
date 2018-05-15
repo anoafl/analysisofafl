@@ -32,5 +32,8 @@ Does that look like a good bet? You be the judge!
 
 Now let me explain things in a bit more depth
 
-`df<-fitzRoy::get_footywire_stats(9514:9576)` gets the most recent 2018 data from [footywire](https://www.footywire.com)
-`df1<-fitzRoy::player_stats` gets data that is in the [fitzRoy](https://github.com/jimmyday12/fitzRoy) package
+*`df<-fitzRoy::get_footywire_stats(9514:9576)` gets the most recent 2018 data from [footywire](https://www.footywire.com)
+*`df1<-fitzRoy::player_stats` gets data that is in the [fitzRoy](https://github.com/jimmyday12/fitzRoy) package
+*`df2<-rbind(df1, df)` binds the datasets together rowise (i.e. stacks df1 on df)
+[`%>%`](https://www.datacamp.com/community/tutorials/pipe-r-tutorial)
+

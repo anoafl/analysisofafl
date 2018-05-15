@@ -1,5 +1,5 @@
 ---
-title : "2018 05 15 Visualisation of Fantasy Points"
+title : "Visualisation of Fantasy Points"
 description : ""
 author : "Robert Nguyen"
 date : 2018-05-15
@@ -25,14 +25,15 @@ df&lt;-fitzRoy::get_footywire_stats(9514:9576)</code></pre>
 <pre><code>## Finished getting data</code></pre>
 <pre class="r"><code>df1&lt;-fitzRoy::player_stats
 df2&lt;-rbind(df1, df) 
-
 df2%&gt;%
-  select(Player, AF, Date, Status)%&gt;%
-  filter(Player %in% c(&quot;Connor Blakely&quot;))%&gt;%
-  ggplot(aes(x=Date, y=AF, colour=Status))+
-  geom_point(aes(),size=3)+
-  geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
-  geom_hline(yintercept =109) +ggtitle(&quot;Conor Blakely AF scores&quot;)+
-  ylab(&quot;AF Score&quot;)</code></pre>
+   select(Player, AF, Date, Status)%&gt;%
+   filter(Player %in% c(&quot;Connor Blakely&quot;))%&gt;%
+   ggplot(aes(x=Date, y=AF, colour=Status))+
+   geom_point()+
+   geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
+   geom_hline(yintercept =109) +ggtitle(&quot;Conor Blakely AF scores&quot;)+
+   ylab(&quot;AF Score&quot;) +ylim(0,150) +geom_text(aes(label=AF),vjust=-1)</code></pre>
 <p><img src="/fitzRoy/2018-05-15-visualisation-of-fantasy-points_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<p>Looks like a pretty good bet!</p>
+<p>Does that look like a good bet? You be the judge!</p>
+<p>Now let me explain things in a bit more depth</p>
+<p><code>df&lt;-fitzRoy::get_footywire_stats(9514:9576)</code> gets the most recent 2018 data from <a href="https://www.footywire.com">footywire</a> <code>df1&lt;-fitzRoy::player_stats</code> gets data that is in the <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> package</p>
