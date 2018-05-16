@@ -11,12 +11,12 @@ tags : ["fitzRoy", "graphics","R","open science"]
 <p>Recently I was on twitter and saw this <a href="https://twitter.com/chriseddy999/status/994920249148432384">tweet here</a>. Being a Connor Blakely fan I thought to myself I wonder if those are actualy good odds and if I could visualise this.</p>
 <p>So what is the theme of the thread, well it seems as though Chris and SgtButane think that Connor is likely to get more than 110 fantasy points and that he has a better fantasy record at home vs away.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
 ## v tibble  1.4.2     v dplyr   0.7.4
 ## v tidyr   0.8.0     v stringr 1.3.0
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ---------------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts ------------------------------------------------------------ tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(fitzRoy)
@@ -36,3 +36,26 @@ df2%&gt;%
    ylab(&quot;AF Score&quot;) +ylim(0,150) +geom_text(aes(label=AF),vjust=-1)</code></pre>
 <p><img src="/fitzRoy/2018-05-15-visualisation-of-fantasy-points_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
 <p>Does that look like a good bet? You be the judge!</p>
+<div id="update" class="section level1">
+<h1>Update</h1>
+<p>Received an email asking how would I compare two players?</p>
+<p>Let me compare Connor Blakely to Jack Steele</p>
+<pre class="r"><code>library(tidyverse)
+library(fitzRoy)
+
+df&lt;-fitzRoy::get_footywire_stats(9514:9576)</code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre class="r"><code>df1&lt;-fitzRoy::player_stats
+df2&lt;-rbind(df1, df) 
+df2%&gt;%
+   select(Player, AF, Date, Status)%&gt;%
+   filter(Player %in% c(&quot;Connor Blakely&quot;, &quot;Jack Steele&quot;))%&gt;%
+   ggplot(aes(x=Date, y=AF, colour=Status))+
+   geom_point()+
+   geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
+   geom_hline(yintercept =109) +ggtitle(&quot;Compare the pair&quot;)+
+   ylab(&quot;AF Score&quot;) +ylim(0,150) +geom_text(aes(label=AF),vjust=-1)                       +facet_wrap(~Player)</code></pre>
+<p><img src="/fitzRoy/2018-05-15-visualisation-of-fantasy-points_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>All you have to do is add the Player to the filter and the <code>facet_wrap(~Player)</code> line and you are good to go.</p>
+</div>
