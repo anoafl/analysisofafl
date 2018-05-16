@@ -32,5 +32,34 @@ df2%>%
 
 Does that look like a good bet? You be the judge!
 
+# Update
+
+Received an email asking how would I compare two players? 
+
+Let me compare Connor Blakely to Jack Steele
+
+```{r}
+library(tidyverse)
+library(fitzRoy)
+
+df<-fitzRoy::get_footywire_stats(9514:9576)
+df1<-fitzRoy::player_stats
+df2<-rbind(df1, df) 
+df2%>%
+   select(Player, AF, Date, Status)%>%
+   filter(Player %in% c("Connor Blakely", "Jack Steele"))%>%
+   ggplot(aes(x=Date, y=AF, colour=Status))+
+   geom_point()+
+   geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
+   geom_hline(yintercept =109) +ggtitle("Compare the pair")+
+   ylab("AF Score") +ylim(0,150) +geom_text(aes(label=AF),vjust=-1)                       +facet_wrap(~Player)
+ 
+ 
+
+
+```
+
+
+All you have to do is add the Player to the filter and the `facet_wrap(~Player)` line and you are good to go. 
 
 

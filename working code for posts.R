@@ -1,3 +1,5 @@
+########-------######
+
 library(tidyverse)
 
 df<-fitzRoy::get_footywire_stats(9514:9585)
@@ -65,24 +67,19 @@ library(tidyverse)
  
  
  df2%>%
-   select(Player, AF, Date, Status)%>%
-   filter(Player %in% c("Connor Blakely"))%>%
-   ggplot(aes(x=Date, y=AF, colour=Status))+
-   geom_point(aes(),size=3)+
-   geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
-   geom_hline(yintercept =109) +ggtitle("Conor Blakely AF scores")+
-   ylab("AF Score") +ylim(0,150) +geom_text(aes(label=AF), vjust=-2)
- 
- 
- df2%>%
-   select(Player, AF, Date, Status)%>%
+   select(Player, AF, Date, Status, Opposition)%>%
    filter(Player %in% c("Connor Blakely"))%>%
    ggplot(aes(x=Date, y=AF, colour=Status))+
    geom_point()+
    geom_segment(aes(x=Date, xend=Date,y=0, yend=AF ))+
    geom_hline(yintercept =109) +ggtitle("Conor Blakely AF scores")+
-   ylab("AF Score") +ylim(0,150) +geom_text(aes(label=AF),vjust=-1)
+   ylab("AF Score") +ylim(0,150) +geom_text(aes(label=Opposition),vjust=-1)
  
- 
+ #########---##########
+#####How to visualise betting data################
+ library(gsheet) 
+ url<-"https://docs.google.com/spreadsheets/d/1H3od0gyEkWj3icnTn55ywQ3YEQ--6xnhFl2AHI2QFdc/edit?usp=sharing"
+ afl_bookies<-read.csv(text=gsheet2text(url, format='csv'), stringsAsFactors=FALSE)
+View(afl_bookies) 
  
  
