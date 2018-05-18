@@ -1,0 +1,81 @@
+---
+title : "Visualisation of Squiggle Tipsters"
+description : ""
+author : "Robert Nguyen"
+date : 2018-05-18
+tags : ["fitzRoy", "graphics","R","open science", "squiggle"]
+
+---
+
+
+
+<p>Something I thought would be interesting is trying to visualise how the different tipsters on squiggle rate match-ups.</p>
+<p>A simple way to do this would be to look at squiggle margins by tipster and visualise it on a plot.</p>
+<p>To hopefully encourage you to give it a go at home why not change “West Coast” to the team you support to see if different squiggle tipsters rate your team differently.</p>
+<pre class="r"><code>library(fitzRoy)
+library(lubridate)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;lubridate&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     date</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
+## v tibble  1.4.2     v dplyr   0.7.4
+## v tidyr   0.8.0     v stringr 1.3.0
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------------------------------ tidyverse_conflicts() --
+## x lubridate::as.difftime() masks base::as.difftime()
+## x lubridate::date()        masks base::date()
+## x dplyr::filter()          masks stats::filter()
+## x lubridate::intersect()   masks base::intersect()
+## x dplyr::lag()             masks stats::lag()
+## x lubridate::setdiff()     masks base::setdiff()
+## x lubridate::union()       masks base::union()</code></pre>
+<pre class="r"><code>library(ggthemes)
+tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
+<pre><code>## Getting data from https://api.squiggle.com.au/?q=tips</code></pre>
+<pre class="r"><code>df&lt;-tips%&gt;%mutate(home.margin=ifelse(hteam==tip, margin,-margin))%&gt;%
+  mutate(away.margin=ifelse(ateam==tip, margin,-margin)) %&gt;%
+  select(source,date,correct,  hconfidence,hteam,
+         ateam,home.margin,away.margin,err ,tip,round, year)
+ 
+
+df1&lt;-select(df,source, date, correct, hconfidence,hteam, home.margin, err, tip, round, year )
+df1$H_A&lt;-&quot;HOME&quot;
+df2&lt;-select(df, source, date, correct, hconfidence, ateam, away.margin, err, tip, round, year)
+df2$H_A&lt;-&quot;AWAY&quot;
+colnames(df1)[5]&lt;-&quot;TEAM&quot;
+
+colnames(df1)[6] &lt;- &quot;margin&quot;
+
+colnames(df2)[5]&lt;-&quot;TEAM&quot;
+
+colnames(df2)[6]&lt;-&quot;margin&quot;
+
+df3&lt;-rbind(df1,df2)
+str(df3$date)</code></pre>
+<pre><code>##  chr [1:7080] &quot;2017-03-23 19:20:00&quot; &quot;2017-03-23 19:20:00&quot; ...</code></pre>
+<pre class="r"><code>df3$date&lt;-ymd_hms(df3$date)
+
+
+df3&lt;-rbind(df1,df2)
+str(df3$date)</code></pre>
+<pre><code>##  chr [1:7080] &quot;2017-03-23 19:20:00&quot; &quot;2017-03-23 19:20:00&quot; ...</code></pre>
+<pre class="r"><code>df3$date&lt;-ymd_hms(df3$date)
+
+
+df3%&gt;%arrange(date)%&gt;%
+  filter(date&gt;&quot;2018-01-09&quot;)%&gt;%
+  filter(round&lt;10)%&gt;%
+  filter(TEAM==&quot;West Coast&quot;)%&gt;%
+  ggplot(aes(y=margin, x=date,fill=H_A))+geom_col() +
+  ggtitle(&quot;West Coast&quot;)   +
+  theme_economist_white() +
+  theme(plot.title  = element_text(size =12),
+        axis.text = element_text(size = 6),
+        strip.text = element_text(size = 12))+
+  facet_wrap(~source)</code></pre>
+<pre><code>## Warning: Removed 9 rows containing missing values (position_stack).</code></pre>
+<p><img src="/fitzRoy/2018-05-18-visualisation-of-squiggle-tipsters_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>

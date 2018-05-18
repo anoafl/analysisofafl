@@ -1,0 +1,72 @@
+---
+title : "Visualisation of Squiggle Tipsters"
+description : ""
+author : "Robert Nguyen"
+date : 2018-05-18
+tags : ["fitzRoy", "graphics","R","open science", "squiggle"]
+
+---
+
+Something I thought would be interesting is trying to visualise how the different tipsters on squiggle rate match-ups. 
+
+A simple way to do this would be to look at squiggle margins by tipster and visualise it on a plot. 
+
+To hopefully encourage you to give it a go at home why not change "West Coast" to the team you support to see if different squiggle tipsters rate your team differently. 
+
+
+```{r}
+
+library(fitzRoy)
+library(lubridate)
+library(tidyverse)
+library(ggthemes)
+tips <- get_squiggle_data("tips")
+
+df<-tips%>%mutate(home.margin=ifelse(hteam==tip, margin,-margin))%>%
+  mutate(away.margin=ifelse(ateam==tip, margin,-margin)) %>%
+  select(source,date,correct,  hconfidence,hteam,
+         ateam,home.margin,away.margin,err ,tip,round, year)
+ 
+
+df1<-select(df,source, date, correct, hconfidence,hteam, home.margin, err, tip, round, year )
+df1$H_A<-"HOME"
+df2<-select(df, source, date, correct, hconfidence, ateam, away.margin, err, tip, round, year)
+df2$H_A<-"AWAY"
+colnames(df1)[5]<-"TEAM"
+
+colnames(df1)[6] <- "margin"
+
+colnames(df2)[5]<-"TEAM"
+
+colnames(df2)[6]<-"margin"
+
+df3<-rbind(df1,df2)
+str(df3$date)
+
+df3$date<-ymd_hms(df3$date)
+
+
+df3<-rbind(df1,df2)
+str(df3$date)
+
+df3$date<-ymd_hms(df3$date)
+
+
+df3%>%arrange(date)%>%
+  filter(date>"2018-01-09")%>%
+  filter(round<10)%>%
+  filter(TEAM=="West Coast")%>%
+  ggplot(aes(y=margin, x=date,fill=H_A))+geom_col() +
+  ggtitle("West Coast")   +
+  theme_economist_white() +
+  theme(plot.title  = element_text(size =12),
+        axis.text = element_text(size = 6),
+        strip.text = element_text(size = 12))+
+  facet_wrap(~source)
+
+```
+
+
+
+
+
