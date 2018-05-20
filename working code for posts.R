@@ -174,9 +174,9 @@ df3$date<-ymd_hms(df3$date)
 df3%>%arrange(date)%>%
   filter(date>"2018-01-09")%>%
   filter(round<10)%>%
-  filter(TEAM %in% c("West Coast"))%>%
+  filter(TEAM %in% c("Brisbane Lions"))%>%
   ggplot(aes(y=margin, x=date,fill=H_A))+geom_col() +
-  ggtitle("West Coast")   +
+  ggtitle("Lions")   +
   theme_economist_white() +
   theme(plot.title  = element_text(size =12),
         axis.text = element_text(size = 6),

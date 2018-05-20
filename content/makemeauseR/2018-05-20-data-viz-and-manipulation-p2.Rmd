@@ -19,3 +19,121 @@ So what we did before, was we created 3 variables from afltables about Tony Lock
 These are summary statistics i.e. the year summaries (totals) of games played and goals kicked. 
 
 Something you might have noticed with `fitzRoy` is that the afldata is stored as game by game data and not season summaries. 
+
+So how do we create these summary statistics? 
+
+# Step One - Get the dataframe with it all
+
+Data is stored in different places in fitzRoy, afldata contains the data we are after at the moment
+
+`head(df)` 
+
+```{r}
+options(max.print=100)
+df<-fitzRoy::afldata
+
+
+```
+
+# Step Two - Select the columns that you want [`select`](https://dplyr.tidyverse.org/reference/select.html)
+
+```{r}
+df%>%
+  select(First.name, Surname, Season, Goals)
+
+```
+
+# Step Three - Create the grouped data [`group_by`](https://dplyr.tidyverse.org/reference/group_by.html)
+
+Now this might seem a bit weird, because on first look it would seem as though group_by doesn't do anything. 
+
+```{r}
+
+df%>%
+  select(First.name, Surname, Season, Goals)%>%
+  group_by(Season)
+```
+
+It doesn't look like our dataset has changed, but if we look closely we have a new `Groups:   Season [121]` and hopefully what you have noticed is that our dataset `afldata` has 121 unique values. Which we can check below. 
+
+```{r}
+length(unique(df$Season))
+```
+
+What this does is adds a grouping structure to our data, which means instead of operations acting element wise like they did earlier now operations can happen by group. 
+
+So why would you want to group data? Well lots of interesting things are done on a `group_by` basis. For example we might be interested in goal kicking trends by [`Season`](https://www.foxsports.com.au/afl/afl-goalkicking-continues-to-be-under-scrutiny-as-league-accuracy-falls-to-its-worst-since-1990/news-story/b01d958a5952a86e714e7ef0a41f75d5)
+Or 
+* by [`round`](https://twitter.com/MatterOfStats/status/997814414832095237) 
+* by [`Playing.For`](https://twitter.com/MatterOfStats/status/997814414832095237)
+* by [opponent](https://twitter.com/MatterOfStats/status/998017464519675904)
+* by [wins and losses](https://twitter.com/MatterOfStats/status/998018492426141696)
+
+We can also `group_by` more than one thing. For example what if we wanted by `Season` and `Round`
+
+```{r}
+df%>%
+  select(Season,Round, Goals, Behinds)%>%
+  group_by(Season, Round)
+```
+What we can now see is that we have grouped by 2 variables (Season, Round) and have formed 769 groups. `Groups:   Season, Round [2,769]`
+
+# Step Four - Take the grouped data and `summarise` it
+
+So recall earlier we grouped our data by year so lets summarise it. 
+
+```{r}
+df%>% 
+  select(First.name, Surname, Season, Goals)%>%
+  group_by(Season)%>%
+  summarise(total_goals=sum(Goals))
+```
+Ok that doesn't quite seem like what we were thinking we wanted the `total_goals` of Tony Lockett by season, but all we got was Season total goals. 
+
+Well duh! We only did a `group_by` by `Season`, we should have done it by `Season, First.name, Surname` should we have? 
+
+Lets check.
+
+```{r}
+df%>%
+  select(Season, First.name, Surname, Goals)%>%
+  group_by(Season, First.name, Surname)%>%
+  summarise(total_goals=sum(Goals))
+  
+```
+This looks a lot better, only issue is that we don't see Tony Lockett but we see all these other blokes like Alb Thomas, he didn't kick 1,360 snags. 
+
+# Step five - `filter` the data
+
+```{r}
+df%>%
+  select(Season, First.name, Surname, Goals)%>%
+  group_by(Season, First.name, Surname)%>%
+  summarise(total_goals=sum(Goals))%>%
+  filter(First.name=="Tony" , Surname=="Lockett")
+```
+
+Now I think I might know what you are thinking. "Weren't we supposed to be plotting average goals by year?"
+
+To do that all we have to do is change `sum` to `mean` and `total_goals` to `average_goals` (these names can be anything but its helpful if they are descriptive).
+
+```{r}
+df%>%
+  select(Season, First.name, Surname, Goals)%>%
+  group_by(Season, First.name, Surname)%>%
+  summarise(average_goals=mean(Goals))%>%
+  filter(First.name=="Tony" , Surname=="Lockett")
+```
+
+# Step Six `ggplot` our way to a glory
+
+```{r}
+df%>%
+  select(Season, First.name, Surname, Goals)%>%
+  group_by(Season, First.name, Surname)%>%
+  summarise(average_goals=mean(Goals))%>%
+  filter(First.name=="Tony" , Surname=="Lockett")%>%
+  ggplot(aes(x=Season, y=average_goals)) +geom_line(color="red") +ggtitle("Tony Lockets Average Goals Per Game by Age")
+
+```
+
