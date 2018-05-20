@@ -13,12 +13,12 @@ tags : ["fitzRoy", "graphics","R","open science" , "tidyverse"]
 <h1>Using fitzRoy and the tidyverse</h1>
 <pre class="r"><code>library(fitzRoy)
 library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ----------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages ----------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
 ## v tibble  1.4.2     v dplyr   0.7.4
 ## v tidyr   0.8.0     v stringr 1.3.0
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts -------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts -------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <p>So what we did before, was we created 3 variables from afltables about Tony Lockett. They were Year (afl season), GM (totals games played in afl season) and GL (total goals kicked in season).</p>
@@ -186,4 +186,45 @@ df&lt;-fitzRoy::afldata</code></pre>
 ## 16   1998 Tony       Lockett         109
 ## 17   1999 Tony       Lockett          82
 ## 18   2002 Tony       Lockett           3</code></pre>
+<p>Now I think I might know what you are thinking. “Weren’t we supposed to be plotting average goals by year?”</p>
+<p>To do that all we have to do is change <code>sum</code> to <code>mean</code> and <code>total_goals</code> to <code>average_goals</code> (these names can be anything but its helpful if they are descriptive).</p>
+<pre class="r"><code>df%&gt;%
+  select(Season, First.name, Surname, Goals)%&gt;%
+  group_by(Season, First.name, Surname)%&gt;%
+  summarise(average_goals=mean(Goals))%&gt;%
+  filter(First.name==&quot;Tony&quot; , Surname==&quot;Lockett&quot;)</code></pre>
+<pre><code>## # A tibble: 18 x 4
+## # Groups:   Season, First.name [18]
+##    Season First.name Surname average_goals
+##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;           &lt;dbl&gt;
+##  1   1983 Tony       Lockett          1.58
+##  2   1984 Tony       Lockett          3.85
+##  3   1985 Tony       Lockett          3.76
+##  4   1986 Tony       Lockett          3.33
+##  5   1987 Tony       Lockett          5.32
+##  6   1988 Tony       Lockett          4.38
+##  7   1989 Tony       Lockett          7.09
+##  8   1990 Tony       Lockett          5.42
+##  9   1991 Tony       Lockett          7.47
+## 10   1992 Tony       Lockett          6   
+## 11   1993 Tony       Lockett          5.3 
+## 12   1994 Tony       Lockett          5.6 
+## 13   1995 Tony       Lockett          5.79
+## 14   1996 Tony       Lockett          5.5 
+## 15   1997 Tony       Lockett          3.08
+## 16   1998 Tony       Lockett          4.74
+## 17   1999 Tony       Lockett          4.32
+## 18   2002 Tony       Lockett          1</code></pre>
+</div>
+<div id="step-six-ggplot-our-way-to-a-glory" class="section level1">
+<h1>Step Six <code>ggplot</code> our way to a glory</h1>
+<pre class="r"><code>df%&gt;%
+  select(Season, First.name, Surname, Goals)%&gt;%
+  group_by(Season, First.name, Surname)%&gt;%
+  summarise(average_goals=mean(Goals))%&gt;%
+  filter(First.name==&quot;Tony&quot; , Surname==&quot;Lockett&quot;)%&gt;%
+  ggplot(aes(x=Season, y=average_goals)) +
+  geom_line(color=&quot;red&quot;) +
+  ggtitle(&quot;Tony Lockets Average Goals Per Game by Age&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 </div>

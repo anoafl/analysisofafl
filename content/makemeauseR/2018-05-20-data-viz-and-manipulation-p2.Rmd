@@ -133,7 +133,9 @@ df%>%
   group_by(Season, First.name, Surname)%>%
   summarise(average_goals=mean(Goals))%>%
   filter(First.name=="Tony" , Surname=="Lockett")%>%
-  ggplot(aes(x=Season, y=average_goals)) +geom_line(color="red") +ggtitle("Tony Lockets Average Goals Per Game by Age")
+  ggplot(aes(x=Season, y=average_goals)) +
+  geom_line(color="red") +
+  ggtitle("Tony Lockets Average Goals Per Game by Age")
 
 ```
 
