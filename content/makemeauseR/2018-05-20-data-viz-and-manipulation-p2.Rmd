@@ -1,0 +1,17 @@
+---
+title : "Data Viz and Manipulation P2"
+description : "A newbies guide to AFL visualisation with R P2"
+author : "Robert Nguyen"
+date : 2018-05-20
+tags : ["fitzRoy", "graphics","R","open science" , "tidyverse"]
+
+---
+
+# Using fitzRoy and the tidyverse
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+```
+
+So what we did before, was we created 3 variables from afltables about Tony Lockett. They were Year (afl season), GM (totals games played in afl season) and GL (total goals kicked in season).  

@@ -1,5 +1,5 @@
 ---
-title : "Data Viz and Manipulation"
+title : "Data Viz and Manipulation P1"
 description : "A newbies guide to AFL visualisation with R"
 author : "Robert Nguyen"
 date : 2018-05-20
@@ -103,7 +103,7 @@ plot(age, GL_GM, type="l", col="red", main="Tony Lockets Average Goals Per Game 
 
 Plot has a lot of options in R, to get a feel for them all simply put a question mark before the function and R will help you out!
 
-```{r}
+```{r, eval=FALSE}
 ?plot
 ```
 
@@ -136,3 +136,8 @@ What if we wanted to find out the values of when Tony Lockett played more than 1
 GM>10
 GM[GM>10]
 ```
+So I gather at this point you are probably thinking "Hey mate this isn't the cool [tidyverse](https://www.tidyverse.org/learn/) stuff I see online"
+
+Well that is true so lets change tack and move to using [tidyverse](http://r4ds.had.co.nz) and [fitzRoy](https://github.com/jimmyday12/fitzRoy) for cool AFL things.
+
+
