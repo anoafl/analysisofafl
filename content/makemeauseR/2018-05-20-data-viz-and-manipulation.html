@@ -1,0 +1,98 @@
+---
+title : "Data Viz and Manipulation"
+description : "A newbies guide to AFL visualisation with R"
+author : "Robert Nguyen"
+date : 2018-05-20
+tags : ["fitzRoy", "graphics","R","open science"]
+
+---
+
+
+
+<p>This is the start of the tutorial series, where we will cover visualising and manipulating data in R. There will be a series of mini checkpoints that should be used as a guide to check understanding.</p>
+<p>To check the most basic functionality of R (you can use it as a calculator) what does <code>9+3</code> equal?</p>
+<pre class="r"><code>9+3</code></pre>
+<pre><code>## [1] 12</code></pre>
+<div id="checkpoint-1-were-you-able-to-get-12-as-an-answer" class="section level1">
+<h1>Checkpoint 1: Were you able to get 12 as an answer?</h1>
+<p>Another cool thing we can do is store variables for example we can have a variable <code>x</code> which is the sum of <code>9+3</code> earlier.</p>
+<pre class="r"><code>x = 9+3</code></pre>
+<p>After running <code>x= 9+3</code> if we type <code>x</code> and hit enter like below then our x variable is printed.</p>
+<pre class="r"><code>x</code></pre>
+<pre><code>## [1] 12</code></pre>
+<p>Now that we have our variable x stored, instead of going <code>9+3+4</code> we can just go <code>x + 4</code></p>
+</div>
+<div id="now-that-we-have-variable-x-stored-we-can-use-x-instead-of-93" class="section level1">
+<h1>Now that we have variable <code>x</code> stored, we can use <code>x</code> instead of <code>9+3</code></h1>
+<p><code>x + 4</code></p>
+<p>Now that we have the very basics sorted, lets try something a little bit more interesting….</p>
+</div>
+<div id="rembering-tony-locketts-career" class="section level1">
+<h1>Rembering <a href="https://www.youtube.com/watch?v=8PCgPAP4n7w">Tony Locketts</a> Career</h1>
+<p>Tony Lockett is the games leading goal kicker, and is easily one of the best to lace them up.</p>
+<p>When thinking about data, we can either enter it in manually or we can get the data in a pre-processed format be it from a R package or other.</p>
+<p>Lets pretend for a second that we didn’t have such a good <a href="https://github.com/jimmyday12/fitzRoy">R package for AFL data</a>. We would go to a site like <a href="https://afltables.com/afl/stats/players/T/Tony_Lockett.html">afltables</a> and enter in his data manually in a csv file to analyse.</p>
+<p>We can also do this in R. So instead of in excel entering the data in cells we would enter each column as a vector</p>
+<pre class="r"><code>Year = c( 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993,
+             1994, 1995, 1996, 1997, 1998, 1999, 2002)
+GL = c(19,77,  79,  60, 117,  35,  78,  65, 127, 132,  53,  56, 110,
+                 121,  37, 109,  82,  3)
+
+GM=c(12, 20, 21, 18, 22,  8, 11, 12, 17, 22, 10, 10, 19, 22, 12, 23, 19,3)</code></pre>
+<p>This would give us 3 variables * Year - Season that Tony Lockett played * GL - Goals kicked in season by Tony Lockett * GM - Total games played by Tony Lockett in season</p>
+<p>We can view these just by typing in the variables once we have created them.</p>
+</div>
+<div id="checkpoint-2-are-you-able-to-print-the-vectors-you-have-created" class="section level1">
+<h1>Checkpoint 2 Are you able to print the vectors you have created?</h1>
+<pre class="r"><code>Year</code></pre>
+<pre><code>##  [1] 1983 1984 1985 1986 1987 1988 1989 1990 1991 1992 1993 1994 1995 1996
+## [15] 1997 1998 1999 2002</code></pre>
+<pre class="r"><code>GL</code></pre>
+<pre><code>##  [1]  19  77  79  60 117  35  78  65 127 132  53  56 110 121  37 109  82
+## [18]   3</code></pre>
+<pre class="r"><code>GM</code></pre>
+<pre><code>##  [1] 12 20 21 18 22  8 11 12 17 22 10 10 19 22 12 23 19  3</code></pre>
+<p>Basic arithmetic are done element wise in R, for example lets say we wanted Tony Lockets average goals per game <code>GL_GM</code></p>
+<pre class="r"><code>GL_GM = GL /GM
+GL_GM</code></pre>
+<pre><code>##  [1] 1.583333 3.850000 3.761905 3.333333 5.318182 4.375000 7.090909
+##  [8] 5.416667 7.470588 6.000000 5.300000 5.600000 5.789474 5.500000
+## [15] 3.083333 4.739130 4.315789 1.000000</code></pre>
+<p>Arithmetic operations involving a scalar (a consistent number applied to all values) and a vector (like Year) act element wise aswell. For example, the command below substract 1966 from each element of our year vector. Because Lockett was born in 1966 , this gives us his age in each season of his career.</p>
+<pre class="r"><code>age = Year - 1966 
+age</code></pre>
+<pre><code>##  [1] 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 36</code></pre>
+</div>
+<div id="checkpoint-3---are-you-able-to-get-the-graph-below." class="section level1">
+<h1>Checkpoint 3 - Are you able to get the graph below.</h1>
+</div>
+<div id="next-lets-plot-locketts-goals-per-game-by-age" class="section level1">
+<h1>Next let’s plot Lockett’s goals per game by age:</h1>
+<pre class="r"><code>plot(age, GL_GM, type=&quot;l&quot;, col=&quot;red&quot;, main=&quot;Tony Lockets Average Goals Per Game by Age&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Plot has a lot of options in R, to get a feel for them all simply put a question mark before the function and R will help you out!</p>
+<pre class="r"><code>?plot</code></pre>
+<pre><code>## starting httpd help server ... done</code></pre>
+</div>
+<div id="indexing-in-r" class="section level1">
+<h1>Indexing in R</h1>
+<p>Lets say we wanted to get Tony Lockets first 3 years goals per game we would do this using the square brackets in R</p>
+<pre class="r"><code>GL_GM[1:3]</code></pre>
+<pre><code>## [1] 1.583333 3.850000 3.761905</code></pre>
+<p>We can also remove data we don’t want, for example Tony Lockett retired and came back. So maybe we don’t want to have his comeback year as part of our analysis. We would remove it using negative index.</p>
+<pre class="r"><code>GL_GM[-c(18)]</code></pre>
+<pre><code>##  [1] 1.583333 3.850000 3.761905 3.333333 5.318182 4.375000 7.090909
+##  [8] 5.416667 7.470588 6.000000 5.300000 5.600000 5.789474 5.500000
+## [15] 3.083333 4.739130 4.315789</code></pre>
+<p>Which we should compare to the original <code>GL_GM</code></p>
+<pre class="r"><code>GL_GM</code></pre>
+<pre><code>##  [1] 1.583333 3.850000 3.761905 3.333333 5.318182 4.375000 7.090909
+##  [8] 5.416667 7.470588 6.000000 5.300000 5.600000 5.789474 5.500000
+## [15] 3.083333 4.739130 4.315789 1.000000</code></pre>
+<p>What if we wanted to find out the values of when Tony Lockett played more than 10 games, we could just go <code>GM&gt;10</code></p>
+<pre class="r"><code>GM&gt;10</code></pre>
+<pre><code>##  [1]  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE FALSE
+## [12] FALSE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE</code></pre>
+<pre class="r"><code>GM[GM&gt;10]</code></pre>
+<pre><code>##  [1] 12 20 21 18 22 11 12 17 22 19 22 12 23 19</code></pre>
+</div>

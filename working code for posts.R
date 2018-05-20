@@ -144,6 +144,7 @@ df3%>%arrange(Date)%>%
 library(fitzRoy)
 library(lubridate)
 library(tidyverse)
+library(ggthemes)
 tips <- get_squiggle_data("tips")
 
 df<-tips%>%mutate(home.margin=ifelse(hteam==tip, margin,-margin))%>%
@@ -173,9 +174,23 @@ df3$date<-ymd_hms(df3$date)
 df3%>%arrange(date)%>%
   filter(date>"2018-01-09")%>%
   filter(round<10)%>%
-  filter(TEAM=="West Coast")%>%
+  filter(TEAM %in% c("West Coast"))%>%
   ggplot(aes(y=margin, x=date,fill=H_A))+geom_col() +
   ggtitle("West Coast")   +
+  theme_economist_white() +
+  theme(plot.title  = element_text(size =12),
+        axis.text = element_text(size = 6),
+        strip.text = element_text(size = 12))+
+  facet_wrap(~source)
+
+
+
+df3%>%arrange(date)%>%
+  filter(date>"2018-01-09")%>%
+  filter(round<10)%>%
+  filter(TEAM=="Richmond")%>%
+  ggplot(aes(y=margin, x=date,fill=H_A))+geom_col() +
+  ggtitle("Richmond")   +
   theme_economist_white() +
   theme(plot.title  = element_text(size =12),
         axis.text = element_text(size = 6),
