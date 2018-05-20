@@ -15,3 +15,7 @@ library(tidyverse)
 ```
 
 So what we did before, was we created 3 variables from afltables about Tony Lockett. They were Year (afl season), GM (totals games played in afl season) and GL (total goals kicked in season).  
+
+These are summary statistics i.e. the year summaries (totals) of games played and goals kicked. 
+
+Something you might have noticed with `fitzRoy` is that the afldata is stored as game by game data and not season summaries. 
