@@ -310,3 +310,90 @@ df&lt;-fitzRoy::afldata</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 </div>
 </div>
+<div id="bonus---you-did-things-in-a-bad-way-that-might-lead-to-problems" class="section level1">
+<h1>Bonus - You did things in a bad way that might lead to problems</h1>
+<p>Yes I did, my filter would have taken any unique combinations of <code>First.name</code> , <code>Surname</code> for example if there was a Tony Dunstall or a Jason Lockett they would have come through in the filter.</p>
+<p>We can see this if we changed Dunstall to Smith.</p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname, Goals)%&gt;%
+    group_by(Season, First.name, Surname)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Smith&quot;))</code></pre>
+<pre><code>## # A tibble: 23 x 4
+## # Groups:   Season, First.name [20]
+##    Season First.name Surname average_goals
+##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;           &lt;dbl&gt;
+##  1   1974 Tony       Smith            0   
+##  2   1983 Tony       Lockett          1.58
+##  3   1984 Tony       Lockett          3.85
+##  4   1985 Tony       Lockett          3.76
+##  5   1986 Tony       Lockett          3.33
+##  6   1986 Tony       Smith            0   
+##  7   1987 Tony       Lockett          5.32
+##  8   1987 Tony       Smith            0   
+##  9   1988 Tony       Lockett          4.38
+## 10   1988 Tony       Smith            0.1 
+## # ... with 13 more rows</code></pre>
+<p>So the best way would be if we had some sort of ID variable. Which luckily in <code>afldata</code> we have an ID column.</p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname,ID, Goals)%&gt;%
+    group_by(Season, First.name, Surname, ID)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))</code></pre>
+<pre><code>## # A tibble: 32 x 5
+## # Groups:   Season, First.name, Surname [32]
+##    Season First.name Surname     ID average_goals
+##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;    &lt;int&gt;         &lt;dbl&gt;
+##  1   1983 Tony       Lockett    990          1.58
+##  2   1984 Tony       Lockett    990          3.85
+##  3   1985 Jason      Dunstall   632          2.25
+##  4   1985 Tony       Lockett    990          3.76
+##  5   1986 Jason      Dunstall   632          3.5 
+##  6   1986 Tony       Lockett    990          3.33
+##  7   1987 Jason      Dunstall   632          3.92
+##  8   1987 Tony       Lockett    990          5.32
+##  9   1988 Jason      Dunstall   632          5.74
+## 10   1988 Tony       Lockett    990          4.38
+## # ... with 22 more rows</code></pre>
+<p>Now we can see our players have the ID of 990 for Lockett and 632 for Dunstall.</p>
+<p>So instead of filtering by First.name and Surname we can use the ID instead.</p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname,ID, Goals)%&gt;%
+    group_by(Season, First.name, Surname, ID)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(ID %in% c(990,632))</code></pre>
+<pre><code>## # A tibble: 32 x 5
+## # Groups:   Season, First.name, Surname [32]
+##    Season First.name Surname     ID average_goals
+##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;    &lt;int&gt;         &lt;dbl&gt;
+##  1   1983 Tony       Lockett    990          1.58
+##  2   1984 Tony       Lockett    990          3.85
+##  3   1985 Jason      Dunstall   632          2.25
+##  4   1985 Tony       Lockett    990          3.76
+##  5   1986 Jason      Dunstall   632          3.5 
+##  6   1986 Tony       Lockett    990          3.33
+##  7   1987 Jason      Dunstall   632          3.92
+##  8   1987 Tony       Lockett    990          5.32
+##  9   1988 Jason      Dunstall   632          5.74
+## 10   1988 Tony       Lockett    990          4.38
+## # ... with 22 more rows</code></pre>
+<p>Then we can now do our same plots as earlier.</p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname,ID, Goals)%&gt;%
+    group_by(Season, First.name, Surname, ID)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(ID %in% c(990,632))%&gt;%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_line() + facet_wrap(~Surname) + 
+    ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname,ID, Goals)%&gt;%
+    group_by(Season, First.name, Surname, ID)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(ID %in% c(990,632))%&gt;%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_line(aes(colour=Surname)) +
+    ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-21-2.png" width="672" /></p>
+</div>

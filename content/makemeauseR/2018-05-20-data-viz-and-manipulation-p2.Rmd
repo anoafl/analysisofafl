@@ -228,3 +228,67 @@ df%>%
     geom_line() + facet_wrap(~Surname) + 
     ggtitle("Average Goals Per Game by Season")
 ```
+
+
+# Bonus - You did things in a bad way that might lead to problems
+
+Yes I did, my filter would have taken any unique combinations of `First.name` , `Surname` for example if there was a Tony Dunstall or a Jason Lockett they would have come through in the filter. 
+
+We can see this if we changed Dunstall to Smith. 
+
+```{r}
+
+df%>%
+    select(Season, First.name, Surname, Goals)%>%
+    group_by(Season, First.name, Surname)%>%
+    summarise(average_goals=mean(Goals))%>%
+    filter(First.name %in% c("Tony", "Jason") , Surname %in% c("Lockett", "Smith"))
+    
+```
+
+So the best way would be if we had some sort of ID variable. Which luckily in `afldata` we have an ID column. 
+
+```{r}
+
+df%>%
+    select(Season, First.name, Surname,ID, Goals)%>%
+    group_by(Season, First.name, Surname, ID)%>%
+    summarise(average_goals=mean(Goals))%>%
+    filter(First.name %in% c("Tony", "Jason") , Surname %in% c("Lockett", "Dunstall"))
+    
+```
+
+Now we can see our players have the ID of 990 for Lockett and 632 for Dunstall. 
+
+So instead of filtering by First.name and Surname we can use the ID instead. 
+
+```{r}
+
+df%>%
+    select(Season, First.name, Surname,ID, Goals)%>%
+    group_by(Season, First.name, Surname, ID)%>%
+    summarise(average_goals=mean(Goals))%>%
+    filter(ID %in% c(990,632))
+```
+
+Then we can now do our same plots as earlier. 
+```{r}
+df%>%
+    select(Season, First.name, Surname,ID, Goals)%>%
+    group_by(Season, First.name, Surname, ID)%>%
+    summarise(average_goals=mean(Goals))%>%
+    filter(ID %in% c(990,632))%>%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_line() + facet_wrap(~Surname) + 
+    ggtitle("Average Goals Per Game by Season")
+
+df%>%
+    select(Season, First.name, Surname,ID, Goals)%>%
+    group_by(Season, First.name, Surname, ID)%>%
+    summarise(average_goals=mean(Goals))%>%
+    filter(ID %in% c(990,632))%>%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_line(aes(colour=Surname)) +
+    ggtitle("Average Goals Per Game by Season")
+
+```
