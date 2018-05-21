@@ -86,7 +86,7 @@ df&lt;-fitzRoy::afldata</code></pre>
 ##  9 Henry      Dunne       1897     0
 ## 10 Brook      Hannah      1897     0
 ## # ... with 603,279 more rows</code></pre>
-<p>It doesn’t look like our dataset has changed, but if we look closely we have a new <code>Groups:   Season [121]</code> and hopefully what you have noticed is that our dataset <code>afldata</code> has 121 unique values. Which we can check below.</p>
+<p>It doesn’t look like our dataset has changed, but if we look closely we have a new <code>Groups:   Season [121]</code> and hopefully what you have noticed is that our dataset <code>afldata</code> has 121 unique values for <code>Season</code>. Which we can check below.</p>
 <pre class="r"><code>length(unique(df$Season))</code></pre>
 <pre><code>## [1] 121</code></pre>
 <p>What this does is adds a grouping structure to our data, which means instead of operations acting element wise like they did earlier now operations can happen by group.</p>
@@ -216,8 +216,8 @@ df&lt;-fitzRoy::afldata</code></pre>
 ## 17   1999 Tony       Lockett          4.32
 ## 18   2002 Tony       Lockett          1</code></pre>
 </div>
-<div id="step-six-ggplot-our-way-to-a-glory" class="section level1">
-<h1>Step Six <code>ggplot</code> our way to a glory</h1>
+<div id="step-six---ggplot-our-way-to-a-glory" class="section level1">
+<h1>Step Six - <code>ggplot</code> our way to a glory</h1>
 <pre class="r"><code>df%&gt;%
   select(Season, First.name, Surname, Goals)%&gt;%
   group_by(Season, First.name, Surname)%&gt;%
@@ -227,4 +227,75 @@ df&lt;-fitzRoy::afldata</code></pre>
   geom_line(color=&quot;red&quot;) +
   ggtitle(&quot;Tony Lockets Average Goals Per Game by Age&quot;)</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div id="step-7---thats-cool-but-i-want-to-compare-players" class="section level1">
+<h1>Step 7 - That’s cool but I want to compare players</h1>
+<p>To do this the obvious thing to do, is to just add a player you want to compare to the filter we do this with <code>%in% c(&quot;Player1&quot;,(&quot;Player2&quot;))</code></p>
+<pre class="r"><code>df%&gt;%
+  select(Season, First.name, Surname, Goals)%&gt;%
+  group_by(Season, First.name, Surname)%&gt;%
+  summarise(average_goals=mean(Goals))%&gt;%
+  filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
+  ggplot(aes(x=Season, y=average_goals)) +
+  geom_line() +
+  ggtitle(&quot;Average Goals Per Game by Age&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>On first glance this doesn’t look like its done the right thing we wanted two lines one for Tony Lockett and one for Jason Dunstall.</p>
+<p>Lets look a bit deeper at what we are doing</p>
+<div id="look-at-the-dataframe-is-it-what-we-wanted" class="section level2">
+<h2>Look at the dataframe is it what we wanted?</h2>
+<pre class="r"><code>df%&gt;%
+  select(Season, First.name, Surname, Goals)%&gt;%
+  group_by(Season, First.name, Surname)%&gt;%
+  summarise(average_goals=mean(Goals))%&gt;%
+  filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))</code></pre>
+<pre><code>## # A tibble: 32 x 4
+## # Groups:   Season, First.name [32]
+##    Season First.name Surname  average_goals
+##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;            &lt;dbl&gt;
+##  1   1983 Tony       Lockett           1.58
+##  2   1984 Tony       Lockett           3.85
+##  3   1985 Jason      Dunstall          2.25
+##  4   1985 Tony       Lockett           3.76
+##  5   1986 Jason      Dunstall          3.5 
+##  6   1986 Tony       Lockett           3.33
+##  7   1987 Jason      Dunstall          3.92
+##  8   1987 Tony       Lockett           5.32
+##  9   1988 Jason      Dunstall          5.74
+## 10   1988 Tony       Lockett           4.38
+## # ... with 22 more rows</code></pre>
+<p>Yes, that looks like the dataframe we want to plot, and looking at the data it seems as though we just have one continous line if we look closely at <code>Season==1985</code> we can see that it jumps straight upwards. We know <code>geom_line()</code> connects the dots (datapoints) so it looks as though its connecting both values one for Tony Lockett and the other for Jason Dunstall. We could see this a bit more clearly if we looked at a scatter plot.</p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname, Goals)%&gt;%
+    group_by(Season, First.name, Surname)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_point() +
+    ggtitle(&quot;Average Goals Per Game by Age&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+<div id="differentiating-the-data" class="section level2">
+<h2>Differentiating the data</h2>
+<p>One way to differentiate the data is by colour, i.e. we could just colour Tony Lockett one colour and Jason Dunstall another.</p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname, Goals)%&gt;%
+    group_by(Season, First.name, Surname)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_point(aes(colour=Surname)) +
+    ggtitle(&quot;Average Goals Per Game by Age&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Then we do our line plot like earlier.</p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname, Goals)%&gt;%
+    group_by(Season, First.name, Surname)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_line(aes(colour=Surname)) +
+    ggtitle(&quot;Average Goals Per Game by Age&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+</div>
 </div>
