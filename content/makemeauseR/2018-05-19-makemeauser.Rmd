@@ -1,6 +1,6 @@
 ---
 title : "makemeauseR"
-description : ""
+description : "Purpose"
 author: "Robert Nguyen"
 date : 2018-05-18
 tags : ["fitzRoy", "graphics","R","open science", "statistics"]
@@ -8,4 +8,10 @@ tags : ["fitzRoy", "graphics","R","open science", "statistics"]
 ---
 
 The best way to learn things in my opinion is through examples. What this part of the site aims to cover an introduction to statistics course one might take at university. But instead of boring examples going to use much more exciting examples relating to AFL. 
+
+These posts are by no means finals and will always be continously updated as I learn new and hopefully better ways to explain things. 
+
+If you have any questions please use the [#makemeauseR](https://twitter.com/anoafl/status/992224187941965824) and ask me over twitter or feel free to email me. 
+
+
 
