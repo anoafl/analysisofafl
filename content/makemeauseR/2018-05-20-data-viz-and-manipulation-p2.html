@@ -225,7 +225,7 @@ df&lt;-fitzRoy::afldata</code></pre>
   filter(First.name==&quot;Tony&quot; , Surname==&quot;Lockett&quot;)%&gt;%
   ggplot(aes(x=Season, y=average_goals)) +
   geom_line(color=&quot;red&quot;) +
-  ggtitle(&quot;Tony Lockets Average Goals Per Game by Age&quot;)</code></pre>
+  ggtitle(&quot;Tony Lockets Average Goals Per Game by Season&quot;)</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 </div>
 <div id="step-7---thats-cool-but-i-want-to-compare-players" class="section level1">
@@ -238,7 +238,7 @@ df&lt;-fitzRoy::afldata</code></pre>
   filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
   ggplot(aes(x=Season, y=average_goals)) +
   geom_line() +
-  ggtitle(&quot;Average Goals Per Game by Age&quot;)</code></pre>
+  ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <p>On first glance this doesn’t look like its done the right thing we wanted two lines one for Tony Lockett and one for Jason Dunstall.</p>
 <p>Lets look a bit deeper at what we are doing</p>
@@ -272,7 +272,7 @@ df&lt;-fitzRoy::afldata</code></pre>
     filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
     ggplot(aes(x=Season, y=average_goals)) +
     geom_point() +
-    ggtitle(&quot;Average Goals Per Game by Age&quot;)</code></pre>
+    ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 </div>
 <div id="differentiating-the-data" class="section level2">
@@ -285,7 +285,7 @@ df&lt;-fitzRoy::afldata</code></pre>
     filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
     ggplot(aes(x=Season, y=average_goals)) +
     geom_point(aes(colour=Surname)) +
-    ggtitle(&quot;Average Goals Per Game by Age&quot;)</code></pre>
+    ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>Then we do our line plot like earlier.</p>
 <pre class="r"><code>df%&gt;%
@@ -295,7 +295,18 @@ df&lt;-fitzRoy::afldata</code></pre>
     filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
     ggplot(aes(x=Season, y=average_goals)) +
     geom_line(aes(colour=Surname)) +
-    ggtitle(&quot;Average Goals Per Game by Age&quot;)</code></pre>
+    ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>Another way we could plot them, is have the same graph but instead of both lines on one, we could have them side by side for comparison. This is handy in situations where you want to compare the same thing <code>average goals per game by season</code></p>
+<p>This is called <a href="https://en.wikipedia.org/wiki/Small_multiple">small multiples</a>, we do this by using <code>facet_wrap()</code></p>
+<pre class="r"><code>df%&gt;%
+    select(Season, First.name, Surname, Goals)%&gt;%
+    group_by(Season, First.name, Surname)%&gt;%
+    summarise(average_goals=mean(Goals))%&gt;%
+    filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))%&gt;%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_line() + facet_wrap(~Surname) + 
+    ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 </div>
 </div>

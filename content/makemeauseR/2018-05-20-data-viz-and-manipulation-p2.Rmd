@@ -215,3 +215,16 @@ df%>%
 
 
 Another way we could plot them, is have the same graph but instead of both lines on one, we could have them side by side for comparison. This is handy in situations where you want to compare the same thing `average goals per game by season`
+
+This is called [small multiples](https://en.wikipedia.org/wiki/Small_multiple), we do this by using `facet_wrap()`
+
+```{r}
+df%>%
+    select(Season, First.name, Surname, Goals)%>%
+    group_by(Season, First.name, Surname)%>%
+    summarise(average_goals=mean(Goals))%>%
+    filter(First.name %in% c("Tony", "Jason") , Surname %in% c("Lockett", "Dunstall"))%>%
+    ggplot(aes(x=Season, y=average_goals)) +
+    geom_line() + facet_wrap(~Surname) + 
+    ggtitle("Average Goals Per Game by Season")
+```
