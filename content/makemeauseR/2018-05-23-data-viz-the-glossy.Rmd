@@ -105,11 +105,14 @@ df2%>%select(Season,TO, MG, Player) %>%
                                      "Bryce Gibbs",
                                      "Paul Seedsman", 
                                    "Tom Mitchell"), T, F))%>%
-  %>%
-  mutate(flag = ifelse(Player %in% c("Rory Laird",
-                                     "Bryce Gibbs",
-                                     "Paul Seedsman", 
-                                    "Tom Mitchell"), T, F)) 
+  ggplot(aes(x=Meters_gained, y=Turnovers)) + 
+  geom_point(aes(colour=flag), show.legend = FALSE) +
+  geom_smooth(method='lm',formula=y~x) +
+  geom_text(aes(label=ifelse(Player %in% c ("Rory Laird", 
+                                            "Bryce Gibbs",
+                                            "Paul Seedsman", 
+                                            "Tom Mitchell"), 
+                             Player, ""),vjust=-1))
 
 ```
 
