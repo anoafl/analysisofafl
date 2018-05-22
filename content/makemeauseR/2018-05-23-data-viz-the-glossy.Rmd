@@ -100,5 +100,18 @@ df2<-rbind(df, df1)
 df2%>%select(Season,TO, MG, Player) %>%
   filter(Season==2018) %>%
   group_by(Player)%>%
-  summarise(Turnovers=sum(TO), Meters_gained=sum(MG)) 
+  summarise(Turnovers=sum(TO), Meters_gained=sum(MG)) %>%
+  mutate(flag = ifelse(Player %in% c("Rory Laird",
+                                     "Bryce Gibbs",
+                                     "Paul Seedsman", 
+                                   "Tom Mitchell"), T, F))%>%
+  %>%
+  mutate(flag = ifelse(Player %in% c("Rory Laird",
+                                     "Bryce Gibbs",
+                                     "Paul Seedsman", 
+                                    "Tom Mitchell"), T, F)) 
+
+```
+
+
                                            
