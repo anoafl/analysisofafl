@@ -94,19 +94,18 @@ df2&lt;-rbind(df, df1)
 df2%&gt;%select(Season,TO, MG, Player) %&gt;%
   filter(Season==2018) %&gt;%
   group_by(Player)%&gt;%
-  summarise(Turnovers=sum(TO), Meters_gained=sum(MG)) </code></pre>
-<pre><code>## # A tibble: 559 x 3
-##    Player           Turnovers Meters_gained
-##    &lt;chr&gt;                &lt;int&gt;         &lt;int&gt;
-##  1 Aaron Hall              24          2016
-##  2 Aaron Mullett           29          2432
-##  3 Aaron Naughton          22          1513
-##  4 Aaron Sandilands        19           842
-##  5 Aaron Young             37          2236
-##  6 Adam Cerra              15          1459
-##  7 Adam Saad               25          2507
-##  8 Adam Tomlinson          26          2858
-##  9 Adam Treloar            48          3598
-## 10 Aidan Corr              19          1641
-## # ... with 549 more rows</code></pre>
+  summarise(Turnovers=sum(TO), Meters_gained=sum(MG)) %&gt;%
+  mutate(flag = ifelse(Player %in% c(&quot;Rory Laird&quot;,
+                                     &quot;Bryce Gibbs&quot;,
+                                     &quot;Paul Seedsman&quot;, 
+                                   &quot;Tom Mitchell&quot;), T, F))%&gt;%
+  ggplot(aes(x=Meters_gained, y=Turnovers)) + 
+  geom_point(aes(colour=flag), show.legend = FALSE) +
+  geom_smooth(method=&#39;lm&#39;,formula=y~x) +
+  geom_text(aes(label=ifelse(Player %in% c (&quot;Rory Laird&quot;, 
+                                            &quot;Bryce Gibbs&quot;,
+                                            &quot;Paul Seedsman&quot;, 
+                                            &quot;Tom Mitchell&quot;), 
+                             Player, &quot;&quot;),vjust=-1))</code></pre>
+<p><img src="/makemeauseR/2018-05-23-data-viz-the-glossy_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 </div>
