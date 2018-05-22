@@ -7,7 +7,7 @@ tags : ["fitzRoy", "graphics","R","open science","statistics"]
 
 ---
 
-One of the fun things when doing graphs, is that moment when you identify something that sticks out. A great example of this is done by [@ethan_meldrum](https://twitter.com/ethan_meldrum/status/991988146215632896)
+One of the fun things when doing graphs, is that moment when you identify something that sticks out. A great example of this is done by [ethan_meldrum](https://twitter.com/ethan_meldrum/status/991988146215632896)
 
 
 In it we can see how much Paul Seedsman 2018 has stood out so far. Lets give it the ggplot/fitzRoy treatment. 
