@@ -1,6 +1,6 @@
 ---
 title : "Data Viz The Glossy"
-description : ""
+description : "Glossy"
 author : "Robert Nguyen"
 date : 2018-05-23
 tags : ["fitzRoy", "graphics","R","open science","statistics"]
