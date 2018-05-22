@@ -47,7 +47,7 @@ Lets break this down
 * step c , Give value T otherwise give value F `,T,F))`
                                                
 
-```{r , eval=FALSE}
+```{r, eval=FALSE}
 
 df2%>%select(Season,TO, MG, Player) %>%
   filter(Season==2018) %>%
