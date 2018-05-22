@@ -150,12 +150,12 @@ tips <- get_squiggle_data("tips")
 df<-tips%>%mutate(home.margin=ifelse(hteam==tip, margin,-margin))%>%
   mutate(away.margin=ifelse(ateam==tip, margin,-margin)) %>%
   select(source,date,correct,  hconfidence,hteam,
-         ateam,home.margin,away.margin,err ,tip,round, year)%>%
+         ateam,home.margin,away.margin,err ,tip,round, year, venue)%>%
   mutate(covered=ifelse(correct==1, err,-err))
 
-df1<-select(df,source, date, correct, hconfidence,hteam, home.margin, err, tip, round, year, covered )
+df1<-select(df,source, date, correct, hconfidence,hteam, home.margin, err, tip, round, year, covered ,venue)
 df1$H_A<-"HOME"
-df2<-select(df, source, date, correct, hconfidence, ateam, away.margin, err, tip, round, year, covered)
+df2<-select(df, source, date, correct, hconfidence, ateam, away.margin, err, tip, round, year, covered, venue)
 df2$H_A<-"AWAY"
 colnames(df1)[5]<-"TEAM"
 
@@ -173,10 +173,10 @@ df3$date<-ymd_hms(df3$date)
 
 df3%>%arrange(date)%>%
   filter(date>"2018-01-09")%>%
-  filter(round<10)%>%
-  filter(TEAM %in% c("Brisbane Lions"))%>%
-  ggplot(aes(y=margin, x=date,fill=H_A))+geom_col() +
-  ggtitle("Lions")   +
+  filter(round<11)%>%
+  filter(TEAM %in% c("Richmond"))%>%
+  ggplot(aes(y=covered, x=date,fill=venue))+geom_col() +
+  ggtitle("Richmond")   +
   theme_economist_white() +
   theme(plot.title  = element_text(size =12),
         axis.text = element_text(size = 6),
@@ -196,4 +196,34 @@ df3%>%arrange(date)%>%
         axis.text = element_text(size = 6),
         strip.text = element_text(size = 12))+
   facet_wrap(~source)
+
+df<-fitzRoy::get_match_results()
+df %>% 
+  group_by(Round, Season) %>% 
+  filter(which.min(Margin)==row_number())  %>%
+  arrange(desc(Margin))
+View(
+     df %>% 
+       group_by(Round, Season) %>% 
+       summarise(average_margin=mean(abs(Margin))%>%
+       filter(row_number() == 1) %>%
+       arrange((average_margin)))
+)
+
+
+df<-fitzRoy::afldata
+
+df%>%
+  select(Attendance,Date ,Venue, Away.team)%>%
+  filter(Away.team %in% c ("West Coast", "Adelaide"))%>%
+  filter(Venue=="M.C.G.") %>% distinct()%>%
+  ggplot(aes(x=Date, y=Attendance))+geom_line(aes(colour=Away.team))+
+  facet_wrap(~Away.team)
   
+
+df%>%
+  select(Attendance,Season ,Venue, Away.team)%>%
+  filter(Away.team %in% c ("West Coast", "Adelaide"))%>%
+  filter(Venue=="M.C.G.") %>% distinct()%>%
+  group_by(Season, Away.team)%>%summarise(average=mean(Attendance))%>%
+  ggplot(aes(x=Season, y=average))+geom_col(aes(colour=Away.team)) + facet_wrap(~Away.team)
