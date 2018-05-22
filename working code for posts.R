@@ -227,3 +227,23 @@ df%>%
   filter(Venue=="M.C.G.") %>% distinct()%>%
   group_by(Season, Away.team)%>%summarise(average=mean(Attendance))%>%
   ggplot(aes(x=Season, y=average))+geom_col(aes(colour=Away.team)) + facet_wrap(~Away.team)
+
+
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+df1<-fitzRoy::get_footywire_stats(9514:9593)
+df<-df%>%filter(Season != 2018)
+df2<-rbind(df, df1)
+df2%>%
+  select(Season, ITC, CM, Player)%>%
+  group_by(Player, Season)%>%
+  filter(Season>2015)%>%
+  summarise(ITC_T=sum(ITC), CM_T=sum(CM))%>%
+  mutate(flag=ifelse(Player %in% c("Jeremy McGovern", "Alex Rance"), T,F))%>%
+  ggplot(aes(x=ITC_T, y=CM_T))+ geom_point()+
+  geom_text(aes(label=ifelse(Player %in% c("Jeremy McGovern", "Alex Rance"), 
+                             Player, ""),vjust=-1))+facet_wrap(~Season)
+
