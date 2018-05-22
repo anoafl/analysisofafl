@@ -243,7 +243,7 @@ df2%>%
   filter(Season>2015)%>%
   summarise(ITC_T=sum(ITC), CM_T=sum(CM))%>%
   mutate(flag=ifelse(Player %in% c("Jeremy McGovern", "Alex Rance"), T,F))%>%
-  ggplot(aes(x=ITC_T, y=CM_T))+ geom_point()+
+  ggplot(aes(x=ITC_T, y=CM_T))+ geom_point(aes(colour=flag), show.legend = FALSE)+
   geom_text(aes(label=ifelse(Player %in% c("Jeremy McGovern", "Alex Rance"), 
                              Player, ""),vjust=-1))+facet_wrap(~Season)
 
