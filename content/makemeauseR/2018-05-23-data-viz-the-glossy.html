@@ -26,6 +26,16 @@ df2%&gt;%select(Season,TO, MG, Player) %&gt;%
   filter(Season==2018) %&gt;%
   group_by(Player)%&gt;%
   summarise(Turnovers=sum(TO), Meters_gained=sum(MG)) </code></pre>
+<ul>
+<li><code>df&lt;-fitzRoy::player_stats</code> this gets <a href="https://www.footywire.com">footywire</a> data from 2010-2018 some round I say some round because this requires a weekly update from James or myself which sadly doesn’t always happen.</li>
+<li><code>df1&lt;-fitzRoy::get_footywire_stats(9514:9593)</code> this gets the footywire data for 2018, 9514 is the first game of 2018 and 9593 was the most recent game as of writing this post (23/05/2018)</li>
+<li>We want to stack these dataframes on top of each other but we are away that some of the <code>df</code> might contain 2018 data so we just get rid of it using <code>filter(Season!=2018)</code></li>
+<li><p><code>df2&lt;-rbind(df, df1)</code> stacks our datasets together and calls it <code>df2</code></p></li>
+<li>From <code>df2</code> we then select the columns we want <code>Season</code>, <code>TO</code> (Turnovers), <code>MG</code> (Meters gained) and <code>Player</code></li>
+<li>Then we filter out just this years data <code>filter(Season==2018)</code></li>
+<li>then we <code>group_by</code> player <em>note if we wanted season on season comparisions we would group_by (Season, Player) and not use the filter(Season==2018)</em></li>
+<li><p>We then <code>summarise</code> the data, get the Season total for each players Turnovers and meters gained. <code>summarise(Turnovers=sum(TO), Meters_gained=sum(MG))</code></p></li>
+</ul>
 </div>
 <div id="step-2" class="section level1">
 <h1>Step 2</h1>
