@@ -32,6 +32,16 @@ df2%>%select(Season,TO, MG, Player) %>%
 
 ```
 
+* `df<-fitzRoy::player_stats` this gets [footywire](https://www.footywire.com) data from 2010-2018 some round I say some round because this requires a weekly update from James or myself which sadly doesn't always happen. 
+* `df1<-fitzRoy::get_footywire_stats(9514:9593)` this gets the footywire data for 2018, 9514 is the first game of 2018 and 9593 was the most recent game as of writing this post (23/05/2018)
+* We want to stack these dataframes on top of each other but we are away that some of the `df` might contain 2018 data so we just get rid of it using `filter(Season!=2018)` 
+* `df2<-rbind(df, df1)` stacks our datasets together and calls it `df2`
+
+* From `df2` we then select the columns we want `Season`,  `TO` (Turnovers), `MG` (Meters gained) and `Player` 
+* Then we filter out just this years data `filter(Season==2018)` 
+* then we `group_by` player *note if we wanted season on season comparisions we would group_by (Season, Player) and not use the filter(Season==2018)*
+* We then `summarise` the data, get the Season total for each players Turnovers and meters gained. `summarise(Turnovers=sum(TO), Meters_gained=sum(MG))`
+
 # Step 2
 
 This is an assumption we are making here that we know the players we want to highlight. But lets say we do and the players are Rory Laird, Bryce Gibbs, Paul Seedsman and Tom Mitchell. We need to create a flag for them so we can subset them out for highlighting down the track. 
