@@ -33,7 +33,7 @@ library(tidyverse)
 
 df<-fitzRoy::player_stats
 
-df1<-fitzRoy::get_footywire_stats(9514:9594) #gets 2018 data until end of round 9
+df1<-fitzRoy::get_footywire_stats(9514:9595) #gets 2018 data until end of round 9
 
 df<-df%>%
       filter(Season != 2018) #filters out the 2018 data (incomeplete that was downloaded when installing fitzRoy for first time) 
