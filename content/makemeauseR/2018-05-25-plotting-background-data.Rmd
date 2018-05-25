@@ -66,7 +66,9 @@ df2<-rbind(df, df1) #stacks the datasets on top of each other
 ```
 
 
-After we have created our variable `hb2k` 
+Remember we wanted to be able to reference for a given team what is their average handball to kick ratio conceded. One way to do this is to add a [reference line](http://ggplot2.tidyverse.org/reference/geom_abline.html). 
+*To get the values for the reference line, we use `group_by(Season, Opposition)` which allows us then to summarise by `Season` for each `Opposition` team their average handball to kick ratio. `summarise(average_hb2k=mean(hb2k))`. 
+* Then as we want a graph for 2018 we use `filter(Season==2018)` to achieve this. Which means we get the average values by `Oppostion` for 2018 only.
 
 
 ### Step 3 - What team do you want to see?
@@ -194,8 +196,9 @@ df2%>%
     filter(Season==2018)%>%
     filter(Opposition != "Collingwood") %>%
     ggplot(aes(x=Round,y=hb2k))+
-    geom_point(data=df3,colour="black")+
-    geom_point(colour="grey", alpha=0.5)
+  geom_point(colour="grey", alpha=0.5)+
+    geom_point(data=df3,colour="black")
+    
 
 ```
 
