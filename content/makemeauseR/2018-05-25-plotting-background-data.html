@@ -228,7 +228,11 @@ df2%&gt;%
 </div>
 <div id="so-what-are-the-steps-involved-in-this" class="section level1">
 <h1>So what are the steps involved in this?</h1>
-<p>After reading the <a href="https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&amp;utm_medium=social&amp;utm_source=twitter.com&amp;utm_campaign=buffer">post</a>, you can think of it as two parts * Part one - plot the data faded without the subdata you want to emphasize. * Part two - plot the subdata you want to emphasize and colour it differently to the rest to make it stand out.</p>
+<p>After reading the <a href="https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&amp;utm_medium=social&amp;utm_source=twitter.com&amp;utm_campaign=buffer">post</a>, you can think of it as two parts.</p>
+<ul>
+<li><p>Part one - plot the data faded without the subdata you want to emphasize.</p></li>
+<li><p>Part two - plot the subdata you want to emphasize and colour it differently to the rest to make it stand out.</p></li>
+</ul>
 <p>So to do this, first lets get the subdata we want which is Collingwoods handball to kick ratio conceded to teams. We call this subdataset <code>df3</code></p>
 <pre class="r"><code>df3&lt;-df2%&gt;%
     select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
