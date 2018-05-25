@@ -202,6 +202,8 @@ df2%>%
     geom_point(colour="grey") +geom_text(data=df3, aes(label=round(hb2k,2),hjust=-.2))
 
 ```
+ 
+Step 7 - Lets see some background data
 
 ```{r}
 
