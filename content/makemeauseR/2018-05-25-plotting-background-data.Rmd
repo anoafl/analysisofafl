@@ -214,6 +214,60 @@ df2%>%
     filter(Season==2018)%>%
     filter(Opposition != "Collingwood") %>%
     ggplot(aes(x=Round, y=hb2k))+geom_point(data=df3)+
-    geom_point(colour="grey") +geom_text(data=df3, aes(label=round(hb2k,2),hjust=-.2))
+    geom_point(colour="grey") +geom_text(data=df3, aes(label=round(hb2k,2),hjust=-0.2))
 
 ```
+We use `geom_text(data=df3,aes(label=round(hb2k,2),hjust=-.2))` to label our data, what this does is takes the Collingwood only subdataset `data=df3` and we label it by the corresponding `hb2k` variable we created earlier. We also round the numbers so it doesn't look too messy to 2 decimals places using `round(hb2k, 2)` and we move the label to slightly right of the actual data point using `hjust=-0.2`
+
+# So what are the steps involved in this? 
+
+After reading the [post](https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer), you can think of it as two parts
+* Part one - plot the data faded without the subdata you want to emphasize. 
+* Part two - plot the subdata you want to emphasize and colour it differently to the rest to make it stand out. 
+
+
+So to do this, first lets get the subdata we want which is Collingwoods handball to kick ratio conceded to teams. We call this subdataset `df3`
+
+```{r, eval=FALSE}
+df3<-df2%>%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+    group_by(Season, Round, Team, Opposition, Date)%>%
+    summarise(tk=sum(K), thb=sum(HB)) %>%
+    mutate(hb2k=thb/tk) %>%
+    filter(Season==2018)%>%
+    filter(Opposition == "Collingwood")
+
+```
+
+Then we plot the full dataset without the Collingwood data, we then want to make this look faded we do this by colouring the points in grey ` geom_point(colour="grey"` and fading the points by using `, alpha=0.5)`
+
+```{r, eval=FALSE}
+df2%>%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+    group_by(Season, Round, Team, Opposition, Date)%>%
+    summarise(tk=sum(K), thb=sum(HB)) %>%
+    mutate(hb2k=thb/tk) %>%
+    filter(Season==2018)%>%
+    filter(Opposition != "Collingwood") %>%
+    ggplot(aes(x=Round,y=hb2k))+
+  geom_point(colour="grey", alpha=0.5)
+```
+
+Lastly we then add in the Collingwood data and make it black `geom_point(data=df3,colour="black")` so it stands out a bit more from our faded grey earlier for the rest of the competition. 
+
+```{r, eval=FALSE}
+df2%>%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+    group_by(Season, Round, Team, Opposition, Date)%>%
+    summarise(tk=sum(K), thb=sum(HB)) %>%
+    mutate(hb2k=thb/tk) %>%
+    filter(Season==2018)%>%
+    filter(Opposition != "Collingwood") %>%
+    ggplot(aes(x=Round,y=hb2k))+
+    geom_point(colour="grey", alpha=0.5)+
+    geom_point(data=df3,colour="black")
+```
+
+
+
+

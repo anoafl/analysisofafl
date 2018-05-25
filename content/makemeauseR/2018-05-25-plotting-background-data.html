@@ -61,9 +61,12 @@ df2&lt;-rbind(df, df1) #stacks the datasets on top of each other
 ##  9   2010 Preliminary Final Colli~ Geelong    2010-09-17   228   101 0.443
 ## 10   2010 Preliminary Final Geelo~ Collingwo~ 2010-09-17   179   229 1.28 
 ## # ... with 3,382 more rows</code></pre>
-</div>
-<div id="step-2b---get-the-teams-yearly-average-for-the-straight-lines" class="section level1">
-<h1>Step 2b - Get the teams yearly average for the <a href="https://www.youtube.com/watch?v=47P3bzefCVI">straight lines</a></h1>
+<ul>
+<li>From <code>df2</code> we <code>select</code> the columns we want which are <code>Season</code>, <code>Round</code>, <code>K</code> (which is kicks), <code>HB</code> which is handballs, <code>Team</code> <code>Opposition</code> and <code>Date</code></li>
+<li>We then use <code>group_by</code> so we can <code>summarise</code> the total kicks <code>tk</code> and the total handballs <code>thb</code> by that a team has done vs a given oppostion (<code>Team, Opposition</code>) for a game (<code>Season, Round, Date</code>)</li>
+<li>As teams don’t play each other more than once per <code>Round</code> you would think <code>Date</code> would be redundant right? But no in 2010 we had a replay of a <a href="https://en.wikipedia.org/wiki/2010_AFL_Grand_Final">grand final</a></li>
+<li>lastly we create the variable we want using <code>mutate</code> <code>hb2k</code> which is the total handballs divided by the total kicks for a given game. . # Step 2b - Get the teams yearly average for the <a href="https://www.youtube.com/watch?v=47P3bzefCVI">straight lines</a></li>
+</ul>
 <pre class="r"><code>  df2%&gt;%
     select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
     group_by(Season, Round, Team, Opposition, Date)%&gt;%
@@ -94,6 +97,7 @@ df2&lt;-rbind(df, df1) #stacks the datasets on top of each other
 ## 16   2018 Sydney                  0.657
 ## 17   2018 West Coast              0.753
 ## 18   2018 Western Bulldogs        0.717</code></pre>
+<p>Remember we wanted to be able to reference for a given team what is their average handball to kick ratio conceded. One way to do this is to add a <a href="http://ggplot2.tidyverse.org/reference/geom_abline.html">reference line</a>. <em>To get the values for the reference line, we use <code>group_by(Season, Opposition)</code> which allows us then to summarise by <code>Season</code> for each <code>Opposition</code> team their average handball to kick ratio. <code>summarise(average_hb2k=mean(hb2k))</code>. </em> Then as we want a graph for 2018 we use <code>filter(Season==2018)</code> to achieve this. Which means we get the average values by <code>Oppostion</code> for 2018 only.</p>
 <div id="step-3---what-team-do-you-want-to-see" class="section level3">
 <h3>Step 3 - What team do you want to see?</h3>
 <p>For tonights game lets look at Collingwood vs the Western Bulldogs. Lets have a look at what the teams handball to kick ratio has been when playing Collingwood and what it has been when playing Western Bulldogs</p>
@@ -207,10 +211,41 @@ df2%&gt;%
     filter(Season==2018)%&gt;%
     filter(Opposition != &quot;Collingwood&quot;) %&gt;%
     ggplot(aes(x=Round,y=hb2k))+
-    geom_point(data=df3,colour=&quot;black&quot;)+
-    geom_point(colour=&quot;grey&quot;, alpha=0.5)</code></pre>
+  geom_point(colour=&quot;grey&quot;, alpha=0.5)+
+    geom_point(data=df3,colour=&quot;black&quot;)</code></pre>
 <p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>We can check our black points are the points we want simply by labelling them.</p>
+<p>So what are the steps involved in this?</p>
+<p>After reading the post, you can think of it as two parts * Part one - plot the data faded without the subdata you want to emphasize. * Part two - plot the subdata you want to emphasize and colour it differently to the rest to make it stand out.</p>
+<p>So to do this, first lets get the subdata we want which is Collingwoods handball to kick ratio conceded to teams. We call this subdataset <code>df3</code></p>
+<pre class="r"><code>df3&lt;-df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+    filter(Season==2018)%&gt;%
+    filter(Opposition == &quot;Collingwood&quot;)</code></pre>
+<p>Then we plot the full dataset without the Collingwood data, we then want to make this look faded we do this by colouring the points in grey <code>geom_point(colour=&quot;grey&quot;</code> and fading the points by using <code>, alpha=0.5)</code></p>
+<pre class="r"><code>df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+    filter(Season==2018)%&gt;%
+    filter(Opposition != &quot;Collingwood&quot;) %&gt;%
+    ggplot(aes(x=Round,y=hb2k))+
+  geom_point(colour=&quot;grey&quot;, alpha=0.5)</code></pre>
+<p>Lastly we then add in the Collingwood data and make it black <code>geom_point(data=df3,colour=&quot;black&quot;)</code> so it stands out a bit more from our faded grey earlier for the rest of the competition.</p>
+<pre class="r"><code>df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+    filter(Season==2018)%&gt;%
+    filter(Opposition != &quot;Collingwood&quot;) %&gt;%
+    ggplot(aes(x=Round,y=hb2k))+
+    geom_point(colour=&quot;grey&quot;, alpha=0.5)+
+    geom_point(data=df3,colour=&quot;black&quot;)</code></pre>
 <pre class="r"><code>df2%&gt;%
     select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
     group_by(Season, Round, Team, Opposition, Date)%&gt;%
@@ -220,21 +255,5 @@ df2%&gt;%
     filter(Opposition != &quot;Collingwood&quot;) %&gt;%
     ggplot(aes(x=Round, y=hb2k))+geom_point(data=df3)+
     geom_point(colour=&quot;grey&quot;) +geom_text(data=df3, aes(label=round(hb2k,2),hjust=-.2))</code></pre>
-<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p>Step 7 - Lets see some background data</p>
-<pre class="r"><code>df4&lt;-df2%&gt;%
-  select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
-  group_by(Season, Round, Team, Opposition, Date)%&gt;%
-  summarise(tk=sum(K), thb=sum(HB)) %&gt;%
-  mutate(hb2k=thb/tk) %&gt;%
-  filter(Season==2018)
-d_bg &lt;- df4[, -4]
-
-ggplot(df4, aes(x = thb, y = tk, colour=Opposition)) +
-  geom_point(data = d_bg, colour = &quot;grey&quot;, alpha = .5) +
-  geom_point() +
-  facet_wrap(~ Opposition)+
-  guides(colour = FALSE) +
-  theme_bw()</code></pre>
-<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>
