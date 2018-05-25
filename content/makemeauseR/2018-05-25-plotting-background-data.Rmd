@@ -294,4 +294,8 @@ df2%>%
   
 ```
 
-Ok so what is actually going on here Let me hopefully explain in a bit more depth.
+Ok so what is actually going on here?
+
+This post here has a great [explanation](https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer)
+
+

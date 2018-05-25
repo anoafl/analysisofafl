@@ -262,7 +262,9 @@ df2%&gt;%
     ggplot(aes(x=Round,y=hb2k))+
     geom_point(colour=&quot;grey&quot;, alpha=0.5)+
     geom_point(data=df3,colour=&quot;black&quot;)</code></pre>
-<p>That’s cool but how do you do the cool small multiple plots that had a bit more colour to it?</p>
+</div>
+<div id="thats-cool-but-how-do-you-do-the-cool-small-multiple-plots-that-had-a-bit-more-colour-to-it" class="section level1">
+<h1>That’s cool but how do you do the cool small multiple plots that had a bit more colour to it?</h1>
 <pre class="r"><code>  df4&lt;-df2%&gt;%
     select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
     group_by(Season, Round, Team, Opposition, Date)%&gt;%
