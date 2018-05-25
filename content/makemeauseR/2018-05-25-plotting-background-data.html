@@ -262,4 +262,22 @@ df2%&gt;%
     ggplot(aes(x=Round,y=hb2k))+
     geom_point(colour=&quot;grey&quot;, alpha=0.5)+
     geom_point(data=df3,colour=&quot;black&quot;)</code></pre>
+<p>That’s cool but how do you do the cool small multiple plots that had a bit more colour to it?</p>
+<pre class="r"><code>  df4&lt;-df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+    filter(Season==2018)
+  d_bg &lt;- df4[, -4]
+
+  ggplot(df4, aes(x = thb, y = tk, colour=Opposition)) +
+    geom_point(data=d_bg, colour = &quot;grey&quot;, alpha = .5)+
+    geom_point() + guides(colour = FALSE)+
+  
+    facet_wrap(~ Opposition)+
+    guides(colour = FALSE) +
+    theme_bw()</code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>Ok so what is actually going on here Let me hopefully explain in a bit more depth.</p>
 </div>
