@@ -215,8 +215,20 @@ df2%&gt;%
     geom_point(data=df3,colour=&quot;black&quot;)</code></pre>
 <p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>We can check our black points are the points we want simply by labelling them.</p>
-<p>So what are the steps involved in this?</p>
-<p>After reading the post, you can think of it as two parts * Part one - plot the data faded without the subdata you want to emphasize. * Part two - plot the subdata you want to emphasize and colour it differently to the rest to make it stand out.</p>
+<pre class="r"><code>df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+    filter(Season==2018)%&gt;%
+    filter(Opposition != &quot;Collingwood&quot;) %&gt;%
+    ggplot(aes(x=Round, y=hb2k))+geom_point(data=df3)+
+    geom_point(colour=&quot;grey&quot;) +geom_text(data=df3, aes(label=round(hb2k,2),hjust=-0.2))</code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-9-1.png" width="672" /> We use <code>geom_text(data=df3,aes(label=round(hb2k,2),hjust=-.2))</code> to label our data, what this does is takes the Collingwood only subdataset <code>data=df3</code> and we label it by the corresponding <code>hb2k</code> variable we created earlier. We also round the numbers so it doesn’t look too messy to 2 decimals places using <code>round(hb2k, 2)</code> and we move the label to slightly right of the actual data point using <code>hjust=-0.2</code></p>
+</div>
+<div id="so-what-are-the-steps-involved-in-this" class="section level1">
+<h1>So what are the steps involved in this?</h1>
+<p>After reading the <a href="https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&amp;utm_medium=social&amp;utm_source=twitter.com&amp;utm_campaign=buffer">post</a>, you can think of it as two parts * Part one - plot the data faded without the subdata you want to emphasize. * Part two - plot the subdata you want to emphasize and colour it differently to the rest to make it stand out.</p>
 <p>So to do this, first lets get the subdata we want which is Collingwoods handball to kick ratio conceded to teams. We call this subdataset <code>df3</code></p>
 <pre class="r"><code>df3&lt;-df2%&gt;%
     select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
@@ -246,14 +258,4 @@ df2%&gt;%
     ggplot(aes(x=Round,y=hb2k))+
     geom_point(colour=&quot;grey&quot;, alpha=0.5)+
     geom_point(data=df3,colour=&quot;black&quot;)</code></pre>
-<pre class="r"><code>df2%&gt;%
-    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
-    group_by(Season, Round, Team, Opposition, Date)%&gt;%
-    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
-    mutate(hb2k=thb/tk) %&gt;%
-    filter(Season==2018)%&gt;%
-    filter(Opposition != &quot;Collingwood&quot;) %&gt;%
-    ggplot(aes(x=Round, y=hb2k))+geom_point(data=df3)+
-    geom_point(colour=&quot;grey&quot;) +geom_text(data=df3, aes(label=round(hb2k,2),hjust=-.2))</code></pre>
-<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>

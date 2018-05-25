@@ -222,7 +222,9 @@ We use `geom_text(data=df3,aes(label=round(hb2k,2),hjust=-.2))` to label our dat
 # So what are the steps involved in this? 
 
 After reading the [post](https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer), you can think of it as two parts
+
 * Part one - plot the data faded without the subdata you want to emphasize. 
+
 * Part two - plot the subdata you want to emphasize and colour it differently to the rest to make it stand out. 
 
 
