@@ -247,3 +247,117 @@ df2%>%
   # geom_text(aes(label=ifelse(Player %in% c("Jeremy McGovern", "Alex Rance"), 
                              # Player, ""),vjust=-1))+facet_wrap(~Season)
 ) +facet_wrap(~Season)
+
+
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+df1<-fitzRoy::get_footywire_stats(9514:9594)
+
+df<-df%>%filter(Season != 2018)
+df2<-rbind(df, df1)
+
+  df2%>%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+    group_by(Season, Round, Team, Opposition, Date)%>%
+    summarise(tk=sum(K), thb=sum(HB)) %>%
+    mutate(hb2k=thb/tk) %>%
+    filter(Season==2018)%>%
+    filter(Opposition=="West Coast")%>%
+    ggplot(aes(x=Date, y=hb2k)) +geom_point() +
+     geom_text(aes(label=Team), size=2) + 
+    geom_hline(yintercept=0.753)
+    
+  
+  facet_wrap(~Opposition)
+
+
+    
+    df3<-df2%>%
+      select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+      group_by(Season, Round, Team, Opposition, Date)%>%
+      summarise(tk=sum(K), thb=sum(HB)) %>%
+      mutate(hb2k=thb/tk) %>%
+      filter(Season==2018)%>%
+      filter(Opposition == "West Coast")       
+    
+    
+        
+    df2%>%
+      select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+      group_by(Season, Round, Team, Opposition, Date)%>%
+      summarise(tk=sum(K), thb=sum(HB)) %>%
+      mutate(hb2k=thb/tk) %>%
+      filter(Season==2018)%>%
+      filter(Opposition != "West Coast") %>%
+      ggplot(aes(x=Round, y=hb2k))+geom_point(data=df3)+
+      geom_point(aes(colour="red"))
+
+df3<-df2%>%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+    group_by(Season, Round, Team, Opposition, Date)%>%
+    summarise(tk=sum(K), thb=sum(HB)) %>%
+    mutate(hb2k=thb/tk) %>%
+    filter(Season==2018)%>%
+    filter(Opposition == "West Coast")       
+
+
+#######################
+
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+df1<-fitzRoy::get_footywire_stats(9514:9593)
+
+df<-df%>%filter(Season != 2018)
+df<-df%>%
+  filter(Season != 2018) #filters out the 2018 data (incomeplete that was downloaded when installing fitzRoy for first time) 
+df2<-rbind(df, df1) #stacks the datasets on top of each other
+
+df2%>%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+  group_by(Season, Round, Team, Opposition, Date)%>%
+  summarise(tk=sum(K), thb=sum(HB)) %>%
+  mutate(hb2k=thb/tk) %>%
+  group_by(Season, Opposition) %>%
+  summarise(average_hb2k=mean(hb2k)) %>%
+  filter(Season==2018)
+
+
+df2%>%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+  group_by(Season, Round, Team, Opposition, Date)%>%
+  summarise(tk=sum(K), thb=sum(HB)) %>%
+  mutate(hb2k=thb/tk) %>%
+  filter(Season==2018)%>%
+  filter(Team=="West Coast")%>%
+  ggplot(aes(x=Date, y=hb2k)) +geom_point() +
+  geom_text(aes(label=Opposition), size=2) + 
+  geom_hline(yintercept=0.753)
+
+
+df2%>%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+  group_by(Season, Round, Team, Opposition, Date)%>%
+  summarise(tk=sum(K), thb=sum(HB)) %>%
+  mutate(hb2k=thb/tk) %>%
+  group_by(Season, Team) %>%
+  summarise(average_hb2k=mean(hb2k)) %>%
+  filter(Season==2018)
+
+df2%>%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %>%
+  group_by(Season, Round, Team, Opposition, Date)%>%
+  summarise(tk=sum(K), thb=sum(HB)) %>%
+  mutate(hb2k=thb/tk) %>%
+  filter(Season==2018)%>%
+  filter(Team=="West Coast")%>%
+  ggplot(aes(x=Date, y=hb2k)) +geom_point() +
+  geom_text(aes(label=Opposition), size=2) + 
+  geom_hline(yintercept=0.753)
+
+

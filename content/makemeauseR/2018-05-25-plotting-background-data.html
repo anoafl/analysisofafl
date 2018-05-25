@@ -1,0 +1,225 @@
+---
+title : "Plotting Background Data"
+description : ""
+author : "Robert Nguyen"
+date : 2018-05-25
+tags : ["fitzRoy", "graphics","R","open science","statistics"]
+
+---
+
+
+
+<p>One of the best things about the online R community is there are lots and lots of great people to follow online especially. One person I follow <a href="https://twitter.com/dataandme">dataandme</a> consistently links great how to do things on R tutorials.</p>
+<p>Recently I saw this <a href="https://twitter.com/dataandme/status/997297983472402437">post</a> where she linked a post by <a href="https://twitter.com/drsimonj">drsimonj</a> running through how to plot background data in R. My first thought as when reading most data viz things is can I do this with footy?</p>
+<div id="step-1---figuring-out-what-i-want-to-visualise" class="section level1">
+<h1>Step 1 - Figuring out what I want to visualise</h1>
+<p>Luckily I received this message recently and thought that this would be a pretty good application of visualising background data.</p>
+<blockquote>
+<p>I’m interested in seeing the way the opposition style affects a teams handball vs kick disposals. So for last x seasons, what was each teams unconditional average handball/kicks ratio. Then look at each game based on the opponent, and summarise the average incremental effect that each opposition team has on handballs/kicks. So 16 numbers where positive means they allow more handballs to kicks than league avg.</p>
+</blockquote>
+<p>What I think its handy to do, is to draw using a bit of pen and paper what you think you want the graph to look like.</p>
+</div>
+<div id="step-2a---get-the-data-for-each-team-by-round" class="section level1">
+<h1>Step 2a - Get the data for each team by round</h1>
+<p>First thing we do is we get the datasets, and then we create the variable we want (<code>hb2k</code>) which is our handball to kick ratio for a team.</p>
+<pre class="r"><code>library(fitzRoy)
+library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ----------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
+## v tibble  1.4.2     v dplyr   0.7.4
+## v tidyr   0.8.0     v stringr 1.3.0
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts -------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>df&lt;-fitzRoy::player_stats
+
+df1&lt;-fitzRoy::get_footywire_stats(9514:9594) #gets 2018 data until end of round 9</code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre class="r"><code>df&lt;-df%&gt;%
+      filter(Season != 2018) #filters out the 2018 data (incomeplete that was downloaded when installing fitzRoy for first time) 
+df2&lt;-rbind(df, df1) #stacks the datasets on top of each other
+
+  df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk)</code></pre>
+<pre><code>## # A tibble: 3,392 x 8
+## # Groups:   Season, Round, Team, Opposition [3,390]
+##    Season Round             Team   Opposition Date          tk   thb  hb2k
+##     &lt;dbl&gt; &lt;chr&gt;             &lt;chr&gt;  &lt;chr&gt;      &lt;date&gt;     &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
+##  1   2010 Elimination Final Carlt~ Sydney     2010-09-05   191   128 0.670
+##  2   2010 Elimination Final Frema~ Hawthorn   2010-09-04   216   113 0.523
+##  3   2010 Elimination Final Hawth~ Fremantle  2010-09-04   197   148 0.751
+##  4   2010 Elimination Final Sydney Carlton    2010-09-05   173   177 1.02 
+##  5   2010 Grand Final       Colli~ St Kilda   2010-09-25   198   128 0.646
+##  6   2010 Grand Final       Colli~ St Kilda   2010-10-02   250   129 0.516
+##  7   2010 Grand Final       St Ki~ Collingwo~ 2010-09-25   193   145 0.751
+##  8   2010 Grand Final       St Ki~ Collingwo~ 2010-10-02   178   148 0.831
+##  9   2010 Preliminary Final Colli~ Geelong    2010-09-17   228   101 0.443
+## 10   2010 Preliminary Final Geelo~ Collingwo~ 2010-09-17   179   229 1.28 
+## # ... with 3,382 more rows</code></pre>
+</div>
+<div id="step-2b---get-the-teams-yearly-average-for-the-straight-lines" class="section level1">
+<h1>Step 2b - Get the teams yearly average for the <a href="https://www.youtube.com/watch?v=47P3bzefCVI">straight lines</a></h1>
+<pre class="r"><code>  df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+  group_by(Season, Opposition) %&gt;%
+  summarise(average_hb2k=mean(hb2k)) %&gt;%
+  filter(Season==2018)</code></pre>
+<pre><code>## # A tibble: 18 x 3
+## # Groups:   Season [1]
+##    Season Opposition       average_hb2k
+##     &lt;dbl&gt; &lt;chr&gt;                   &lt;dbl&gt;
+##  1   2018 Adelaide                0.763
+##  2   2018 Brisbane                0.810
+##  3   2018 Carlton                 0.745
+##  4   2018 Collingwood             0.795
+##  5   2018 Essendon                0.788
+##  6   2018 Fremantle               0.729
+##  7   2018 Geelong                 0.701
+##  8   2018 Gold Coast              0.721
+##  9   2018 GWS                     0.760
+## 10   2018 Hawthorn                0.824
+## 11   2018 Melbourne               0.836
+## 12   2018 North Melbourne         0.741
+## 13   2018 Port Adelaide           0.718
+## 14   2018 Richmond                0.801
+## 15   2018 St Kilda                0.767
+## 16   2018 Sydney                  0.657
+## 17   2018 West Coast              0.753
+## 18   2018 Western Bulldogs        0.717</code></pre>
+<div id="step-3---what-team-do-you-want-to-see" class="section level3">
+<h3>Step 3 - What team do you want to see?</h3>
+<p>For tonights game lets look at Collingwood vs the Western Bulldogs. Lets have a look at what the teams handball to kick ratio has been when playing Collingwood and what it has been when playing Western Bulldogs</p>
+<pre class="r"><code>df2%&gt;%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+  group_by(Season, Round, Team, Opposition, Date)%&gt;%
+  summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+  mutate(hb2k=thb/tk) %&gt;%
+  filter(Season==2018)%&gt;%
+  filter(Opposition==&quot;Collingwood&quot;)%&gt;%
+  ggplot(aes(x=Date, y=hb2k)) +geom_point() +
+  geom_text(aes(label=Team), size=2) </code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Our first check is that the teams that are playing the pies are in the right order. We can do this using <code>geom_text(aes(label=Team))</code>. We can check the <a href="ttps://www.footywire.com/afl/footy/tg-collingwood-magpies">pies footywire page</a> and see that they do play hawks round 1</p>
+<p>Our next check is that the datapoints are correct, we can check this by just adding a data label.</p>
+<pre class="r"><code>df2%&gt;%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+  group_by(Season, Round, Team, Opposition, Date)%&gt;%
+  summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+  mutate(hb2k=thb/tk) %&gt;%
+  filter(Season==2018)%&gt;%
+  filter(Opposition==&quot;Collingwood&quot;)%&gt;%
+  ggplot(aes(x=Date, y=hb2k)) +geom_point() +
+  geom_text(aes(label=Team), size=2) +
+  geom_text(aes(label=hb2k), vjust=-1, size=1.5)</code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>We check if Hawthorns handball to kick ratio vs the pies in round 1 was <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9519">0.7866</a>.</p>
+</div>
+</div>
+<div id="step-4-get-the-competitions-yearly-average-handball-to-kick-ratio" class="section level1">
+<h1>Step 4 Get the Competitions yearly average handball to kick ratio</h1>
+<pre class="r"><code>df2%&gt;%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+  group_by(Season, Round, Team, Opposition, Date)%&gt;%
+  summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+  mutate(hb2k=thb/tk) %&gt;%
+  group_by(Season)%&gt;%
+  summarise(meanhb2k=mean(hb2k))</code></pre>
+<pre><code>## # A tibble: 9 x 2
+##   Season meanhb2k
+##    &lt;dbl&gt;    &lt;dbl&gt;
+## 1   2010    0.845
+## 2   2011    0.761
+## 3   2012    0.739
+## 4   2013    0.737
+## 5   2014    0.774
+## 6   2015    0.788
+## 7   2016    0.834
+## 8   2017    0.820
+## 9   2018    0.757</code></pre>
+<p>From here we can see that the average handball to kick ratio for 2018 so far is 0.757.</p>
+</div>
+<div id="step-5---putting-it-all-together-for-one-team" class="section level1">
+<h1>Step 5 - Putting it all together for one team</h1>
+<pre class="r"><code>df2%&gt;%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+  group_by(Season, Round, Team, Opposition, Date)%&gt;%
+  summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+  mutate(hb2k=thb/tk) %&gt;%
+  filter(Season==2018)%&gt;%
+  filter(Opposition==&quot;Collingwood&quot;)%&gt;%
+  ggplot(aes(x=Date, y=hb2k)) +geom_point() +
+  geom_text(aes(label=Team), size=2) +
+  geom_hline(yintercept = 0.757) +ggtitle(&quot;Opponents handball 2 kick ratio vs Collingwood&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="step-6---compare-the-pair" class="section level1">
+<h1>Step 6 - Compare the pair</h1>
+<p>From above, we cacn see all we need to do is change “Collingwood” to “Western Bulldogs”</p>
+<pre class="r"><code>df2%&gt;%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+  group_by(Season, Round, Team, Opposition, Date)%&gt;%
+  summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+  mutate(hb2k=thb/tk) %&gt;%
+  filter(Season==2018)%&gt;%
+  filter(Opposition==&quot;Western Bulldogs&quot;)%&gt;%
+  ggplot(aes(x=Date, y=hb2k)) +geom_point() +
+  geom_text(aes(label=Team), size=2) +
+  geom_hline(yintercept = 0.757) +ggtitle(&quot;Opponents handball 2 kick ratio vs Western Bulldogs&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>df2%&gt;%
+  select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+  group_by(Season, Round, Team, Opposition, Date)%&gt;%
+  summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+  mutate(hb2k=thb/tk) %&gt;%
+  filter(Season==2018)%&gt;%
+  filter(Opposition==&quot;Collingwood&quot;)%&gt;%
+  ggplot(aes(x=Date, y=hb2k)) +geom_point() +
+  geom_text(aes(label=Team), size=2) +
+  geom_hline(yintercept = 0.757) +ggtitle(&quot;Opponents handball 2 kick ratio vs Collingwood&quot;)</code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+</div>
+<div id="step-7---but-what-about-the-background-stuff" class="section level1">
+<h1>Step 7 - But what about the background stuff?</h1>
+<p>First lets do Collingwood, I’m thinking lets see a similar plot, but lets change <code>Date</code> to <code>Round</code> as games are on different days of the week and lets make Collingwood a different colour to the rest of the competition.</p>
+<pre class="r"><code>df3&lt;-df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+    filter(Season==2018)%&gt;%
+    filter(Opposition == &quot;Collingwood&quot;)
+
+
+
+df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+    filter(Season==2018)%&gt;%
+    filter(Opposition != &quot;Collingwood&quot;) %&gt;%
+    ggplot(aes(x=Round,y=hb2k))+
+    geom_point(data=df3,colour=&quot;black&quot;)+
+    geom_point(colour=&quot;grey&quot;, alpha=0.5)</code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>We can check our black points are the points we want simply by labelling them.</p>
+<pre class="r"><code>df2%&gt;%
+    select(Season, Round, K,HB, Team, Opposition, Date ) %&gt;%
+    group_by(Season, Round, Team, Opposition, Date)%&gt;%
+    summarise(tk=sum(K), thb=sum(HB)) %&gt;%
+    mutate(hb2k=thb/tk) %&gt;%
+    filter(Season==2018)%&gt;%
+    filter(Opposition != &quot;Collingwood&quot;) %&gt;%
+    ggplot(aes(x=Round, y=hb2k))+geom_point(data=df3)+
+    geom_point(colour=&quot;grey&quot;) +geom_text(data=df3, aes(label=round(hb2k,2),hjust=-.2))</code></pre>
+<p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>```</p>
+</div>
