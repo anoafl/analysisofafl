@@ -311,7 +311,7 @@ library(tidyverse)
 
 df<-fitzRoy::player_stats
 
-df1<-fitzRoy::get_footywire_stats(9514:9593)
+df1<-fitzRoy::get_footywire_stats(9514:9594)
 
 df<-df%>%filter(Season != 2018)
 df<-df%>%
@@ -355,9 +355,9 @@ df2%>%
   summarise(tk=sum(K), thb=sum(HB)) %>%
   mutate(hb2k=thb/tk) %>%
   filter(Season==2018)%>%
-  filter(Team=="West Coast")%>%
+  filter(Team=="Collingwood")%>%
   ggplot(aes(x=Date, y=hb2k)) +geom_point() +
-  geom_text(aes(label=Opposition), size=2) + 
-  geom_hline(yintercept=0.753)
+  geom_text(aes(label=hb2k), size=2) + 
+  geom_hline(yintercept=0.829)
 
 

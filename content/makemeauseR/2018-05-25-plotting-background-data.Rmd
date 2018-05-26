@@ -286,7 +286,7 @@ df2%>%
 
   ggplot(df4, aes(x = thb, y = tk, colour=Opposition)) +
     geom_point(data=d_bg, colour = "grey", alpha = .5)+
-    geom_point() + guides(colour = FALSE)+
+    geom_point() + guides(colour = FALSE)+ geom_text(aes(label=Team), size=1.5)+
   
     facet_wrap(~ Opposition)+
     guides(colour = FALSE) +
@@ -296,6 +296,9 @@ df2%>%
 
 Ok so what is actually going on here?
 
-This post here has a great [explanation](https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer)
+This post here has a great [explanation](https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer) and is by far better than anything I could do myself so please read it!
+
+
+
 
 

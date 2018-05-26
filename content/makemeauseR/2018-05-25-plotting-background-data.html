@@ -275,7 +275,7 @@ df2%&gt;%
 
   ggplot(df4, aes(x = thb, y = tk, colour=Opposition)) +
     geom_point(data=d_bg, colour = &quot;grey&quot;, alpha = .5)+
-    geom_point() + guides(colour = FALSE)+
+    geom_point() + guides(colour = FALSE)+ geom_text(aes(label=Team), size=1.5)+
   
     facet_wrap(~ Opposition)+
     guides(colour = FALSE) +
