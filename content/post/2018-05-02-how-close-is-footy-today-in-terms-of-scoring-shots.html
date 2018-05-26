@@ -39,14 +39,14 @@ bg3 &lt;- read.fwf(
 <pre><code>## # A tibble: 6 x 7
 ##      V1 V2              V3           V4        V5        V6       V7      
 ##   &lt;dbl&gt; &lt;fct&gt;           &lt;fct&gt;        &lt;fct&gt;     &lt;fct&gt;     &lt;fct&gt;    &lt;fct&gt;   
-## 1    1. &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Fitzroy~ &quot;6.13.49~ &quot;Carlto~ &quot;2.4.16~
-## 2    2. &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Colling~ &quot;5.11.41~ &quot;St Kil~ &quot;2.4.16~
-## 3    3. &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Geelong~ &quot;3.6.24 ~ &quot;Essend~ &quot;7.5.47~
-## 4    4. &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;South M~ &quot;3.9.27 ~ &quot;Melbou~ &quot;6.8.44~
-## 5    5. &quot; 15-May-1897 &quot; &quot;     R2   &quot; &quot;South M~ &quot;6.4.40 ~ &quot;Carlto~ &quot;5.6.36~
-## 6    6. &quot; 15-May-1897 &quot; &quot;     R2   &quot; &quot;Essendo~ &quot;4.6.30 ~ &quot;Collin~ &quot;8.2.50~</code></pre>
+## 1     1 &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Fitzroy~ &quot;6.13.49~ &quot;Carlto~ &quot;2.4.16~
+## 2     2 &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Colling~ &quot;5.11.41~ &quot;St Kil~ &quot;2.4.16~
+## 3     3 &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Geelong~ &quot;3.6.24 ~ &quot;Essend~ &quot;7.5.47~
+## 4     4 &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;South M~ &quot;3.9.27 ~ &quot;Melbou~ &quot;6.8.44~
+## 5     5 &quot; 15-May-1897 &quot; &quot;     R2   &quot; &quot;South M~ &quot;6.4.40 ~ &quot;Carlto~ &quot;5.6.36~
+## 6     6 &quot; 15-May-1897 &quot; &quot;     R2   &quot; &quot;Essendo~ &quot;4.6.30 ~ &quot;Collin~ &quot;8.2.50~</code></pre>
 <pre class="r"><code>glimpse(bg3)</code></pre>
-<pre><code>## Observations: 15,254
+<pre><code>## Observations: 15,281
 ## Variables: 7
 ## $ V1 &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, ...
 ## $ V2 &lt;fct&gt;  8-May-1897  ,  8-May-1897  ,  8-May-1897  ,  8-May-1897  ,...
@@ -56,9 +56,9 @@ bg3 &lt;- read.fwf(
 ## $ V6 &lt;fct&gt; Carlton           , St Kilda          , Essendon          ,...
 ## $ V7 &lt;fct&gt; 2.4.16            , 2.4.16            , 7.5.47            ,...</code></pre>
 <pre class="r"><code>str(bg3)</code></pre>
-<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    15254 obs. of  7 variables:
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    15281 obs. of  7 variables:
 ##  $ V1: num  1 2 3 4 5 6 7 8 9 10 ...
-##  $ V2: Factor w/ 4672 levels &quot; 1-Apr-1972  &quot;,..: 4458 4458 4458 4458 1010 1010 1010 1010 2192 2192 ...
+##  $ V2: Factor w/ 4681 levels &quot; 1-Apr-1972  &quot;,..: 4467 4467 4467 4467 1013 1013 1013 1013 2198 2198 ...
 ##  $ V3: Factor w/ 29 levels &quot;     EF   &quot;,&quot;     GF   &quot;,..: 5 5 5 5 16 16 16 16 22 22 ...
 ##  $ V4: Factor w/ 24 levels &quot;Adelaide          &quot;,..: 7 5 10 19 19 6 20 15 5 7 ...
 ##  $ V5: Factor w/ 675 levels &quot;0.18.18          &quot;,..: 579 554 504 507 592 548 506 650 593 575 ...
@@ -71,14 +71,14 @@ head(bg3)</code></pre>
 <pre><code>## # A tibble: 6 x 7
 ##      V1 V2         V3           V4                   V5      V6     V7    
 ##   &lt;dbl&gt; &lt;date&gt;     &lt;fct&gt;        &lt;fct&gt;                &lt;fct&gt;   &lt;fct&gt;  &lt;fct&gt; 
-## 1    1. 1897-05-08 &quot;     R1   &quot; &quot;Fitzroy           &quot; &quot;6.13.~ &quot;Carl~ &quot;2.4.~
-## 2    2. 1897-05-08 &quot;     R1   &quot; &quot;Collingwood       &quot; &quot;5.11.~ &quot;St K~ &quot;2.4.~
-## 3    3. 1897-05-08 &quot;     R1   &quot; &quot;Geelong           &quot; &quot;3.6.2~ &quot;Esse~ &quot;7.5.~
-## 4    4. 1897-05-08 &quot;     R1   &quot; &quot;South Melbourne   &quot; &quot;3.9.2~ &quot;Melb~ &quot;6.8.~
-## 5    5. 1897-05-15 &quot;     R2   &quot; &quot;South Melbourne   &quot; &quot;6.4.4~ &quot;Carl~ &quot;5.6.~
-## 6    6. 1897-05-15 &quot;     R2   &quot; &quot;Essendon          &quot; &quot;4.6.3~ &quot;Coll~ &quot;8.2.~</code></pre>
+## 1     1 1897-05-08 &quot;     R1   &quot; &quot;Fitzroy           &quot; &quot;6.13.~ &quot;Carl~ &quot;2.4.~
+## 2     2 1897-05-08 &quot;     R1   &quot; &quot;Collingwood       &quot; &quot;5.11.~ &quot;St K~ &quot;2.4.~
+## 3     3 1897-05-08 &quot;     R1   &quot; &quot;Geelong           &quot; &quot;3.6.2~ &quot;Esse~ &quot;7.5.~
+## 4     4 1897-05-08 &quot;     R1   &quot; &quot;South Melbourne   &quot; &quot;3.9.2~ &quot;Melb~ &quot;6.8.~
+## 5     5 1897-05-15 &quot;     R2   &quot; &quot;South Melbourne   &quot; &quot;6.4.4~ &quot;Carl~ &quot;5.6.~
+## 6     6 1897-05-15 &quot;     R2   &quot; &quot;Essendon          &quot; &quot;4.6.3~ &quot;Coll~ &quot;8.2.~</code></pre>
 <pre class="r"><code>glimpse(bg3)</code></pre>
-<pre><code>## Observations: 15,254
+<pre><code>## Observations: 15,281
 ## Variables: 7
 ## $ V1 &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, ...
 ## $ V2 &lt;date&gt; 1897-05-08, 1897-05-08, 1897-05-08, 1897-05-08, 1897-05-15...
@@ -88,7 +88,7 @@ head(bg3)</code></pre>
 ## $ V6 &lt;fct&gt; Carlton           , St Kilda          , Essendon          ,...
 ## $ V7 &lt;fct&gt; 2.4.16            , 2.4.16            , 7.5.47            ,...</code></pre>
 <pre class="r"><code>str(bg3)</code></pre>
-<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    15254 obs. of  7 variables:
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    15281 obs. of  7 variables:
 ##  $ V1: num  1 2 3 4 5 6 7 8 9 10 ...
 ##  $ V2: Date, format: &quot;1897-05-08&quot; &quot;1897-05-08&quot; ...
 ##  $ V3: Factor w/ 29 levels &quot;     EF   &quot;,&quot;     GF   &quot;,..: 5 5 5 5 16 16 16 16 22 22 ...
@@ -105,17 +105,17 @@ head(afl.games)</code></pre>
 <pre><code>## # A tibble: 6 x 11
 ##      V1 V2         V3     V4      `Home Goals` `Home Behinds` `Home Score`
 ##   &lt;dbl&gt; &lt;date&gt;     &lt;fct&gt;  &lt;fct&gt;   &lt;chr&gt;        &lt;chr&gt;          &lt;chr&gt;       
-## 1    1. 1897-05-08 &quot;    ~ &quot;Fitzr~ 6            13             &quot;49        ~
-## 2    2. 1897-05-08 &quot;    ~ &quot;Colli~ 5            11             &quot;41        ~
-## 3    3. 1897-05-08 &quot;    ~ &quot;Geelo~ 3            6              &quot;24        ~
-## 4    4. 1897-05-08 &quot;    ~ &quot;South~ 3            9              &quot;27        ~
-## 5    5. 1897-05-15 &quot;    ~ &quot;South~ 6            4              &quot;40        ~
-## 6    6. 1897-05-15 &quot;    ~ &quot;Essen~ 4            6              &quot;30        ~
+## 1     1 1897-05-08 &quot;    ~ &quot;Fitzr~ 6            13             &quot;49        ~
+## 2     2 1897-05-08 &quot;    ~ &quot;Colli~ 5            11             &quot;41        ~
+## 3     3 1897-05-08 &quot;    ~ &quot;Geelo~ 3            6              &quot;24        ~
+## 4     4 1897-05-08 &quot;    ~ &quot;South~ 3            9              &quot;27        ~
+## 5     5 1897-05-15 &quot;    ~ &quot;South~ 6            4              &quot;40        ~
+## 6     6 1897-05-15 &quot;    ~ &quot;Essen~ 4            6              &quot;30        ~
 ## # ... with 4 more variables: V6 &lt;fct&gt;, `Away Goals` &lt;chr&gt;, `Away
 ## #   Behinds` &lt;chr&gt;, `Away Score` &lt;chr&gt;</code></pre>
 <pre class="r"><code>afl.games&lt;-cbind(afl.games,season=year(afl.games$V2))
 glimpse(afl.games)</code></pre>
-<pre><code>## Observations: 15,254
+<pre><code>## Observations: 15,281
 ## Variables: 12
 ## $ V1             &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, ...
 ## $ V2             &lt;date&gt; 1897-05-08, 1897-05-08, 1897-05-08, 1897-05-08...
@@ -130,7 +130,7 @@ glimpse(afl.games)</code></pre>
 ## $ `Away Score`   &lt;chr&gt; &quot;16            &quot;, &quot;16            &quot;, &quot;47        ...
 ## $ season         &lt;dbl&gt; 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897,...</code></pre>
 <pre class="r"><code>str(afl.games)</code></pre>
-<pre><code>## &#39;data.frame&#39;:    15254 obs. of  12 variables:
+<pre><code>## &#39;data.frame&#39;:    15281 obs. of  12 variables:
 ##  $ V1          : num  1 2 3 4 5 6 7 8 9 10 ...
 ##  $ V2          : Date, format: &quot;1897-05-08&quot; &quot;1897-05-08&quot; ...
 ##  $ V3          : Factor w/ 29 levels &quot;     EF   &quot;,&quot;     GF   &quot;,..: 5 5 5 5 16 16 16 16 22 22 ...
@@ -154,7 +154,7 @@ afl.games$`Away Behinds`&lt;-as.numeric(afl.games$`Away Behinds`)
 afl.games$`Away Score`&lt;-as.numeric(afl.games$`Away Score`)
 afl.games$margin&lt;-afl.games$`Home Score`-afl.games$`Away Score`
 glimpse(afl.games)</code></pre>
-<pre><code>## Observations: 15,254
+<pre><code>## Observations: 15,281
 ## Variables: 13
 ## $ V1             &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, ...
 ## $ V2             &lt;date&gt; 1897-05-08, 1897-05-08, 1897-05-08, 1897-05-08...
@@ -170,7 +170,7 @@ glimpse(afl.games)</code></pre>
 ## $ season         &lt;dbl&gt; 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897,...
 ## $ margin         &lt;dbl&gt; 33, 25, -23, -17, 4, -20, -40, 45, 4, -11, 37, ...</code></pre>
 <pre class="r"><code>str(afl.games)</code></pre>
-<pre><code>## &#39;data.frame&#39;:    15254 obs. of  13 variables:
+<pre><code>## &#39;data.frame&#39;:    15281 obs. of  13 variables:
 ##  $ V1          : num  1 2 3 4 5 6 7 8 9 10 ...
 ##  $ V2          : Date, format: &quot;1897-05-08&quot; &quot;1897-05-08&quot; ...
 ##  $ V3          : Factor w/ 29 levels &quot;     EF   &quot;,&quot;     GF   &quot;,..: 5 5 5 5 16 16 16 16 22 22 ...
@@ -253,7 +253,7 @@ head(games)</code></pre>
 ## 5   1897      R2    South Melbourne         -1
 ## 6   1897      R2    Essendon                 0</code></pre>
 <pre class="r"><code>glimpse(games)</code></pre>
-<pre><code>## Observations: 30,508
+<pre><code>## Observations: 30,562
 ## Variables: 4
 ## $ Season  &lt;dbl&gt; 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, ...
 ## $ Round   &lt;fct&gt;      R1   ,      R1   ,      R1   ,      R1   ,      R...
@@ -270,12 +270,12 @@ head(df1)</code></pre>
 ## # Groups:   Season [1]
 ##   Season Team                 total.ss.diff std.ss.diff average.ss.diff
 ##    &lt;dbl&gt; &lt;fct&gt;                        &lt;dbl&gt;       &lt;dbl&gt;           &lt;dbl&gt;
-## 1  1897. &quot;Carlton           &quot;         -126.        8.47          -9.00 
-## 2  1897. &quot;Collingwood       &quot;           14.        8.20           0.824
-## 3  1897. &quot;Essendon          &quot;           78.        9.02           4.59 
-## 4  1897. &quot;Fitzroy           &quot;           19.       10.2            1.36 
-## 5  1897. &quot;Geelong           &quot;          113.       10.1            6.65 
-## 6  1897. &quot;Melbourne         &quot;           38.        9.68           2.24</code></pre>
+## 1   1897 &quot;Carlton           &quot;          -126        8.47          -9    
+## 2   1897 &quot;Collingwood       &quot;            14        8.20           0.824
+## 3   1897 &quot;Essendon          &quot;            78        9.02           4.59 
+## 4   1897 &quot;Fitzroy           &quot;            19       10.2            1.36 
+## 5   1897 &quot;Geelong           &quot;           113       10.1            6.65 
+## 6   1897 &quot;Melbourne         &quot;            38        9.68           2.24</code></pre>
 <pre class="r"><code>glimpse(df1)</code></pre>
 <pre><code>## Observations: 1,496
 ## Variables: 5

@@ -24,12 +24,12 @@ tags : ["fitzRoy", "graphics","R","open science","statistics"]
 <p>First thing we do is we get the datasets, and then we create the variable we want (<code>hb2k</code>) which is our handball to kick ratio for a team.</p>
 <pre class="r"><code>library(fitzRoy)
 library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ----------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
 ## v tibble  1.4.2     v dplyr   0.7.4
 ## v tidyr   0.8.0     v stringr 1.3.0
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts -------------------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts ------------------------------------------------------------------ tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>df&lt;-fitzRoy::player_stats
@@ -282,5 +282,5 @@ df2%&gt;%
     theme_bw()</code></pre>
 <p><img src="/makemeauseR/2018-05-25-plotting-background-data_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 <p>Ok so what is actually going on here?</p>
-<p>This post here has a great <a href="https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&amp;utm_medium=social&amp;utm_source=twitter.com&amp;utm_campaign=buffer">explanation</a></p>
+<p>This post here has a great <a href="https://drsimonj.svbtle.com/plotting-background-data-for-groups-with-ggplot2?utm_content=buffer2b686&amp;utm_medium=social&amp;utm_source=twitter.com&amp;utm_campaign=buffer">explanation</a> and is by far better than anything I could do myself so please read it!</p>
 </div>
