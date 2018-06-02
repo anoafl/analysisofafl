@@ -103,7 +103,8 @@ df2%&gt;%filter(Player==&quot;Max Gawn&quot;  &amp; Opposition==&quot;Western Bu
 <pre class="r"><code>df1%&gt;%filter(Opposition==&quot;Western Bulldogs&quot;)%&gt;%
   filter(HO&gt;0)%&gt;%ggplot(aes(x=Date, y=SC))+
   geom_point()+
-  geom_text(aes(label=paste(Player,&quot;&quot; ,HO)))</code></pre>
+  geom_text(aes(label=paste(Player,&quot;&quot; ,HO)))+
+   theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
 <p><img src="/fitzRoy/2018-06-02-is-there-another-way-to-do-fantasy_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <pre class="r"><code>df1%&gt;%
   filter(HO&gt;0)%&gt;%
@@ -130,5 +131,8 @@ df2%&gt;%filter(Player==&quot;Max Gawn&quot;  &amp; Opposition==&quot;Western Bu
 <pre class="r"><code>df1%&gt;%filter(Player %in% c(&quot;Brodie Grundy&quot;,&quot;Max Gawn&quot;))%&gt;%
   ggplot(aes(x=Opposition, y=SC,colour=Player))+
   geom_point()+
-  geom_text(aes(label=paste(Player,&quot; &quot;,HO)))</code></pre>
+  geom_text(aes(label=paste(Player,&quot; &quot;,HO,&quot; &quot;,CM)))+
+   theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
 <p><img src="/fitzRoy/2018-06-02-is-there-another-way-to-do-fantasy_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>What we can see is that they have played the same team 8 times and out of those 8 times Gawn has had more supercoach points in 5 of those games.</p>
+<p>Max Gawns over/under as per tab pre game is 129.5 is there some value there?</p>
