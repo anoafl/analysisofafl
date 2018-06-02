@@ -66,7 +66,8 @@ Another way you might want to see the same graph is by putting the number of hit
 df1%>%filter(Opposition=="Western Bulldogs")%>%
   filter(HO>0)%>%ggplot(aes(x=Date, y=SC))+
   geom_point()+
-  geom_text(aes(label=paste(Player,"" ,HO)))
+  geom_text(aes(label=paste(Player,"" ,HO)))+
+   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
 
@@ -89,7 +90,8 @@ Well we could look at the 2018 data like so.
 df1%>%filter(Player %in% c("Brodie Grundy","Max Gawn"))%>%
   ggplot(aes(x=Opposition, y=SC,colour=Player))+
   geom_point()+
-  geom_text(aes(label=paste(Player," ",HO," ",CM)))
+  geom_text(aes(label=paste(Player," ",HO," ",CM)))+
+   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 
