@@ -89,7 +89,7 @@ Well we could look at the 2018 data like so.
 df1%>%filter(Player %in% c("Brodie Grundy","Max Gawn"))%>%
   ggplot(aes(x=Opposition, y=SC,colour=Player))+
   geom_point()+
-  geom_text(aes(label=paste(Player," ",HO)))
+  geom_text(aes(label=paste(Player," ",HO," ",CM)))
 ```
 
 
