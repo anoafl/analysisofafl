@@ -1,0 +1,58 @@
+---
+title : "Is There Another Way to Do Fantasy"
+description : ""
+author : ""
+date : 2018-06-01
+tags : ["fantasy"]
+
+---
+Apologies for the rushed nature of post
+Recently I saw this [post](https://twitter.com/Trooa/status/1001671331686043648) on twitter and it got me thinking is there another way?
+
+So lets run through the rough problems as outlined in this tweet. 
+
+* Numbers have context (suprising I know!)
+* What time period is best when looking at fantasy score history
+
+The general gist of the post is that Max Gawns numbers vs the bulldogs as outlined in the [fantasyfreko](https://twitter.com/FantasyFreako/status/1001668417148080134) post here are misleading because of the timeframe it looks at. 
+
+To do this using [fitzRoy] and the [tidyverse]
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+df1<-fitzRoy::get_footywire_stats(9514:9603)
+
+df<-df%>%filter(Season != 2018)
+df<-df%>%
+  filter(Season != 2018) #filters out the 2018 data (incomeplete that was downloaded when installing fitzRoy for first time) 
+df2<-rbind(df, df1) 
+
+df2%>%filter(Player=="Max Gawn"  & Opposition=="Western Bulldogs")
+```
+
+From there we can see that it is a bit misleading. As we are looking at games going back to 2013 and I do believe that Max Gawn is very different to todays Max Gawn.  Another thing was raised was that Max wasn't the first ruck. We can check this by looking at the matchIds and looking at just those games statistics we would do that like this. 
+
+```{r}
+df2%>%filter(Match_id %in% c("5662","5742","5880","6133","6242"))%>%filter(Team=="Melbourne")%>%filter(HO>0) %>%arrange(desc(HO))
+
+
+```
+Looking at that as an example we can see that in one of the games Fantasy Freako is referring to. Max was the second ruck behind Mark Jamar. So again pretty misleading. 
+
+Another idea, and this might be more topical is to look at a plot of how much fantasy points the Bulldogs give up to ruckman this year. 
+
+```{r}
+df1%>%filter(Opposition=="Western Bulldogs")%>%filter(HO>0)%>%ggplot(aes(x=Date, y=SC, label=Player))+geom_point()+geom_label()
+
+```
+
+What is the o/u for Max Gawn if you were a betting man?
+
+129.5 thoughts?
+
+
+

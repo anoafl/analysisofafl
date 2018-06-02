@@ -2,7 +2,7 @@
 
 library(tidyverse)
 
-df<-fitzRoy::get_footywire_stats(9514:9585)
+df<-fitzRoy::get_footywire_stats(9514:9602)
 df1<-fitzRoy::player_stats
 df3<-rbind(df1, df) 
 # head(df3)
@@ -174,9 +174,9 @@ df3$date<-ymd_hms(df3$date)
 df3%>%arrange(date)%>%
   filter(date>"2018-01-09")%>%
   filter(round<11)%>%
-  filter(TEAM %in% c("Richmond"))%>%
+  filter(TEAM %in% c("Essendon"))%>%
   ggplot(aes(y=covered, x=date,fill=venue))+geom_col() +
-  ggtitle("Richmond")   +
+  ggtitle("Essendon")   +
   theme_economist_white() +
   theme(plot.title  = element_text(size =12),
         axis.text = element_text(size = 6),
@@ -187,10 +187,10 @@ df3%>%arrange(date)%>%
 
 df3%>%arrange(date)%>%
   filter(date>"2018-01-09")%>%
-  filter(round<10)%>%
-  filter(TEAM=="Richmond")%>%
+  filter(round<11)%>%
+  filter(TEAM=="Essendon")%>%
   ggplot(aes(y=margin, x=date,fill=H_A))+geom_col() +
-  ggtitle("Richmond")   +
+  ggtitle("Essendon")   +
   theme_economist_white() +
   theme(plot.title  = element_text(size =12),
         axis.text = element_text(size = 6),
@@ -361,3 +361,30 @@ df2%>%
   geom_hline(yintercept=0.829)
 
 
+library(fitzRoy)
+df<-fitzRoy::get_match_results()
+
+ home<-select(df, Home.Team, Home.Points,Season)
+ away<-select(df, Away.Team, Away.Points,Season)
+ 
+ colnames(home)[colnames(home) == 'Home.Points'] <- 'Total'
+  colnames(home)[colnames(home) == 'Home.Team'] <- 'Team'
+  colnames(away)[colnames(away) == 'Away.Team'] <- 'Team'
+  colnames(away)[colnames(away) == 'Away.Team'] <- 'Team'
+  colnames(away)[colnames(away) == 'Away.Points'] <- 'Total'
+df1<-rbind(home,away)
+df1%>%
+  filter(Season>2015)%>%
+  group_by(Team, Season)%>%
+summarise(team.average=mean(Total))
+
+df2<-df1%>%
+  filter(Season>1999)%>%
+  group_by(Team,Season)%>%
+  summarise(team.average=mean(Total))
+
+
+var(scale(df2$team.average))
+mean(scale(df2$team.average))
+df3<-cbind(df2$Team,df2$Season, scale(df2$team.average))
+View(df3)
