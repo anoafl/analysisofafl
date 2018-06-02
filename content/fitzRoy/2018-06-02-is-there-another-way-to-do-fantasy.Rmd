@@ -3,9 +3,10 @@ title : "Is There Another Way to Do Fantasy"
 description : ""
 author : ""
 date : 2018-06-01
-tags : ["fantasy"]
+tags : ["fitzRoy", "graphics","R","fantasy","statistics"]
 
 ---
+
 Apologies for the rushed nature of post
 Recently I saw this [post](https://twitter.com/Trooa/status/1001671331686043648) on twitter and it got me thinking is there another way?
 
@@ -47,6 +48,16 @@ Another idea, and this might be more topical is to look at a plot of how much fa
 
 ```{r}
 df1%>%filter(Opposition=="Western Bulldogs")%>%filter(HO>0)%>%ggplot(aes(x=Date, y=SC, label=Player))+geom_point()+geom_label(size=3)
+
+```
+
+Another way you might want to see the same graph is by putting the number of hitouts in that game next to the player name. This is handy if you want to see who the dominate ruckman was.
+
+```{r}
+df1%>%filter(Opposition=="Western Bulldogs")%>%
+  filter(HO>0)%>%ggplot(aes(x=Date, y=SC))+
+  geom_point()+
+  geom_text(aes(label=paste(Player,"" ,HO)))
 
 ```
 
