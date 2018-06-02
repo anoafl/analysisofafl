@@ -83,4 +83,13 @@ Looking at this table we can see that the one other full time ruckman that score
 
 So the question is what teams do these two players gets lots of SC against?
 
+Well we could look at the 2018 data like so. 
+
+```{r}
+df1%>%filter(Player %in% c("Brodie Grundy","Max Gawn"))%>%
+  ggplot(aes(x=Opposition, y=SC,colour=Player))+
+  geom_point()+
+  geom_text(aes(label=paste(Player," ",HO)))
+```
+
 
