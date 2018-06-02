@@ -46,7 +46,7 @@ Looking at that as an example we can see that in one of the games Fantasy Freako
 Another idea, and this might be more topical is to look at a plot of how much fantasy points the Bulldogs give up to ruckman this year. 
 
 ```{r}
-df1%>%filter(Opposition=="Western Bulldogs")%>%filter(HO>0)%>%ggplot(aes(x=Date, y=SC, label=Player))+geom_point()+geom_label()
+df1%>%filter(Opposition=="Western Bulldogs")%>%filter(HO>0)%>%ggplot(aes(x=Date, y=SC, label=Player))+geom_point()+geom_label(size=3)
 
 ```
 
