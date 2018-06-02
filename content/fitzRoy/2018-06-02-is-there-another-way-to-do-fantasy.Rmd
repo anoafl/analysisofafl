@@ -96,4 +96,8 @@ df1%>%filter(Player %in% c("Brodie Grundy","Max Gawn"))%>%
 
 What we can see is that they have played the same team 8 times and out of those 8 times Gawn has had more supercoach points in 5 of those games. 
 
+Max Gawns over/under as per tab pre game is 129.5 is there some value there?
+
+
+
 
