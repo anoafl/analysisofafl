@@ -1,7 +1,7 @@
 ---
 title : "Is There Another Way to Do Fantasy"
 description : ""
-author : ""
+author : "Robert Nguyen"
 date : 2018-06-01
 tags : ["fitzRoy", "graphics","R","fantasy","statistics"]
 
@@ -38,16 +38,25 @@ df2%>%filter(Player=="Max Gawn"  & Opposition=="Western Bulldogs")
 From there we can see that it is a bit misleading. As we are looking at games going back to 2013 and I do believe that Max Gawn is very different to todays Max Gawn.  Another thing was raised was that Max wasn't the first ruck. We can check this by looking at the matchIds and looking at just those games statistics we would do that like this. 
 
 ```{r}
-df2%>%filter(Match_id %in% c("5662","5742","5880","6133","6242"))%>%filter(Team=="Melbourne")%>%filter(HO>0) %>%arrange(desc(HO))
+df2%>%filter(Match_id %in% c("5662","5742","5880","6133","6242"))%>%
+  filter(Team=="Melbourne")%>%
+  filter(HO>0) %>%
+  arrange(desc(HO))%>%
+  select(Date, Season, Round, Venue, Player, Team, HO)
 
 
 ```
-Looking at that as an example we can see that in one of the games Fantasy Freako is referring to. Max was the second ruck behind Mark Jamar. So again pretty misleading. 
+Looking at that as an example we can see that in one of the games Fantasy Freako is referring to, Max was the second ruck behind Mark Jamar. So again pretty misleading. 
 
 Another idea, and this might be more topical is to look at a plot of how much fantasy points the Bulldogs give up to ruckman this year. 
 
 ```{r}
-df1%>%filter(Opposition=="Western Bulldogs")%>%filter(HO>0)%>%ggplot(aes(x=Date, y=SC, label=Player))+geom_point()+geom_label(size=3)
+df1%>%
+  filter(Opposition=="Western Bulldogs")%>%
+  filter(HO>0)%>%
+  ggplot(aes(x=Date, y=SC, label=Player))+
+  geom_point()+
+  geom_label(size=3)
 
 ```
 
@@ -61,9 +70,17 @@ df1%>%filter(Opposition=="Western Bulldogs")%>%
 
 ```
 
-What is the o/u for Max Gawn if you were a betting man?
 
-129.5 thoughts?
+```{r}
+df1%>%
+  filter(HO>0)%>%
+  group_by(Player)%>%
+  summarise(averageSC=mean(SC))%>%
+  arrange(desc(averageSC))
 
+```
+Looking at this table we can see that the one other full time ruckman that scored lots of SC points vs the Bulldogs was Brodie Grundy and Max Gawn actually averages more SC points over Grundy. 
+
+So the question is what teams do these two players gets lots of SC against?
 
 
