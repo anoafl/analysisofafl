@@ -178,3 +178,8 @@ df4%>%
 ```
 
 Here we use `facet_wrap` exactly like we have been doing in [previous blog posts](https://analysisofafl.netlify.com/fitzroy/2018-05-18-visualisation-of-squiggle-tipsters/). We use the argument `scales="free"` so that each graph for each different variable can be on an appropriate scale. We are probably not interested in absolute changes i.e. if intercepts go from 3 to 4 that is seen different to if his Supercoach score goes from 123 to 124
+
+So what is missing here is that for when we are doing the dotplots is that we want our variables to be on the same scale. 
+
+To think about this a bit more clearly, lets come up with another example for comparision. 
+
