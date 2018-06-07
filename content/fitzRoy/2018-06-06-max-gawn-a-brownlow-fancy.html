@@ -168,3 +168,51 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
 <p>So what is missing here is that for when we are doing the dotplots is that we want our variables to be on the same scale.</p>
 <p>To think about this a bit more clearly, lets come up with another example for comparision.</p>
 </div>
+<div id="a-better-example-of-cleveland-dot-plots" class="section level1">
+<h1>A better example of cleveland dot plots</h1>
+<p>When looking at the example plot <img src="/img/unnamed-chunk-10-1.png" alt="Cleveland Dot Plot Example." /></p>
+<p>When looking at example plots like the one above, I like to think about it in terms of how can I do the same thing but for footy and how would my variables/values/observations change.</p>
+<p>So if I wanted to do the same plot but for footy ruckman, I would change the city axis to be ruckman, the gender variable to be years I want to compare and to be measured on the same values I would use say SC scores.</p>
+<p>So lets get the top 10 ruckman in 2016 and see how they stack up their versions of themselves today.</p>
+<pre class="r"><code>df2%&gt;%
+  filter(Season==2016)%&gt;%
+  filter(HO&gt;15)%&gt;%
+  group_by(Player)%&gt;%
+  summarise(ave.SC=mean(SC))%&gt;%
+  arrange(desc(ave.SC))</code></pre>
+<pre><code>## # A tibble: 47 x 2
+##    Player            ave.SC
+##    &lt;chr&gt;              &lt;dbl&gt;
+##  1 Max Gawn           119. 
+##  2 Todd Goldstein     109. 
+##  3 Nicholas Naitanui  106. 
+##  4 Jackson Trengove    99.6
+##  5 Shane Mumford       97.3
+##  6 Brodie Grundy       94.1
+##  7 Archie Smith        93  
+##  8 Scott Lycett        92.5
+##  9 Sam Jacobs          91.0
+## 10 Stefan Martin       90.3
+## # ... with 37 more rows</code></pre>
+<p>This is where being a nuffie comes in handy and you can overlay your domain expertise. We hopefully know that Shane Mumford has retired so probably shouldn’t be used. Archie smith is based off three games</p>
+<p>We can check that by using the below script</p>
+<pre class="r"><code>df2%&gt;%
+  filter(Season==2016)%&gt;%
+  filter(Player==&quot;Archie Smith&quot;)</code></pre>
+<pre><code>##         Date Season    Round         Venue       Player     Team
+## 1 2016-07-30   2016 Round 19         Gabba Archie Smith Brisbane
+## 2 2016-08-06   2016 Round 20 Adelaide Oval Archie Smith Brisbane
+## 3 2016-08-13   2016 Round 21         Gabba Archie Smith Brisbane
+##      Opposition Status GA Match_id CP UP ED   DE CM MI5 One.Percenters BO
+## 1 Port Adelaide   Home  0     6329 17  5 15 78.9  1   0              1  0
+## 2      Adelaide   Away  0     6339  9  5  9 60.0  1   0              4  0
+## 3       Carlton   Home  0     6344  4  2  4 66.7  0   1              3  0
+##   TOG K HB  D M G B T HO I50 CL CG R50 FF FA AF SC CCL SCL SI  MG TO ITC
+## 1  80 2 17 19 1 0 0 5 30   2  9  1   0  6  1 96 96   8   1  8  65  1   1
+## 2  83 6  9 15 1 0 0 3 32   0  3  1   3  1  0 84 90   2   1  1 200  6   2
+## 3  63 2  4  6 1 1 1 2  8   0  1  3   0  1  2 35 52   1   0  4  26  1   0
+##   T5
+## 1  0
+## 2  0
+## 3  0</code></pre>
+</div>

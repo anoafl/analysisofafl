@@ -213,3 +213,32 @@ df2%>%
   filter(Player=="Archie Smith")
 ```
 
+So lets compare the following ruckman
+
+* Max Gawn
+* Todd Goldstein
+* Nicholas Naitanui
+* Sam Jacobs
+* Stefan Martin
+* Brodie Grundy
+* Scott Lycett
+
+To do this using the script we had before we would go. 
+
+
+```{r}
+
+df3<-df2%>%
+  filter(Season %in% c(2016,2018))%>%
+  filter(Player %in% c("Max Gawn","Todd Goldstein",
+                       "Nicholas Naitanui","Sam Jacobs",
+                       "Stefan Martin","Brodie Grundy",
+                       "Scott Lycett") %>%
+  group_by(Season)%>%
+  summarise(ave.SC=mean(SC))%>%
+      ggplot(aes(x=ave.SC, y=Player)) +geom_point(aes(colour=as.factor(df3$Season)))+ geom_line(aes(group = Player))
+
+
+```
+
+
