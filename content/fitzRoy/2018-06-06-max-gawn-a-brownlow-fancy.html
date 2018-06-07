@@ -45,12 +45,23 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
 <pre><code>## Finished getting data</code></pre>
 <pre class="r"><code>df2&lt;-rbind(df, df1) #stacks the datasets on top of each other</code></pre>
 <p>So what steps are we taking here</p>
+<ul>
+<li>First we load our packages <code>library(tidyverse)</code> <code>library(fitzRoy)</code></li>
+<li>Then we get all the player data from 2010-2018 from footywire <code>df&lt;-fitzRoy::player_stats</code></li>
+<li>BUT depending on when you first <a href="https://github.com/jimmyday12/fitzRoy">installed fitzRoy</a> you might not have all the up to date data.</li>
+<li>so to make sure we have all the up to date data, we delete the data that has Season 2018 <code>df&lt;-df%&gt;%filter(Season != 2018)</code></li>
+<li>We then go to this <a href="https://www.footywire.com/afl/footy/ft_match_list">page</a> to click on the first game and last game so far in 2018 to get the unique game IDs. Then we scrape them freshly using fitzRoys scraper function <code>df1&lt;-fitzRoy::get_footywire_stats(9514:9611)</code></li>
+<li>We then just stack the datasets on top of each other using <code>rbind</code></li>
+</ul>
 </div>
 <div id="step-2---filter-out-max-gawn-and-his-2016-2018-seasons" class="section level1">
 <h1>Step 2 - Filter out Max Gawn and his 2016, 2018 Seasons</h1>
 <pre class="r"><code>df3&lt;-df2%&gt;%
   filter(Season %in% c(2016,2018))%&gt;%
   filter(Player ==&quot;Max Gawn&quot;) </code></pre>
+<ul>
+<li>We have 2 basic steps when we were filtering, the first step was to filter out the seasons 2016, 2018 <code>filter(Season %in% c(2016,2018))</code> and the next step was to filter out the player Max Gawn <code>filter(Player ==&quot;Max Gawn&quot;)</code></li>
+</ul>
 </div>
 <div id="step-3---summarise-max-gawns-averages-for-each-season" class="section level1">
 <h1>Step 3 - Summarise Max Gawns averages for each season</h1>
