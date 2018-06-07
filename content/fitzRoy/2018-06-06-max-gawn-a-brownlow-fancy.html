@@ -19,8 +19,8 @@ tags : ["fitzRoy","Brownlow"]
 <p>Visually how can we compare his 2016 season to his 2018 season so far?</p>
 <p>One way to do this is to look at a cleveland dot plot</p>
 <div class="figure">
-<img src="/img/unnamed-chunk-10-1.png" alt="Cleveland Dot Plot Example" />
-<p class="caption">Cleveland Dot Plot Example</p>
+<img src="/img/unnamed-chunk-10-1.png" alt="Cleveland Dot Plot Example." />
+<p class="caption">Cleveland Dot Plot Example.</p>
 </div>
 <p>This is something you see quite a bit of online when people are trying to compare many things but split by a factor. So in our case for this blog post, we are trying to compare many things (various Max Gawn statistics) split by factor (season 2016, 2018)</p>
 <p>So how is Max going in 2018 compared to 2016, lets use this dotplots to visualise this.</p>
@@ -28,12 +28,12 @@ tags : ["fitzRoy","Brownlow"]
 <h1>Step 1 - Get the Data</h1>
 <p>Luckily we know we are using player level data and thankfully the great people over at <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9604">footywire</a> have collected stats that include meters gained (MG), intercepts (ITC) and a host of other things.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ----------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.5
 ## v tidyr   0.8.1     v stringr 1.3.0
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts -------------------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(fitzRoy)
@@ -77,6 +77,13 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
             ave.AF=mean(AF),
             ave.SC=mean(SC),
             ave.Mi5=mean(MI5))</code></pre>
+<p>So remember to get summary measures by <em>something</em> we have to <code>group_by</code> that <em>something</em> which is in this case <code>Season</code> The summary measure I am thinking here is lets just start by looking at the <code>mean</code> but of what variables?</p>
+<p>Well one way to do this is by using <code>names(df3)</code> this will give you the names of all your columns another way to think about it, is its a quick way to list the variables.</p>
+<pre class="r"><code>names(df3)</code></pre>
+<pre><code>## [1] &quot;Season&quot;  &quot;ave.ho&quot;  &quot;ave.CM&quot;  &quot;ave.SC&quot;  &quot;ave.MG&quot;  &quot;ave.ITC&quot; &quot;ave.AF&quot; 
+## [8] &quot;ave.Mi5&quot;</code></pre>
+<p>From there, I’m going to pick the following variables * hitouts (HO) * Contested Marks (CM) * Meters Gained (MG) * Intercepts (ITC) * supercoach scores (SC) * AFL fantasy scores (AF) * Marks inside 50 (MI5)</p>
+<p>and I want to <code>summarise</code> them and <code>summarise</code> works as follows * summarise(new_variablename=summarymeasure(variable)) * example * <code>new_variablename=ave.ho</code> * <code>summarymeasure = mean</code> * <code>variable = HO</code> * putting it all together <code>ave.ho=mean(HO)</code></p>
 </div>
 <div id="step-4---go-from-wide-to-long-data" class="section level1">
 <h1>Step 4 - Go from wide to long data</h1>
@@ -86,11 +93,11 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
 <h1>Step 5 - Give it the ggplot2 treatment</h1>
 <pre class="r"><code>df4%&gt;%   
   ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=Season))</code></pre>
-<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 </div>
 <div id="step-6---change-colour-to-a-factor-add-in-a-connecter-line" class="section level1">
 <h1>Step 6 - Change colour to a factor, add in a <code>connecter line</code></h1>
 <pre class="r"><code>df4%&gt;%   
   ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=as.factor(df4$Season)))+ geom_line(aes(group = variables))</code></pre>
-<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 </div>
