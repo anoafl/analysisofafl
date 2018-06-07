@@ -78,7 +78,7 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
             ave.SC=mean(SC),
             ave.Mi5=mean(MI5))</code></pre>
 <p>So remember to get summary measures by <em>something</em> we have to <code>group_by</code> that <em>something</em> which is in this case <code>Season</code> The summary measure I am thinking here is lets just start by looking at the <code>mean</code> but of what variables?</p>
-<p>Well one way to do this is by using <code>names(df3)</code> this will give you the names of all your columns another way to think about it, is its a quick way to list the variables.</p>
+<p>Well one way to do this is by using <code>names(df2)</code> this will give you the names of all your columns another way to think about it, is its a quick way to list the variables.</p>
 <pre class="r"><code>names(df2)</code></pre>
 <pre><code>##  [1] &quot;Date&quot;           &quot;Season&quot;         &quot;Round&quot;          &quot;Venue&quot;         
 ##  [5] &quot;Player&quot;         &quot;Team&quot;           &quot;Opposition&quot;     &quot;Status&quot;        
@@ -157,7 +157,7 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
 </div>
 <div id="step-7---have-a-think-does-this-graph-give-you-what-you-want" class="section level1">
 <h1>Step 7 - Have a think, does this graph give you what you want?</h1>
-<p>To be honest its quite hard to see the differences for variables like ITC when compared on the same axis to the differences in SC scores as an example.</p>
+<p>To be honest its quite hard to see the differences for variables like ITC when compared on the same axis to the differences in SC scores as an example. So when thinking about looking at multiple variables a dotplot in this example doesn’t make much sense as the range of likely values varies a lot between variables. I.e we wouldn’t expect any AFL player to have as many intercepts as they get SC points.</p>
 <p>So instead lets try <code>facet_wrap</code></p>
 <pre class="r"><code>df4%&gt;%   
     ggplot(aes(x=as.factor(df4$Season), y=values)) +
