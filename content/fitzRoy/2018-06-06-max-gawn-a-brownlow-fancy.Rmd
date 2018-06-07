@@ -15,6 +15,18 @@ When looking at the Brownlow odds, its a bit surprising to see Max Gawn listed a
 
 One way to think about Max, is to compare him to his best every year, which I think personally was his [2016 year](https://en.wikipedia.org/wiki/2016_All-Australian_team) in which he was named in the All-Australian team. 
 
+One of the first things we could do, is actually check how did Max Gawn do in the 2016 Brownlow Medal count?
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+df<-fitzRoy::afldata 
+df%>% 
+  filter(Season==2016)%>% 
+  group_by(First.name , Surname, Playing.for)%>% summarise(brownlowvotes=sum(Brownlow.Votes))
+
+```
+
 Visually how can we compare his 2016 season to his 2018 season so far?
 
 One way to do this is to look at a cleveland dot plot
@@ -192,7 +204,7 @@ When looking at example plots like the one above, I like to think about it in te
 
 So if I wanted to do the same plot but for footy ruckman, I would change the city axis to be ruckman, the gender variable to be years I want to compare and to be measured on the same values I would use say SC scores. 
 
-So lets get the top 10 ruckman in 2016 and see how they stack up their versions of themselves today. 
+So lets get the top 10 ruckman in 2016 and see how they stack up their versions of themselves today. A quick way to get actual ruckman is to just increase the number of HOs in the filter to an arbirary number you think captures the main ruck I went 15 but you could choose a higher or lower number yourselves.
 
 ```{r}
 df2%>%
@@ -228,17 +240,34 @@ To do this using the script we had before we would go.
 
 ```{r}
 
-df3<-df2%>%
-  filter(Season %in% c(2016,2018))%>%
-  filter(Player %in% c("Max Gawn","Todd Goldstein",
-                       "Nicholas Naitanui","Sam Jacobs",
-                       "Stefan Martin","Brodie Grundy",
-                       "Scott Lycett") %>%
-  group_by(Season)%>%
-  summarise(ave.SC=mean(SC))%>%
-      ggplot(aes(x=ave.SC, y=Player)) +geom_point(aes(colour=as.factor(df3$Season)))+ geom_line(aes(group = Player))
-
+df2%>%
+    filter(Season %in% c(2016,2018))%>%
+    filter(Player %in% c("Max Gawn","Todd Goldstein",
+                         "Nicholas Naitanui","Sam Jacobs",
+                         "Stefan Martin","Brodie Grundy",
+                         "Scott Lycett")) %>%
+               group_by(Season, Player)%>%
+               summarise(ave.SC=mean(SC))%>%
+    ggplot(aes(x=ave.SC, y=Player)) +geom_point(aes(colour=as.factor(Season)))+ geom_line(aes(group = Player))
 
 ```
 
+Now that we have a template we could compare a few variables if we wanted quickly by just copy and pasting the above script but changing say SC to CM 
 
+```{r}
+df2%>%
+    filter(Season %in% c(2016,2018))%>%
+    filter(Player %in% c("Max Gawn","Todd Goldstein",
+                         "Nicholas Naitanui","Sam Jacobs",
+                         "Stefan Martin","Brodie Grundy",
+                         "Scott Lycett")) %>%
+               group_by(Season, Player)%>%
+               summarise(ave.CM=mean(CM))%>%
+    ggplot(aes(x=ave.CM, y=Player)) +geom_point(aes(colour=as.factor(Season)))+ geom_line(aes(group = Player))
+```
+
+Hopefully now you have a quickfire template to go off and explore AFL ruckman yourselves. 
+
+Do you think Max Gawn should be second fav? 
+
+As always hit me up on twitter if any Qs #makemeauseR
