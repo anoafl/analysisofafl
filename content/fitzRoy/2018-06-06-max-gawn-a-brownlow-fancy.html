@@ -82,8 +82,25 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
 <pre class="r"><code>names(df3)</code></pre>
 <pre><code>## [1] &quot;Season&quot;  &quot;ave.ho&quot;  &quot;ave.CM&quot;  &quot;ave.SC&quot;  &quot;ave.MG&quot;  &quot;ave.ITC&quot; &quot;ave.AF&quot; 
 ## [8] &quot;ave.Mi5&quot;</code></pre>
-<p>From there, I’m going to pick the following variables * hitouts (HO) * Contested Marks (CM) * Meters Gained (MG) * Intercepts (ITC) * supercoach scores (SC) * AFL fantasy scores (AF) * Marks inside 50 (MI5)</p>
-<p>and I want to <code>summarise</code> them and <code>summarise</code> works as follows * summarise(new_variablename=summarymeasure(variable)) * example * <code>new_variablename=ave.ho</code> * <code>summarymeasure = mean</code> * <code>variable = HO</code> * putting it all together <code>ave.ho=mean(HO)</code></p>
+<p>From there, I’m going to pick the following variables:</p>
+<ul>
+<li>hitouts (HO)</li>
+<li>Contested Marks (CM)</li>
+<li>Meters Gained (MG)</li>
+<li>Intercepts (ITC)</li>
+<li>supercoach scores (SC)</li>
+<li>AFL fantasy scores (AF)</li>
+<li>Marks inside 50 (MI5)</li>
+</ul>
+<p>and I want to <code>summarise</code> them and <code>summarise</code> works as follows</p>
+<ul>
+<li>summarise(new_variablename=summarymeasure(variable))</li>
+<li>example</li>
+<li><code>new_variablename=ave.ho</code></li>
+<li><code>summarymeasure = mean</code></li>
+<li><code>variable = HO</code></li>
+<li>putting it all together <code>ave.ho=mean(HO)</code></li>
+</ul>
 </div>
 <div id="step-4---go-from-wide-to-long-data" class="section level1">
 <h1>Step 4 - Go from wide to long data</h1>
@@ -100,4 +117,14 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
 <pre class="r"><code>df4%&gt;%   
   ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=as.factor(df4$Season)))+ geom_line(aes(group = variables))</code></pre>
 <p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="step-7---have-a-think-does-this-graph-give-you-what-you-want" class="section level1">
+<h1>Step 7 - Have a think, does this graph give you what you want?</h1>
+<p>To be honest its quite hard to see the differences for variables like ITC when compared on the same axis to the differences in SC scores as an example.</p>
+<p>So instead lets try <code>facet_wrap</code></p>
+<pre class="r"><code>df4%&gt;%   
+    ggplot(aes(x=as.factor(df4$Season), y=values)) +
+  geom_point()+
+  facet_wrap(~variables,scales = &quot;free&quot;)</code></pre>
+<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 </div>
