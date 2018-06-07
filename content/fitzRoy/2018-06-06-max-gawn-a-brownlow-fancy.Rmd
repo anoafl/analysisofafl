@@ -164,6 +164,8 @@ df4%>%
 # Step 7 - Have a think, does this graph give you what you want?
 
 To be honest its quite hard to see the differences for variables like ITC when compared on the same axis to the differences in SC scores as an example. 
+So when thinking about looking at multiple variables a dotplot in this example doesn't make much sense as the range of likely values varies a lot between variables. I.e we wouldn't expect any AFL player to have as many intercepts as they get SC points. 
+
 
 So instead lets try `facet_wrap`
 
