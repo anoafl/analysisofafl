@@ -79,9 +79,18 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
             ave.Mi5=mean(MI5))</code></pre>
 <p>So remember to get summary measures by <em>something</em> we have to <code>group_by</code> that <em>something</em> which is in this case <code>Season</code> The summary measure I am thinking here is lets just start by looking at the <code>mean</code> but of what variables?</p>
 <p>Well one way to do this is by using <code>names(df3)</code> this will give you the names of all your columns another way to think about it, is its a quick way to list the variables.</p>
-<pre class="r"><code>names(df3)</code></pre>
-<pre><code>## [1] &quot;Season&quot;  &quot;ave.ho&quot;  &quot;ave.CM&quot;  &quot;ave.SC&quot;  &quot;ave.MG&quot;  &quot;ave.ITC&quot; &quot;ave.AF&quot; 
-## [8] &quot;ave.Mi5&quot;</code></pre>
+<pre class="r"><code>names(df2)</code></pre>
+<pre><code>##  [1] &quot;Date&quot;           &quot;Season&quot;         &quot;Round&quot;          &quot;Venue&quot;         
+##  [5] &quot;Player&quot;         &quot;Team&quot;           &quot;Opposition&quot;     &quot;Status&quot;        
+##  [9] &quot;GA&quot;             &quot;Match_id&quot;       &quot;CP&quot;             &quot;UP&quot;            
+## [13] &quot;ED&quot;             &quot;DE&quot;             &quot;CM&quot;             &quot;MI5&quot;           
+## [17] &quot;One.Percenters&quot; &quot;BO&quot;             &quot;TOG&quot;            &quot;K&quot;             
+## [21] &quot;HB&quot;             &quot;D&quot;              &quot;M&quot;              &quot;G&quot;             
+## [25] &quot;B&quot;              &quot;T&quot;              &quot;HO&quot;             &quot;I50&quot;           
+## [29] &quot;CL&quot;             &quot;CG&quot;             &quot;R50&quot;            &quot;FF&quot;            
+## [33] &quot;FA&quot;             &quot;AF&quot;             &quot;SC&quot;             &quot;CCL&quot;           
+## [37] &quot;SCL&quot;            &quot;SI&quot;             &quot;MG&quot;             &quot;TO&quot;            
+## [41] &quot;ITC&quot;            &quot;T5&quot;</code></pre>
 <p>From there, I’m going to pick the following variables:</p>
 <ul>
 <li>hitouts (HO)</li>
@@ -104,19 +113,47 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
 </div>
 <div id="step-4---go-from-wide-to-long-data" class="section level1">
 <h1>Step 4 - Go from wide to long data</h1>
+<p>What is wide data and what is long data?</p>
+<p>The best way in my opinion is to look at the same dataset but both ways.</p>
+<p>So first wide</p>
+<pre class="r"><code>df3</code></pre>
+<pre><code>## # A tibble: 2 x 8
+##   Season ave.ho ave.CM ave.SC ave.MG ave.ITC ave.AF ave.Mi5
+##    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+## 1   2016   42.2   2.09   119.   149.    2.91   106.       1
+## 2   2018   48.5   2.09   130.   175.    3.45   116.       1</code></pre>
 <pre class="r"><code>df4&lt;-gather(df3,variables, values, -Season)   </code></pre>
+<p>Next lets look at long:</p>
+<pre class="r"><code>df4</code></pre>
+<pre><code>## # A tibble: 14 x 3
+##    Season variables values
+##     &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt;
+##  1   2016 ave.ho     42.2 
+##  2   2018 ave.ho     48.5 
+##  3   2016 ave.CM      2.09
+##  4   2018 ave.CM      2.09
+##  5   2016 ave.SC    119.  
+##  6   2018 ave.SC    130.  
+##  7   2016 ave.MG    149.  
+##  8   2018 ave.MG    175.  
+##  9   2016 ave.ITC     2.91
+## 10   2018 ave.ITC     3.45
+## 11   2016 ave.AF    106.  
+## 12   2018 ave.AF    116.  
+## 13   2016 ave.Mi5     1   
+## 14   2018 ave.Mi5     1</code></pre>
 </div>
 <div id="step-5---give-it-the-ggplot2-treatment" class="section level1">
 <h1>Step 5 - Give it the ggplot2 treatment</h1>
 <pre class="r"><code>df4%&gt;%   
   ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=Season))</code></pre>
-<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 </div>
 <div id="step-6---change-colour-to-a-factor-add-in-a-connecter-line" class="section level1">
 <h1>Step 6 - Change colour to a factor, add in a <code>connecter line</code></h1>
 <pre class="r"><code>df4%&gt;%   
   ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=as.factor(df4$Season)))+ geom_line(aes(group = variables))</code></pre>
-<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 </div>
 <div id="step-7---have-a-think-does-this-graph-give-you-what-you-want" class="section level1">
 <h1>Step 7 - Have a think, does this graph give you what you want?</h1>
@@ -126,5 +163,5 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
     ggplot(aes(x=as.factor(df4$Season), y=values)) +
   geom_point()+
   facet_wrap(~variables,scales = &quot;free&quot;)</code></pre>
-<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 </div>
