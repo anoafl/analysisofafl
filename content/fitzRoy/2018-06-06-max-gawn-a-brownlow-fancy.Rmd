@@ -95,7 +95,7 @@ The summary measure I am thinking here is lets just start by looking at the `mea
 Well one way to do this is by using `names(df3)` this will give you the names of all your columns another way to think about it, is its a quick way to list the variables. 
 
 ```{r}
-names(df3)
+names(df2)
 ```
 
 From there, I'm going to pick the following variables:
@@ -120,10 +120,28 @@ and I want to `summarise` them and `summarise` works as follows
 
 # Step 4 - Go from wide to long data
 
+What is wide data and what is long data? 
+
+The best way in my opinion is to look at the same dataset but both ways. 
+
+So first wide
+
+```{r}
+df3
+```
+
+
 ```{r}
 
 df4<-gather(df3,variables, values, -Season)   
 
+
+```
+Next lets look at long:
+
+```{r}
+
+df4
 
 ```
 
