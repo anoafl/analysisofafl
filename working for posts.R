@@ -4,7 +4,7 @@ library(tidyverse)
 
 df<-fitzRoy::player_stats
 
-df1<-fitzRoy::get_footywire_stats(9514:9594)
+df1<-fitzRoy::get_footywire_stats(9514:9611)
 
 df<-df%>%filter(Season != 2018)
 df<-df%>%
@@ -62,3 +62,33 @@ df1%>%filter(Opposition=="Western Bulldogs")%>%
   filter(HO>0)%>%ggplot(aes(x=Date, y=SC))+
   geom_point()+
   geom_text(aes(label=paste(Player,"" ,HO)))
+
+
+
+
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+df1<-fitzRoy::get_footywire_stats(9514:9611)
+
+df<-df%>%filter(Season != 2018)
+df<-df%>%
+  filter(Season != 2018) #filters out the 2018 data (incomeplete that was downloaded when installing fitzRoy for first time) 
+df2<-rbind(df, df1) #stacks the datasets on top of each other
+
+df2%>%
+  filter(Player=="Max Gawn")%>%
+  filter(Season %in% c(2016,2018))%>%
+  group_by(Season)%>%
+  summarise(aveHO=mean(HO),
+            aveCP=mean(CP),
+            aveCM=mean(CM),
+            aveSI=mean(SI),
+            aveITC=mean(ITC),
+            aveM=mean(M)
+            ) %>%
+  ggplot(aes(x=aveHO,y=Season))+geom_dotplot()
+
+df46 <-  swiss %>% rownames_to_column("Province")

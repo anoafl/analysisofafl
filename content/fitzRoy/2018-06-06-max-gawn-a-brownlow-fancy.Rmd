@@ -1,0 +1,100 @@
+---
+title : "Max Gawn a Brownlow Fancy"
+description : "Cleveland dot plots to compare"
+author : "Robert Nguyen"
+date : 2018-06-06
+tags : ["fitzRoy","Brownlow"]
+
+---
+
+This week in AFL Nathan Fyfe one of the brownlow favourites got rubbed out for an [ear tickler to Levi Greenwood](https://twitter.com/AFL/status/1003170937812893696)
+
+When looking at the Brownlow odds, its a bit surprising to see Max Gawn listed as the second favourite. While he is having a great season, historically Ruckman have not polled well. But is Max having a Brownlow worthy year?
+
+![Max Gawn Brownlow Odds 07-06-2018.](/img/Capture.PNG)
+
+One way to think about Max, is to compare him to his best every year, which I think personally was his [2016 year](https://en.wikipedia.org/wiki/2016_All-Australian_team) in which he was named in the All-Australian team. 
+
+Visually how can we compare his 2016 season to his 2018 season so far?
+
+One way to do this is to look at a cleveland dot plot
+
+![Cleveland Dot Plot Example](/img/unnamed-chunk-10-1.png)
+
+This is something you see quite a bit of online when people are trying to compare many things but split by a factor. 
+So in our case for this blog post, we are trying to compare many things (various Max Gawn statistics) split by factor (season 2016, 2018)
+
+So how is Max going in 2018 compared to 2016, lets use this dotplots to visualise this. 
+
+# Step 1 - Get the Data
+
+Luckily we know we are using player level data and thankfully the great people over at [footywire](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9604) have collected stats that include meters gained (MG), intercepts (ITC) and a host of other things. 
+
+
+```{r}
+
+library(tidyverse)
+library(fitzRoy)
+df<-fitzRoy::player_stats
+df<-df%>%
+  filter(Season != 2018) #filters out the 2018 data (incomeplete that was downloaded when installing fitzRoy for first time) 
+df1<-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)
+
+
+df2<-rbind(df, df1) #stacks the datasets on top of each other
+
+```
+
+# Step 2 - Filter out Max Gawn and his 2016, 2018 Seasons
+
+```{r}
+
+
+df3<-df2%>%
+  filter(Season %in% c(2016,2018))%>%
+  filter(Player =="Max Gawn") 
+```
+
+# Step 3 - Summarise Max Gawns averages for each season
+
+```{r}
+df3<-df2%>%
+  filter(Season %in% c(2016,2018))%>%
+  filter(Player =="Max Gawn") %>%
+  group_by(Season)%>%
+  summarise(ave.ho=mean(HO),
+            ave.CM=mean(CM),
+            ave.SC=mean(SC),
+            ave.MG=mean(MG),
+            ave.ITC=mean(ITC), 
+            ave.AF=mean(AF),
+            ave.SC=mean(SC),
+            ave.Mi5=mean(MI5))
+
+
+```
+
+# Step 4 - Go from wide to long data
+
+```{r}
+
+df4<-gather(df3,variables, values, -Season)   
+
+
+```
+
+# Step 5 - Give it the ggplot2 treatment
+
+```{r}
+df4%>%   
+  ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=Season))
+
+```
+
+# Step 6 - Change colour to a factor, add in a `connecter line`
+
+```{r}
+df4%>%   
+  ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=as.factor(df4$Season)))+ geom_line(aes(group = variables))
+
+```

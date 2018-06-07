@@ -1,0 +1,84 @@
+---
+title : "Max Gawn a Brownlow Fancy"
+description : "Cleveland dot plots to compare"
+author : "Robert Nguyen"
+date : 2018-06-06
+tags : ["fitzRoy","Brownlow"]
+
+---
+
+
+
+<p>This week in AFL Nathan Fyfe one of the brownlow favourites got rubbed out for an <a href="https://twitter.com/AFL/status/1003170937812893696">ear tickler to Levi Greenwood</a></p>
+<p>When looking at the Brownlow odds, its a bit surprising to see Max Gawn listed as the second favourite. While he is having a great season, historically Ruckman have not polled well. But is Max having a Brownlow worthy year?</p>
+<div class="figure">
+<img src="/img/Capture.PNG" alt="Max Gawn Brownlow Odds 07-06-2018." />
+<p class="caption">Max Gawn Brownlow Odds 07-06-2018.</p>
+</div>
+<p>One way to think about Max, is to compare him to his best every year, which I think personally was his <a href="https://en.wikipedia.org/wiki/2016_All-Australian_team">2016 year</a> in which he was named in the All-Australian team.</p>
+<p>Visually how can we compare his 2016 season to his 2018 season so far?</p>
+<p>One way to do this is to look at a cleveland dot plot</p>
+<div class="figure">
+<img src="/img/unnamed-chunk-10-1.png" alt="Cleveland Dot Plot Example" />
+<p class="caption">Cleveland Dot Plot Example</p>
+</div>
+<p>This is something you see quite a bit of online when people are trying to compare many things but split by a factor. So in our case for this blog post, we are trying to compare many things (various Max Gawn statistics) split by factor (season 2016, 2018)</p>
+<p>So how is Max going in 2018 compared to 2016, lets use this dotplots to visualise this.</p>
+<div id="step-1---get-the-data" class="section level1">
+<h1>Step 1 - Get the Data</h1>
+<p>Luckily we know we are using player level data and thankfully the great people over at <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9604">footywire</a> have collected stats that include meters gained (MG), intercepts (ITC) and a host of other things.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ----------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.5
+## v tidyr   0.8.1     v stringr 1.3.0
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts -------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(fitzRoy)
+df&lt;-fitzRoy::player_stats
+df&lt;-df%&gt;%
+  filter(Season != 2018) #filters out the 2018 data (incomeplete that was downloaded when installing fitzRoy for first time) 
+df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre class="r"><code>df2&lt;-rbind(df, df1) #stacks the datasets on top of each other</code></pre>
+</div>
+<div id="step-2---filter-out-max-gawn-and-his-2016-2018-seasons" class="section level1">
+<h1>Step 2 - Filter out Max Gawn and his 2016, 2018 Seasons</h1>
+<pre class="r"><code>df3&lt;-df2%&gt;%
+  filter(Season %in% c(2016,2018))%&gt;%
+  filter(Player ==&quot;Max Gawn&quot;) </code></pre>
+</div>
+<div id="step-3---summarise-max-gawns-averages-for-each-season" class="section level1">
+<h1>Step 3 - Summarise Max Gawns averages for each season</h1>
+<pre class="r"><code>df3&lt;-df2%&gt;%
+  filter(Season %in% c(2016,2018))%&gt;%
+  filter(Player ==&quot;Max Gawn&quot;) %&gt;%
+  group_by(Season)%&gt;%
+  summarise(ave.ho=mean(HO),
+            ave.CM=mean(CM),
+            ave.SC=mean(SC),
+            ave.MG=mean(MG),
+            ave.ITC=mean(ITC), 
+            ave.AF=mean(AF),
+            ave.SC=mean(SC),
+            ave.Mi5=mean(MI5))</code></pre>
+</div>
+<div id="step-4---go-from-wide-to-long-data" class="section level1">
+<h1>Step 4 - Go from wide to long data</h1>
+<pre class="r"><code>df4&lt;-gather(df3,variables, values, -Season)   </code></pre>
+</div>
+<div id="step-5---give-it-the-ggplot2-treatment" class="section level1">
+<h1>Step 5 - Give it the ggplot2 treatment</h1>
+<pre class="r"><code>df4%&gt;%   
+  ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=Season))</code></pre>
+<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="step-6---change-colour-to-a-factor-add-in-a-connecter-line" class="section level1">
+<h1>Step 6 - Change colour to a factor, add in a <code>connecter line</code></h1>
+<pre class="r"><code>df4%&gt;%   
+  ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=as.factor(df4$Season)))+ geom_line(aes(group = variables))</code></pre>
+<p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
