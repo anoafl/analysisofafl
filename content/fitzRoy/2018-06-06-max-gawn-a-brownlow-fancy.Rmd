@@ -92,7 +92,7 @@ df3<-df2%>%
 So remember to get summary measures by *something* we have to `group_by` that *something* which is in this case `Season`
 The summary measure I am thinking here is lets just start by looking at the `mean` but of what variables? 
 
-Well one way to do this is by using `names(df3)` this will give you the names of all your columns another way to think about it, is its a quick way to list the variables. 
+Well one way to do this is by using `names(df2)` this will give you the names of all your columns another way to think about it, is its a quick way to list the variables. 
 
 ```{r}
 names(df2)
