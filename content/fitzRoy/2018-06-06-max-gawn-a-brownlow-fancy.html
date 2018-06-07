@@ -164,4 +164,7 @@ df1&lt;-fitzRoy::get_footywire_stats(9514:9611) #(end round 11)</code></pre>
   geom_point()+
   facet_wrap(~variables,scales = &quot;free&quot;)</code></pre>
 <p><img src="/fitzRoy/2018-06-06-max-gawn-a-brownlow-fancy_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Here we use <code>facet_wrap</code> exactly like we have been doing in <a href="https://analysisofafl.netlify.com/fitzroy/2018-05-18-visualisation-of-squiggle-tipsters/">previous blog posts</a>. We use the argument <code>scales=&quot;free&quot;</code> so that each graph for each different variable can be on an appropriate scale. We are probably not interested in absolute changes i.e. if intercepts go from 3 to 4 that is seen different to if his Supercoach score goes from 123 to 124</p>
+<p>So what is missing here is that for when we are doing the dotplots is that we want our variables to be on the same scale.</p>
+<p>To think about this a bit more clearly, lets come up with another example for comparision.</p>
 </div>
