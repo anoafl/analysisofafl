@@ -47,6 +47,15 @@ df2<-rbind(df, df1) #stacks the datasets on top of each other
 
 So what steps are we taking here
 
+* First we load our packages `library(tidyverse)` `library(fitzRoy)`
+* Then we get all the player data from 2010-2018 from footywire `df<-fitzRoy::player_stats` 
+* BUT depending on when you first [installed fitzRoy](https://github.com/jimmyday12/fitzRoy) you might not have all the up to date data. 
+* so to make sure we have all the up to date data, we delete the data that has Season 2018 `df<-df%>%filter(Season != 2018)` 
+* We then go to this [page](https://www.footywire.com/afl/footy/ft_match_list) to click on the first game and last game so far in 2018 to get the unique game IDs. Then we scrape them freshly using fitzRoys scraper function `df1<-fitzRoy::get_footywire_stats(9514:9611)`
+* We then just stack the datasets on top of each other using `rbind` 
+
+
+
 # Step 2 - Filter out Max Gawn and his 2016, 2018 Seasons
 
 ```{r}
@@ -56,6 +65,10 @@ df3<-df2%>%
   filter(Season %in% c(2016,2018))%>%
   filter(Player =="Max Gawn") 
 ```
+
+* We have 2 basic steps when we were filtering, the first step was to filter out the seasons 2016, 2018 `filter(Season %in% c(2016,2018))` and the next step was to filter out the player Max Gawn `filter(Player =="Max Gawn")`
+
+
 
 # Step 3 - Summarise Max Gawns averages for each season
 
