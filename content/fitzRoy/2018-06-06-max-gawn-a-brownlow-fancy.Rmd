@@ -98,7 +98,8 @@ Well one way to do this is by using `names(df3)` this will give you the names of
 names(df3)
 ```
 
-From there, I'm going to pick the following variables
+From there, I'm going to pick the following variables:
+
 * hitouts (HO)
 * Contested Marks (CM)
 * Meters Gained (MG)
@@ -108,6 +109,7 @@ From there, I'm going to pick the following variables
 * Marks inside 50 (MI5)
 
 and I want to `summarise` them and `summarise` works as follows
+
 * summarise(new_variablename=summarymeasure(variable))
 * example 
 * `new_variablename=ave.ho`
@@ -138,5 +140,19 @@ df4%>%
 ```{r}
 df4%>%   
   ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=as.factor(df4$Season)))+ geom_line(aes(group = variables))
+
+```
+
+# Step 7 - Have a think, does this graph give you what you want?
+
+To be honest its quite hard to see the differences for variables like ITC when compared on the same axis to the differences in SC scores as an example. 
+
+So instead lets try `facet_wrap`
+
+```{r}
+df4%>%   
+    ggplot(aes(x=as.factor(df4$Season), y=values)) +
+  geom_point()+
+  facet_wrap(~variables,scales = "free")
 
 ```
