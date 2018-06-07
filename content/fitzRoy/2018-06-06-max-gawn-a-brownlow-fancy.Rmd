@@ -45,6 +45,8 @@ df2<-rbind(df, df1) #stacks the datasets on top of each other
 
 ```
 
+So what steps are we taking here
+
 # Step 2 - Filter out Max Gawn and his 2016, 2018 Seasons
 
 ```{r}
