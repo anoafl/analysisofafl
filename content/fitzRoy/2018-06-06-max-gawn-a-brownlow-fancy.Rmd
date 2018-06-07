@@ -183,3 +183,5 @@ So what is missing here is that for when we are doing the dotplots is that we wa
 
 To think about this a bit more clearly, lets come up with another example for comparision. 
 
+# A better example of cleveland dot plots
+
