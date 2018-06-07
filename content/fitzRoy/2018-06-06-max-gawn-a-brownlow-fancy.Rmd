@@ -89,6 +89,33 @@ df3<-df2%>%
 
 ```
 
+So remember to get summary measures by *something* we have to `group_by` that *something* which is in this case `Season`
+The summary measure I am thinking here is lets just start by looking at the `mean` but of what variables? 
+
+Well one way to do this is by using `names(df3)` this will give you the names of all your columns another way to think about it, is its a quick way to list the variables. 
+
+```{r}
+names(df3)
+```
+
+From there, I'm going to pick the following variables
+* hitouts (HO)
+* Contested Marks (CM)
+* Meters Gained (MG)
+* Intercepts (ITC)
+* supercoach scores (SC)
+* AFL fantasy scores (AF)
+* Marks inside 50 (MI5)
+
+and I want to `summarise` them and `summarise` works as follows
+* summarise(new_variablename=summarymeasure(variable))
+* example 
+* `new_variablename=ave.ho`
+* `summarymeasure = mean`
+* `variable = HO`
+* putting it all together `ave.ho=mean(HO)` 
+
+
 # Step 4 - Go from wide to long data
 
 ```{r}
