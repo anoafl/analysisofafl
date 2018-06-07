@@ -19,7 +19,7 @@ Visually how can we compare his 2016 season to his 2018 season so far?
 
 One way to do this is to look at a cleveland dot plot
 
-![Cleveland Dot Plot Example](/img/unnamed-chunk-10-1.png)
+![Cleveland Dot Plot Example.](/img/unnamed-chunk-10-1.png)
 
 This is something you see quite a bit of online when people are trying to compare many things but split by a factor. 
 So in our case for this blog post, we are trying to compare many things (various Max Gawn statistics) split by factor (season 2016, 2018)
