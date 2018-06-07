@@ -3,7 +3,7 @@ title : "Max Gawn a Brownlow Fancy"
 description : "Cleveland dot plots to compare"
 author : "Robert Nguyen"
 date : 2018-06-06
-tags : ["fitzRoy","Brownlow"]
+tags : ["fitzRoy","Brownlow","graphics","R"]
 
 ---
 
