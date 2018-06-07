@@ -185,3 +185,31 @@ To think about this a bit more clearly, lets come up with another example for co
 
 # A better example of cleveland dot plots
 
+When looking at the example plot
+![Cleveland Dot Plot Example.](/img/unnamed-chunk-10-1.png)
+
+When looking at example plots like the one above, I like to think about it in terms of how can I do the same thing but for footy and how would my variables/values/observations change. 
+
+So if I wanted to do the same plot but for footy ruckman, I would change the city axis to be ruckman, the gender variable to be years I want to compare and to be measured on the same values I would use say SC scores. 
+
+So lets get the top 10 ruckman in 2016 and see how they stack up their versions of themselves today. 
+
+```{r}
+df2%>%
+  filter(Season==2016)%>%
+  filter(HO>15)%>%
+  group_by(Player)%>%
+  summarise(ave.SC=mean(SC))%>%
+  arrange(desc(ave.SC))
+
+```
+This is where being a nuffie comes in handy and you can overlay your domain expertise. We hopefully know that Shane Mumford has retired so probably shouldn't be used. Archie smith is based off three games 
+
+We can check that by using the below script
+
+```{r}
+df2%>%
+  filter(Season==2016)%>%
+  filter(Player=="Archie Smith")
+```
+
