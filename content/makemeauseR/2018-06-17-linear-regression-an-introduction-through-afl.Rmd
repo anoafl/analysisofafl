@@ -119,6 +119,8 @@ So the idea is, we start off with this idea of a [null hypothesis](https://www.n
 
 So we have our null hypothesis, we assume nothings going on and then we calculate the probability of getting some test statistic as or more extreme to the one observed (4.726). So if nothing was going on here, the probability of getting the value of 4.726 for Kicks is small (<2e-16). So, if the P-value is small, what you're seeing is the probability of observing a test statistic as extreme as the one seen, is low if the null hypothesis were true (nothing is going on $\beta_{1} = 0$)
 
+### Fantasy scores are just a linear model right?  
+
 Something that might be fun to do (well is fun to ) you can actually get how [AF calculates the scores](https://fantasy.afl.com.au/help/index.html#/guidelines). So why not knowing this put in those variables and you should get what the coefficients are right?
 
 ```{r}
@@ -131,11 +133,27 @@ eq1<-lm(AF~K +HB+M +T +FF +FA+HO +G +B, data=df)
 summary(eq1)
 
 ```
+Few things to note if you are new to R/Stats. 
+
+We knew beforehand that FA (free kicks against) had a negative impact on the AF total, but we didn't go -FA in our lm why?
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+eq1<-lm(AF~K +HB+M +T +FF -FA+HO +G +B, data=df)
+summary(eq1)
+
+
+```
+
 Yep there you go, the intercept is basically 0, Kicks are 3, handballs are 2, marks are 3, tackles are 4 etc. We can also see our $R^2$ is 1
 
 # Using Linear regression to build a team rating system
 
-Before you get all angry and don't @me here me out. Linear regression is a powerful tool and can even form part of a [PhD thesis](https://researchbank.rmit.edu.au/eserv/rmit:160744/Ryall.pdf) in statistics. Its a great building block to build from just as more commonly used ELOS are another great building block and another post. 
+Before you get all angry and don't @me here me out. Linear regression is a powerful tool and can even form part of a [PhD thesis](https://researchbank.rmit.edu.au/eserv/rmit:160744/Ryall.pdf) in footy statistics. Its a great building block to build from just as more commonly used ELOS are another great building block and another post. 
 
 
 
