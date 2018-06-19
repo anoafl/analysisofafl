@@ -155,7 +155,7 @@ summary(eq1)</code></pre>
 <p>Now we have margin as our outcome variable we want to try and predict what would be our actual predictors? Well we can’t use the actual Home.Score and Away.Score, thats just silly.</p>
 <p>Lets write it out like:</p>
 <p><span class="math inline">\(margin_{i} = home_quality_{i} - away_quality_{i} + \epsilon\)</span></p>
-<p>W</p>
+<p>Where for each game we have our home team, our away team and some measure of their quality.</p>
 <pre class="r"><code>library(tidyverse)
 library(fitzRoy)
 matches&lt;-fitzRoy::get_match_results()
