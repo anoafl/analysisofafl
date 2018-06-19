@@ -149,7 +149,7 @@ teams<-unique(matches$Home.Team)
 all.teams <- sort(unique(teams))
 y <- with(matches, Home.Points-Away.Points)
 
-X0 <- as.data.frame(matrix(0,nrow(matches),length(all.teams)))
+X0 <- as_tibble(matrix(0,nrow(matches),length(all.teams)))
 names(X0) <- all.teams
 
 for(mtrx in all.teams) {
@@ -157,10 +157,10 @@ for(mtrx in all.teams) {
 }
 X <- X0[,names(X0) != "Carlton"]
 
-mod <- lm(y ~ 0 + ., data=X)
-head(coef(summary(mod)))
-sc<-as.data.frame(coef(summary(mod)))
-sc[with(sc, order(-Estimate)), ]
+linearmodel <- lm(y ~ 0 + ., data=X)
+head(coef(summary(linearmodel)))
+linearmodelratings<-as.data.frame(coef(summary(linearmodel)))
+linearmodelratings[with(linearmodelratings, order(-Estimate)), ]
 
 ```
 
