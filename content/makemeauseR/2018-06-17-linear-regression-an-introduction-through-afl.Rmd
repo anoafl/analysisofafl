@@ -133,21 +133,7 @@ eq1<-lm(AF~K +HB+M +T +FF +FA+HO +G +B, data=df)
 summary(eq1)
 
 ```
-Few things to note if you are new to R/Stats. 
 
-We knew beforehand that FA (free kicks against) had a negative impact on the AF total, but we didn't go -FA in our lm why?
-
-```{r}
-library(fitzRoy)
-library(tidyverse)
-
-df<-fitzRoy::player_stats
-
-eq1<-lm(AF~K +HB+M +T +FF -FA+HO +G +B, data=df)
-summary(eq1)
-
-
-```
 
 Yep there you go, the intercept is basically 0, Kicks are 3, handballs are 2, marks are 3, tackles are 4 etc. We can also see our $R^2$ is 1
 

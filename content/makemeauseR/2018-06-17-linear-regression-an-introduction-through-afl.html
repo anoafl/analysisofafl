@@ -108,6 +108,8 @@ summary(eq1)</code></pre>
 </blockquote>
 <p>So the idea is, we start off with this idea of a <a href="https://www.ncbi.nlm.nih.gov/pubmed/23249368">null hypothesis</a> which in our example above for the coeffcient for kicks is that nothing is going on, that <span class="math inline">\(\beta_{1}\)</span> our coefficient for kicks is equal to 0. This <em>nothing going on here</em> is the same null hypothesis test for all the coefficents that lm would have produced estimates for if we added in more variables like handballs, marks, tackles etc.</p>
 <p>So we have our null hypothesis, we assume nothings going on and then we calculate the probability of getting some test statistic as or more extreme to the one observed (4.726). So if nothing was going on here, the probability of getting the value of 4.726 for Kicks is small (&lt;2e-16). So, if the P-value is small, what you’re seeing is the probability of observing a test statistic as extreme as the one seen, is low if the null hypothesis were true (nothing is going on <span class="math inline">\(\beta_{1} = 0\)</span>)</p>
+<div id="fantasy-scores-are-just-a-linear-model-right" class="section level3">
+<h3>Fantasy scores are just a linear model right?</h3>
 <p>Something that might be fun to do (well is fun to ) you can actually get how <a href="https://fantasy.afl.com.au/help/index.html#/guidelines">AF calculates the scores</a>. So why not knowing this put in those variables and you should get what the coefficients are right?</p>
 <pre class="r"><code>library(fitzRoy)
 library(tidyverse)
@@ -142,11 +144,46 @@ summary(eq1)</code></pre>
 ## Residual standard error: 1.438e-11 on 76066 degrees of freedom
 ## Multiple R-squared:      1,  Adjusted R-squared:      1 
 ## F-statistic: 3.053e+28 on 9 and 76066 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Few things to note if you are new to R/Stats.</p>
+<p>We knew beforehand that FA (free kicks against) had a negative impact on the AF total, but we didn’t go -FA in our lm why?</p>
+<pre class="r"><code>library(fitzRoy)
+library(tidyverse)
+
+df&lt;-fitzRoy::player_stats
+
+eq1&lt;-lm(AF~K +HB+M +T +FF -FA+HO +G +B, data=df)
+summary(eq1)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = AF ~ K + HB + M + T + FF - FA + HO + G + B, data = df)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -21.4556  -0.9086  -0.0335   2.3477   6.3620 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -1.887584   0.030402  -62.09   &lt;2e-16 ***
+## K            3.002715   0.002998 1001.65   &lt;2e-16 ***
+## HB           1.979953   0.002662  743.90   &lt;2e-16 ***
+## M            3.012356   0.005045  597.15   &lt;2e-16 ***
+## T            3.898629   0.004916  793.05   &lt;2e-16 ***
+## FF           0.847826   0.011161   75.97   &lt;2e-16 ***
+## HO           0.950191   0.001661  572.06   &lt;2e-16 ***
+## G            5.926926   0.011329  523.15   &lt;2e-16 ***
+## B            0.953057   0.014988   63.59   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.897 on 76067 degrees of freedom
+## Multiple R-squared:  0.9888, Adjusted R-squared:  0.9888 
+## F-statistic: 8.367e+05 on 8 and 76067 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Yep there you go, the intercept is basically 0, Kicks are 3, handballs are 2, marks are 3, tackles are 4 etc. We can also see our <span class="math inline">\(R^2\)</span> is 1</p>
+</div>
 </div>
 <div id="using-linear-regression-to-build-a-team-rating-system" class="section level1">
 <h1>Using Linear regression to build a team rating system</h1>
-<p>Before you get all angry and don’t <span class="citation">@me</span> here me out. Linear regression is a powerful tool and can even form part of a <a href="https://researchbank.rmit.edu.au/eserv/rmit:160744/Ryall.pdf">PhD thesis</a> in statistics. Its a great building block to build from just as more commonly used ELOS are another great building block and another post.</p>
+<p>Before you get all angry and don’t <span class="citation">@me</span> here me out. Linear regression is a powerful tool and can even form part of a <a href="https://researchbank.rmit.edu.au/eserv/rmit:160744/Ryall.pdf">PhD thesis</a> in footy statistics. Its a great building block to build from just as more commonly used ELOS are another great building block and another post.</p>
 <pre class="r"><code>library(tidyverse)
 library(fitzRoy)
 matches&lt;-fitzRoy::get_match_results()
@@ -155,7 +192,7 @@ teams&lt;-unique(matches$Home.Team)
 all.teams &lt;- sort(unique(teams))
 y &lt;- with(matches, Home.Points-Away.Points)
 
-X0 &lt;- as.data.frame(matrix(0,nrow(matches),length(all.teams)))
+X0 &lt;- as_tibble(matrix(0,nrow(matches),length(all.teams)))
 names(X0) &lt;- all.teams
 
 for(mtrx in all.teams) {
@@ -163,8 +200,8 @@ for(mtrx in all.teams) {
 }
 X &lt;- X0[,names(X0) != &quot;Carlton&quot;]
 
-mod &lt;- lm(y ~ 0 + ., data=X)
-head(coef(summary(mod)))</code></pre>
+linearmodel &lt;- lm(y ~ 0 + ., data=X)
+head(coef(summary(linearmodel)))</code></pre>
 <pre><code>##                   Estimate Std. Error    t value     Pr(&gt;|t|)
 ## Adelaide         48.061201   10.08678  4.7647734 3.747107e-06
 ## `Brisbane Lions` -9.127578   10.37399 -0.8798521 3.800509e-01
@@ -172,8 +209,8 @@ head(coef(summary(mod)))</code></pre>
 ## Essendon         20.508245   10.06377  2.0378301 4.295321e-02
 ## Footscray        15.920944   10.39112  1.5321677 1.271444e-01
 ## Fremantle        -4.472357   10.38228 -0.4307685 6.671250e-01</code></pre>
-<pre class="r"><code>sc&lt;-as.data.frame(coef(summary(mod)))
-sc[with(sc, order(-Estimate)), ]</code></pre>
+<pre class="r"><code>linearmodelratings&lt;-as.data.frame(coef(summary(linearmodel)))
+linearmodelratings[with(linearmodelratings, order(-Estimate)), ]</code></pre>
 <pre><code>##                    Estimate Std. Error    t value     Pr(&gt;|t|)
 ## Adelaide          48.061201  10.086776  4.7647734 3.747107e-06
 ## `Port Adelaide`   38.558691  10.293608  3.7458868 2.382649e-04
