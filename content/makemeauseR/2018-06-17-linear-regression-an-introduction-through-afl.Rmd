@@ -68,7 +68,7 @@ Another quote from George Box which is my personal favourite:
 
 So there you go, all models are wrong, we can't take into account all the things that might effect our dependant variable. Think about team ratings (we will build a team rating linear regression later) how can you possible take into account all the factors that might affect how good a team is. There has and always will be some natural variable and some uncertainty around our estimates and isn't that beautiful. 
 
-So now we now, that there will always be somethings that we can't account for and things we could account for but don't want to be it for model simplicity/interprebility, data issues or a host of other reasons. Hence we update our little equation above all these random and unaccounted for things `e` , and we write our new equation as `AF ~ Kicks + e` we can think of `e` as all the things that effect fantasy scores that are not kicks. 
+So now we now, that there will always be somethings that we can't account for and things we could account for but don't want to be it for model simplicity/interprebility, data issues or a host of other reasons. Hence we update our little equation above all these random and unaccounted for things $\epsilon$ , and we write our new equation as $AF ~ Kicks + \epsilon$ we can think of $\epsilon$ as all the things that effect fantasy scores that are not kicks. 
 
 # Get me my coefficiants 
 
