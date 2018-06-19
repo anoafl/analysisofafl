@@ -150,6 +150,12 @@ summary(eq1)</code></pre>
 <div id="using-linear-regression-to-build-a-team-rating-system" class="section level1">
 <h1>Using Linear regression to build a team rating system</h1>
 <p>Before you get all angry and don’t <span class="citation">@me</span> here me out. Linear regression is a powerful tool and can even form part of a <a href="https://researchbank.rmit.edu.au/eserv/rmit:160744/Ryall.pdf">PhD thesis</a> in footy statistics. Its a great building block to build from just as more commonly used ELOS are another great building block and another post.</p>
+<p>Using what we learnt above, we might want to formulate our regression so that we can predict the margin of win/loss for the home team.</p>
+<p><span class="math inline">\(margin = Home.Score - Away.Score\)</span></p>
+<p>Now we have margin as our outcome variable we want to try and predict what would be our actual predictors? Well we can’t use the actual Home.Score and Away.Score, thats just silly.</p>
+<p>Lets write it out like:</p>
+<p><span class="math inline">\(margin_{i} = home_quality_{i} - away_quality_{i} + \epsilon\)</span></p>
+<p>W</p>
 <pre class="r"><code>library(tidyverse)
 library(fitzRoy)
 matches&lt;-fitzRoy::get_match_results()

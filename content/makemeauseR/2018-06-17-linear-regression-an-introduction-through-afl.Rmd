@@ -141,6 +141,18 @@ Yep there you go, the intercept is basically 0, Kicks are 3, handballs are 2, ma
 
 Before you get all angry and don't @me here me out. Linear regression is a powerful tool and can even form part of a [PhD thesis](https://researchbank.rmit.edu.au/eserv/rmit:160744/Ryall.pdf) in footy statistics. Its a great building block to build from just as more commonly used ELOS are another great building block and another post. 
 
+Using what we learnt above, we might want to formulate our regression so that we can predict the margin of win/loss for the home team. 
+
+$margin = Home.Score - Away.Score$ 
+
+Now we have margin as our outcome variable we want to try and predict what would be our actual predictors? Well we can't use the actual Home.Score and Away.Score, thats just silly. 
+
+Lets write it out like:
+
+$margin_{i} = home_quality_{i} - away_quality_{i} + \epsilon$
+
+Where for each game we have our home team, our away team and some measure of their quality. 
+
 
 
 
