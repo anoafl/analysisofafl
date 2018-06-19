@@ -153,10 +153,13 @@ $margin_{i} = home_quality_{i} - away_quality_{i} + \epsilon$
 
 Where for each game we have our home team, our away team and some measure of their quality. 
 
-So how do we do this as a regression? 
+### So how do we do this as a regression? 
 
-`$y_{i} = \sum_{x}_{ij} \beta{j} +\epsilon $`
 
+
+$y_{i} = \sum x_{ij} \beta_{j} + \epsilon$
+ 
+ 
 
 ```{r}
 library(tidyverse)

@@ -156,8 +156,9 @@ summary(eq1)</code></pre>
 <p>Lets write it out like:</p>
 <p><span class="math inline">\(margin_{i} = home_quality_{i} - away_quality_{i} + \epsilon\)</span></p>
 <p>Where for each game we have our home team, our away team and some measure of their quality.</p>
-<p>So how do we do this as a regression?</p>
-<p><code>$y_{i} = \sum_{x}_{ij} \beta{j} +\epsilon $</code></p>
+<div id="so-how-do-we-do-this-as-a-regression" class="section level3">
+<h3>So how do we do this as a regression?</h3>
+<p><span class="math inline">\(y_{i} = \sum x_{ij} \beta_{j} + \epsilon\)</span></p>
 <pre class="r"><code>library(tidyverse)
 library(fitzRoy)
 matches&lt;-fitzRoy::get_match_results()
@@ -203,4 +204,5 @@ linearmodelratings[with(linearmodelratings, order(-Estimate)), ]</code></pre>
 ## Fremantle         -4.472357  10.382276 -0.4307685 6.671250e-01
 ## `Gold Coast`      -7.541466  10.172218 -0.7413788 4.593792e-01
 ## `Brisbane Lions`  -9.127578  10.373991 -0.8798521 3.800509e-01</code></pre>
+</div>
 </div>
