@@ -155,7 +155,7 @@ Where for each game we have our home team, our away team and some measure of the
 
 So how do we do this as a regression? 
 
-
+`$y_{i} = \sum_{x}_{ij} \beta{j} +\epsilon $`
 
 
 ```{r}
