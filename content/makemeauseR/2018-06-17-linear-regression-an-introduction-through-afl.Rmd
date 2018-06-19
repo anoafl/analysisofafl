@@ -1,0 +1,170 @@
+---
+title : "Linear Regression an Introduction Through AFL"
+description : "Learning linear regression with AFL examples"
+author : "Robert Nguyen"
+date : 2018-06-17
+tags : ["regression", "p-values","fitzRoy","modelling"]
+
+---
+Linear regression is an amazingly powerful concept in statistical modelling. It forms a major part of lots of first year statistics cources and how to deal with problems with linear regression can form second year units by themselves!
+
+This post goal is to through the use of AFL data provide an intituitive guide to linear regression. 
+
+So why use AFL data? 
+
+With learning context and motivation are key. I think this is especially true with statistics. Hopefully you have found this blog through a combination of wanting to learn some stats, some R and an interest in footy. 
+
+# Linear Regression
+
+Lets think about an example we know to be true. Lots of people do fantasy sports be it for fun with mates or having a punt. 
+We know that [AFL Fantasy](https://fantasy.afl.com.au/help/index.html#/guidelines) points are linear in nature. But lets pretend for a second that we didn't know how points were allocated for fantasy. 
+
+We are interested in looking at whether the amount of kicks influences the fantsy points and if so by how much?
+
+# Step One - Get the data
+
+Our first step would be just to get the data and explore it. 
+
+Thankfully there exists an [AFL R package](https://github.com/jimmyday12/fitzRoy) so we can go exploring.
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+```
+
+# Step Two - Plot the data
+
+Step two, in practice I don't think is done as often as it should be. We can learn lots of things from visually inspecting our data. 
+
+```{r}
+df%>%
+  select(K,AF)%>%
+  ggplot(aes(x=K,y=AF))+geom_point()
+
+```
+Looking at this it would seem as though on average if a player has more kicks they will get more fantasy points. 
+Intuitively the relationship looks fairly obvious, players who get more kicks get more fantasy points. BUT we might want a more precise estimate of the relationship between kicks and fantasy points. This is where our linear regression comes in handy dandy.
+
+# Step Three - The linear regression
+
+The way we have posed this problem is that AF (Fantasy scores) is a function of kicks. We would write this out to begin with as 
+
+`AF ~ Kicks` This reads as AF (our dependant variable as it depends on Kicks) is a function of Kicks (our independant variable). 
+
+### All models are wrong!
+
+George Box:
+
+> All models are wrong but some are useful
+
+Models are by nature a simplifcation of reality, in this case we know that Kicks are not the only variable that has an effect on fantasy scores. 
+  
+Another quote from George Box which is my personal favourite:
+
+>Since all models are wrong the scientist cannot obtain a "correct" one by excessive elaboration. On the contrary following William of Occam he should seek an economical description of natural phenomena. Just as the ability to devise simple but evocative models is the signature of the great scientist so overelaboration and overparameterization is often the mark of mediocrity.
+
+So there you go, all models are wrong, we can't take into account all the things that might effect our dependant variable. Think about team ratings (we will build a team rating linear regression later) how can you possible take into account all the factors that might affect how good a team is. There has and always will be some natural variable and some uncertainty around our estimates and isn't that beautiful. 
+
+So now we now, that there will always be somethings that we can't account for and things we could account for but don't want to be it for model simplicity/interprebility, data issues or a host of other reasons. Hence we update our little equation above all these random and unaccounted for things `e` , and we write our new equation as `AF ~ Kicks + e` we can think of `e` as all the things that effect fantasy scores that are not kicks. 
+
+# Get me my coefficiants 
+
+
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+eq1<-lm(AF~K, data=df)
+summary(eq1)
+
+
+```
+
+So what is going on here? 
+
+First, we load our packages that we need (fitzRoy, tidyverse). Then we get the player_stats data and call it df `df<-fitzRoy::player_stats`. After that we fit our linear regression which we recall was `AF~K` we do this using the `lm` function in R and the dataset we use to fit the model is `df` from earlier. 
+
+Then we use `summary(eq1)` to see our output and coefficients. 
+
+Theres a lot going on there, so lets dig in and find what we are looking for. 
+
+# Question and Answers
+
+I am going to give something new a go here so I may even have to rewrite this blog post!
+
+**You said earlier that a model can't explain everything but it can explain somethings?**
+
+*That is true, a model is an abstraction away from reality, and there will always be some unexplained variation that we can't or choose not to control for. A measure of the variation that our models explains is our * `Multiple R-squared` *for this example our* `Mutliple R-squared:`* is 0.6235 you can interpret this by saying that 62.35% of the variation in fantasy scores is accounted for by our model (in this case just kicks)* 
+
+In general you want your 	$R^2$  `Multple R-squared` to be higher rather than lower. The question of how high depends on what kind of data you are looking at. AFL modelling can be messy and noisy and affected by a whole heap of things outside of the model. But in this specific example because we know that fantasy scores are a direct function of the game statistics we would expect an 	$R^2$ as close to one as possible if we knew all the variables in the fantasy scores. 
+
+**What about this significance test and p-values that everyone is crazy for can you please tell me more**
+
+That is a great question and you have really [opened](https://simplystatistics.org/2012/01/06/p-values-and-hypothesis-testing-get-a-bad-rap-but-we/) [up](http://www.amstat.org/asa/files/pdfs/P-ValueStatement.pdf) [a](https://www.nature.com/news/statisticians-issue-warning-over-misuse-of-p-values-1.19503) [can](http://www.fharrell.com/post/pval-litany/) [of](http://fivethirtyeight.com/features/statisticians-found-one-thing-they-can-agree-on-its-time-to-stop-misusing-p-values/) [worms](http://www.stat.columbia.edu/~gelman/research/unpublished/p_hacking.pdf).  
+
+**Great so what is a the bloody thing!**
+
+From the [ASA](https://amstat.tandfonline.com/doi/abs/10.1080/00031305.2016.1154108#.Wyd4QKczZPY) statment on p-values
+
+> Informally, a *p*-value is the probability under a specified statistical model that a statistical summary of the data (e.g., the sample mean difference between two compared groups) would be equal to or more extreme than its observed value.
+
+
+So the idea is, we start off with this idea of a [null hypothesis](https://www.ncbi.nlm.nih.gov/pubmed/23249368) which in our example above for the coeffcient for kicks is that nothing is going on, that $\beta_{1}$ our coefficient for kicks is equal to 0. This *nothing going on here* is the same null hypothesis test for all the coefficents that lm would have produced estimates for if we added in more variables like handballs, marks, tackles etc. 
+
+So we have our null hypothesis, we assume nothings going on and then we calculate the probability of getting some test statistic as or more extreme to the one observed (4.726). So if nothing was going on here, the probability of getting the value of 4.726 for Kicks is small (<2e-16). So, if the P-value is small, what you're seeing is the probability of observing a test statistic as extreme as the one seen, is low if the null hypothesis were true (nothing is going on $\beta_{1} = 0$)
+
+Something that might be fun to do (well is fun to ) you can actually get how [AF calculates the scores](https://fantasy.afl.com.au/help/index.html#/guidelines). So why not knowing this put in those variables and you should get what the coefficients are right?
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats
+
+eq1<-lm(AF~K +HB+M +T +FF +FA+HO +G +B, data=df)
+summary(eq1)
+
+```
+Yep there you go, the intercept is basically 0, Kicks are 3, handballs are 2, marks are 3, tackles are 4 etc. We can also see our $R^2$ is 1
+
+# Using Linear regression to build a team rating system
+
+Before you get all angry and don't @me here me out. Linear regression is a powerful tool and can even form part of a [PhD thesis](https://researchbank.rmit.edu.au/eserv/rmit:160744/Ryall.pdf) in statistics. Its a great building block to build from just as more commonly used ELOS are another great building block and another post. 
+
+
+
+
+```{r}
+library(tidyverse)
+library(fitzRoy)
+matches<-fitzRoy::get_match_results()
+matches<-matches%>%filter(Season==2017)
+teams<-unique(matches$Home.Team)
+all.teams <- sort(unique(teams))
+y <- with(matches, Home.Points-Away.Points)
+
+X0 <- as.data.frame(matrix(0,nrow(matches),length(all.teams)))
+names(X0) <- all.teams
+
+for(mtrx in all.teams) {
+  X0[[mtrx]] <- 1*(matches$Home.Team==mtrx) - 1*(matches$Away.Team==mtrx)
+}
+X <- X0[,names(X0) != "Carlton"]
+
+mod <- lm(y ~ 0 + ., data=X)
+head(coef(summary(mod)))
+sc<-as.data.frame(coef(summary(mod)))
+sc[with(sc, order(-Estimate)), ]
+
+```
+
+
+
+
+

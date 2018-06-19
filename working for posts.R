@@ -92,3 +92,22 @@ df2%>%
   ggplot(aes(x=aveHO,y=Season))+geom_dotplot()
 
 df46 <-  swiss %>% rownames_to_column("Province")
+
+library(tidyverse)
+df3<-df2%>%
+  filter(Season %in% c(2017,2018))%>%
+  filter(Player =="Dustin Martin") %>%
+group_by(Season)%>%
+  summarise(ave.ho=mean(HO),
+            ave.CM=mean(CM),
+            ave.SC=mean(SC),
+            ave.MG=mean(MG),
+            ave.ITC=mean(ITC), 
+            ave.AF=mean(AF),
+            ave.CP=mean(CP),
+            ave.Mi5=mean(MI5))
+df4<-gather(df3,variables, values, -Season)   
+df4%>%   
+  ggplot(aes(x=as.factor(df4$Season), y=values)) +
+  geom_point()+
+  facet_wrap(~variables,scales = "free")
