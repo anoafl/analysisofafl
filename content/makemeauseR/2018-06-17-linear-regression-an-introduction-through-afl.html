@@ -158,8 +158,8 @@ y &lt;- with(matches, Home.Points-Away.Points)
 X0 &lt;- as.data.frame(matrix(0,nrow(matches),length(all.teams)))
 names(X0) &lt;- all.teams
 
-for(tm in all.teams) {
-  X0[[tm]] &lt;- 1*(matches$Home.Team==tm) - 1*(matches$Away.Team==tm)
+for(mtrx in all.teams) {
+  X0[[mtrx]] &lt;- 1*(matches$Home.Team==mtrx) - 1*(matches$Away.Team==mtrx)
 }
 X &lt;- X0[,names(X0) != &quot;Carlton&quot;]
 
