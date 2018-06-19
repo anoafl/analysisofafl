@@ -144,40 +144,6 @@ summary(eq1)</code></pre>
 ## Residual standard error: 1.438e-11 on 76066 degrees of freedom
 ## Multiple R-squared:      1,  Adjusted R-squared:      1 
 ## F-statistic: 3.053e+28 on 9 and 76066 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>Few things to note if you are new to R/Stats.</p>
-<p>We knew beforehand that FA (free kicks against) had a negative impact on the AF total, but we didn’t go -FA in our lm why?</p>
-<pre class="r"><code>library(fitzRoy)
-library(tidyverse)
-
-df&lt;-fitzRoy::player_stats
-
-eq1&lt;-lm(AF~K +HB+M +T +FF -FA+HO +G +B, data=df)
-summary(eq1)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = AF ~ K + HB + M + T + FF - FA + HO + G + B, data = df)
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -21.4556  -0.9086  -0.0335   2.3477   6.3620 
-## 
-## Coefficients:
-##              Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) -1.887584   0.030402  -62.09   &lt;2e-16 ***
-## K            3.002715   0.002998 1001.65   &lt;2e-16 ***
-## HB           1.979953   0.002662  743.90   &lt;2e-16 ***
-## M            3.012356   0.005045  597.15   &lt;2e-16 ***
-## T            3.898629   0.004916  793.05   &lt;2e-16 ***
-## FF           0.847826   0.011161   75.97   &lt;2e-16 ***
-## HO           0.950191   0.001661  572.06   &lt;2e-16 ***
-## G            5.926926   0.011329  523.15   &lt;2e-16 ***
-## B            0.953057   0.014988   63.59   &lt;2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 2.897 on 76067 degrees of freedom
-## Multiple R-squared:  0.9888, Adjusted R-squared:  0.9888 
-## F-statistic: 8.367e+05 on 8 and 76067 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Yep there you go, the intercept is basically 0, Kicks are 3, handballs are 2, marks are 3, tackles are 4 etc. We can also see our <span class="math inline">\(R^2\)</span> is 1</p>
 </div>
 </div>
