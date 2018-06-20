@@ -13,7 +13,7 @@ Regression to the mean as a concept was first introduced in 1886 by Galton who o
 
 Regression to the mean is a powerful concept in statistics and how can we use it? 
 
-The following will be a simple goal-kicking example but if you wanted to, you could use something like supercoach scores to beat your friends or the bookie. 
+The following will be a simple goal-kicking example but if you wanted to, you could use something like supercoach scores to beat your friends or the bookie. Maybe you want to use it more at a [team level](https://www.foxsports.com.au/afl/worst-in-50-years-true-extent-of-afls-scoring-woes-revealed-after-one-of-lowestscoring-rounds-in-recent-history/news-story/d0cc1c3f86844aca7e25f6e5b155455e?nk=c85e2bf5aaa4e57ec96ed23c3a076d3c-1529480215? Will [total scores return](https://www.theage.com.au/sport/afl/afl-to-keep-close-watch-on-dip-in-scoring-20180503-p4zd9g.html) via some regression to the mean?
 
 
 # Step 1 create the dataset
