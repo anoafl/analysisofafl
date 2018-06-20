@@ -37,7 +37,7 @@ data%&gt;%group_by(Player,Team, Season)%&gt;%
   mutate(shots= TG + TB)
 
 
-subset = data$shots &gt; 9
+subset = data$shots &gt; 20
 
 
 good = data$TG[subset]
@@ -49,7 +49,7 @@ S = good/had_a_go
 
 muT = sum(good)/sum(had_a_go)
 print(muT)</code></pre>
-<pre><code>## [1] 0.5907544</code></pre>
+<pre><code>## [1] 0.6022388</code></pre>
 <pre class="r"><code>sigma2L = muT*(1-muT)/had_a_go
 
 sigma2T = 0
@@ -59,22 +59,22 @@ for (i in 1:100000) {
   sigma2T = sum(weight*((S - muT)^2 - sigma2L))/sum(weight)
 }
 print(sigma2T)</code></pre>
-<pre><code>## [1] 0.001712824</code></pre>
+<pre><code>## [1] 0.00152793</code></pre>
 <pre class="r"><code>sqrt(sigma2T)</code></pre>
-<pre><code>## [1] 0.04138628</code></pre>
+<pre><code>## [1] 0.03908875</code></pre>
 <pre class="r"><code>skill = (muT/sigma2T + S/sigma2L)/(1/sigma2T + 1/sigma2L)
 
 
 head(sort(skill, decreasing = TRUE))</code></pre>
 <pre><code>##       Luke Breust 2014      Tory Dickson 2015 Christopher Mayne 2012 
-##              0.6680231              0.6565840              0.6539409 
+##              0.6706487              0.6601109              0.6579498 
 ##       Drew Petrie 2012        Barry Hall 2011       Cyril Rioli 2016 
-##              0.6510939              0.6492378              0.6481981</code></pre>
+##              0.6547773              0.6531124              0.6523621</code></pre>
 <pre class="r"><code>tail(sort(skill, decreasing = TRUE))</code></pre>
-<pre><code>## Mitch Robinson 2011  Dustin Martin 2013 Daniel Jackson 2011 
-##           0.5424627           0.5423653           0.5375257 
-##    Lewis Jetta 2010  Jack Billings 2017 Lindsay Thomas 2011 
-##           0.5343479           0.5315260           0.5267975</code></pre>
+<pre><code>## Marcus Bontempelli 2017      Dustin Martin 2013     Daniel Jackson 2011 
+##               0.5560256               0.5544383               0.5518497 
+##        Lewis Jetta 2010      Jack Billings 2017     Lindsay Thomas 2011 
+##               0.5488632               0.5441604               0.5398958</code></pre>
 <pre class="r"><code>plot(S, skill, xlim = c(.2, .5), col = &#39;darkorange&#39;)
 abline(0, 1, col = &#39;dodgerblue&#39;)</code></pre>
 <p><img src="/makemeauseR/2018-06-20-regression-to-the-mean_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>

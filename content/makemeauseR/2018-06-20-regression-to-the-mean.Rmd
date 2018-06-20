@@ -32,7 +32,7 @@ data<-data%>%group_by(Player,Team, Season)%>%
   mutate(shots= TG + TB)
 
 
-subset = data$shots > 9
+subset = data$shots > 20
 
 
 good = data$TG[subset]
