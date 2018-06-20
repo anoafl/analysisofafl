@@ -43,9 +43,14 @@ data%>%
 data<-data%>%
   group_by(Player,Team, Season)%>%
   mutate(shots= TG + TB)
+```
 
+# Step Two Subsetting our data, finding ours means
 
-subset = data$shots > 20
+Looking at our earlier plot we see that we have lots of players who have failed to take a single shot at goal. We don't want this to effect what we are doing down the track so lets arbitrary cut off shots at say 20 or more
+
+```{r}
+subset = data$shots > 19
 
 
 good = data$TG[subset]
