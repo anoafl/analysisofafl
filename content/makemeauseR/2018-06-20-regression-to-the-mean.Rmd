@@ -1,0 +1,79 @@
+---
+title : "Regression to the Mean"
+description : "An example using goalkicking"
+author  : "Robert Nguyen"
+date : 2018-06-20
+tags : ["regression", "fitzRoy","modelling"]
+
+---
+
+Regression to the mean is a powerful concept in statistics but what is it really? 
+
+Once you know it you see it everywhere, infact it helps to know, but how can we go about looking at it?
+
+
+```{r}
+
+library(tidyverse)
+library(fitzRoy)
+data<-fitzRoy::player_stats
+
+data<-data%>%group_by(Player, Team, Season)%>%
+  summarise(TG=sum(G), TB=sum(B))
+
+
+
+
+data%>%group_by(Player,Team, Season)%>%
+  mutate(shots= TG + TB)%>%
+  ggplot(aes(x=shots))+geom_histogram(binwidth = 5)
+
+data<-data%>%group_by(Player,Team, Season)%>%
+  mutate(shots= TG + TB)
+
+
+subset = data$shots > 9
+
+
+good = data$TG[subset]
+had_a_go = data$shots[subset]
+names(good) = names(had_a_go) = paste(data$Player[subset], data$Season[subset])
+
+
+S = good/had_a_go
+
+muT = sum(good)/sum(had_a_go)
+print(muT)
+
+sigma2L = muT*(1-muT)/had_a_go
+
+sigma2T = 0
+
+for (i in 1:100000) {
+  weight = 1/(2*(sigma2T + sigma2L)^2)
+  sigma2T = sum(weight*((S - muT)^2 - sigma2L))/sum(weight)
+}
+print(sigma2T)
+
+
+sqrt(sigma2T)
+
+
+skill = (muT/sigma2T + S/sigma2L)/(1/sigma2T + 1/sigma2L)
+
+
+head(sort(skill, decreasing = TRUE))
+tail(sort(skill, decreasing = TRUE))
+
+plot(S, skill, xlim = c(.2, .5), col = 'darkorange')
+abline(0, 1, col = 'dodgerblue')
+
+
+plot(density(S), ylim = c(0, 30), col = 'darkorange',
+     main = 'Distribution of Goal kicking skill in AFL',
+     xlab = 'Goal Kicking  percentage')
+lines(density(skill), col = 'dodgerblue')
+legend('topright', c('True skill', 'Observed'),
+       col = c('dodgerblue', 'darkorange'), lty = 1)
+
+```
