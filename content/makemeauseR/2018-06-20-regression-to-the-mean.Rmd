@@ -16,7 +16,11 @@ Regression to the mean is a powerful concept in statistics and how can we use it
 The following will be a simple goal-kicking example but if you wanted to, you could use something like supercoach scores to beat your friends or the bookie. 
 
 
+# Step 1 create the dataset
 
+Thankfully we can use [fitzRoy](https://github.com/jimmyday12/fitzRoy) for the data we need pretty easily. Here we will take goals (G), behinds (B) and create a variable using `mutate` called `shots` which just represent total shots on goals (we don't have access to kicks that were out on the full or dropped short) so this becomes the sum of goals and behinds.  
+
+We are looking at regression to the mean for goal kicking accuracy on a year to year bases on a player level. Hence our `group_by(Player, Team, Season)`
 
 ```{r}
 
@@ -24,17 +28,20 @@ library(tidyverse)
 library(fitzRoy)
 data<-fitzRoy::player_stats
 
-data<-data%>%group_by(Player, Team, Season)%>%
+data<-data%>%
+  group_by(Player, Team, Season)%>%
   summarise(TG=sum(G), TB=sum(B))
 
 
 
 
-data%>%group_by(Player,Team, Season)%>%
+data%>%
+  group_by(Player,Team, Season)%>%
   mutate(shots= TG + TB)%>%
   ggplot(aes(x=shots))+geom_histogram(binwidth = 5)
 
-data<-data%>%group_by(Player,Team, Season)%>%
+data<-data%>%
+  group_by(Player,Team, Season)%>%
   mutate(shots= TG + TB)
 
 
