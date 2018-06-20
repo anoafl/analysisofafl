@@ -78,15 +78,15 @@ skill = (muT/sigma2T + S/sigma2L)/(1/sigma2T + 1/sigma2L)
 head(sort(skill, decreasing = TRUE))
 tail(sort(skill, decreasing = TRUE))
 
-plot(S, skill, xlim = c(.2, .5), col = 'darkorange')
-abline(0, 1, col = 'dodgerblue')
+plot(S, skill, xlim = c(.2, .5), col = 'orange')
+abline(0, 1, col = 'blue')
 
 
-plot(density(S), ylim = c(0, 30), col = 'darkorange',
+plot(density(S), ylim = c(0, 30), col = 'orange',
      main = 'Distribution of Goal kicking skill in AFL',
      xlab = 'Goal Kicking  percentage')
-lines(density(skill), col = 'dodgerblue')
+lines(density(skill), col = 'blue')
 legend('topright', c('True skill', 'Observed'),
-       col = c('dodgerblue', 'darkorange'), lty = 1)
+       col = c('blue', 'orange'), lty = 1)
 
 ```
