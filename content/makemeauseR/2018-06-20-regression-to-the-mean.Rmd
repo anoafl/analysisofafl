@@ -7,9 +7,15 @@ tags : ["regression", "fitzRoy","modelling"]
 
 ---
 
-Regression to the mean is a powerful concept in statistics but what is it really? 
+We also see this in sports, Hollinger refers to it as the [fluke rule](http://www.espn.com/nba/columns/story?columnist=hollinger_john&page=All-Decline-Team-081031). Bill James calls it the [plexiglas principle](http://grantland.com/the-triangle/fantasy-baseball-nerdy-keys-to-victory-the-plexiglas-principle/), you might call it the [Sports Illustrated curse](https://en.wikipedia.org/wiki/Sports_Illustrated_cover_jinx). They all are different names from different people who have observed the same thing mean reversion or regression to the mean. 
 
-Once you know it you see it everywhere, infact it helps to know, but how can we go about looking at it?
+Regression to the mean as a concept was first introduced in 1886 by Galton who observed that on average taller parents have tall kids but not as tall as them. In otherwords their heights 'shrunk' towards the overall average at the time. 
+
+Regression to the mean is a powerful concept in statistics and how can we use it? 
+
+The following will be a simple goal-kicking example but if you wanted to, you could use something like supercoach scores to beat your friends or the bookie. 
+
+
 
 
 ```{r}
