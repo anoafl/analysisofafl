@@ -1,0 +1,103 @@
+---
+title : "Score Involvements"
+description : "footballistics"
+author : "Robert Nguyen"
+date : 2018-06-21
+tags : []
+
+---
+
+Got an email from someone who was reading the [footballistics book](https://shop.abc.net.au/footballistics) they were really into it and got up to chapter 3. 
+
+They must be a really big Western Bulldogs fan who has a lot of theories as to why after their premiership year in 2016 it seems they have dropped off suddenly, perhaps it has something to do with their spread of score involvements or who is involved in the scoring chain? 
+
+
+Well ask and you shall receive:
+
+# Step one - recreate what is going on in the book
+
+The graph I am interested in recreated to check I understand what is going on here, is the Adelaide Crows graph of % involvement in team scores in 2017. 
+
+```{r}
+fitzRoy::player_stats%>%
+  filter(Season==2017 & Team=="Adelaide")%>%
+  select(Player, SI, G, B, Round)%>%
+  group_by(Round)%>%
+  mutate(SIT=SI/((sum(G)+sum(B))))%>%
+  group_by(Player)%>%
+  summarise(averageSIT=mean(SIT))%>%
+  arrange(desc(averageSIT))  
+
+
+```
+What we can see here is that our leaderboard doesn't quite align to what the book says? So what could be going on here? 
+
+Could be a coding issue? Could be an interpretation issue, or could be something else entirely.
+
+The first thing we could do is do a quick check either manually (checking [footywire](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9314)) 
+
+
+To do this we would run just this part of the script above
+
+```{r}
+
+fitzRoy::player_stats%>%
+  filter(Season==2017 & Team=="Adelaide")%>%
+  select(Player, SI, G, B, Round)%>%
+  group_by(Round)%>%
+  mutate(TG=sum(G), TB=sum(B))%>%
+  mutate(SIT=SI/((sum(G)+sum(B))))
+
+```
+We would need to check if in round 1 2017 Rory Laird was involved in 28.57% of Adelaides scores. We can see he had 10 SI, Adelaides players scored in total 22 goals and 13 behinds. 
+
+```{r}
+10/(22+13)
+
+```
+Looking at the page though, we didn't include the rushed behinds! Perhaps this is the missing data that will get our numbers to align.
+
+One last check before we check if its rushed behinds. Lets make sure we are looking at the right amount of games. 
+
+```{r}
+
+fitzRoy::player_stats%>%
+    filter(Season==2017 & Team=="Adelaide")%>%
+    select(Player, SI, G, B, Round)%>%
+    group_by(Round)%>%
+    mutate(SIT=SI/((sum(G)+sum(B))))%>%
+    group_by(Player)%>%
+    tally()
+```
+
+Here it gives Tex as having played 23 games. Lets move on to see if its the rushed behinds!
+```{r}
+
+df<-  fitzRoy::player_stats%>%filter(Season==2017)
+df2<-fitzRoy::match_results
+df2<-df2%>%filter(Season==2017)
+df3<-select(df2, Date, Round, Home.Team, Home.Goals, Home.Behinds)
+df4<-select(df2, Date, Round, Away.Team, Away.Goals, Away.Behinds)
+colnames(df3)[3]<-"Team"
+colnames(df3)[4]<-"Goals"
+colnames(df3)[5]<-"Behinds"
+colnames(df4)[3]<-"Team"
+colnames(df4)[4]<-"Goals"
+colnames(df4)[5]<-"Behinds"
+
+df5<-rbind(df4,df3)
+
+df6<-inner_join(df,df5, by=c("Team","Date"))
+
+df6%>%filter(Team=="Adelaide")%>%
+  select(Player, SI, Goals, Behinds, Round.x)%>%
+  group_by(Round.x)%>%
+  mutate(SIT=SI/(((Goals)+(Behinds))))%>%
+  group_by(Player)%>%
+  summarise(averageSIT=mean(SIT))%>%
+  arrange(desc(averageSIT))
+  
+
+```
+
+Ok still doesn't seem as though we know what is up post to be updated!

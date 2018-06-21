@@ -12,7 +12,11 @@ tags : ["regression", "fitzRoy","modelling"]
 <p>We also see this in sports, Hollinger refers to it as the <a href="http://www.espn.com/nba/columns/story?columnist=hollinger_john&amp;page=All-Decline-Team-081031">fluke rule</a>. Bill James calls it the <a href="http://grantland.com/the-triangle/fantasy-baseball-nerdy-keys-to-victory-the-plexiglas-principle/">plexiglas principle</a>, you might call it the <a href="https://en.wikipedia.org/wiki/Sports_Illustrated_cover_jinx">Sports Illustrated Jinx</a>. They all are different names from different people who have observed the same thing mean reversion or regression to the mean.</p>
 <p>Regression to the mean as a concept was first introduced in 1886 by Galton who observed that on average taller parents have tall kids but not as tall as them. In otherwords their heights ‘shrunk’ towards the overall average at the time.</p>
 <p>Regression to the mean is a powerful concept in statistics and how can we use it?</p>
-<p>The following will be a simple goal-kicking example but if you wanted to, you could use something like supercoach scores to beat your friends or the bookie.</p>
+<p>The following will be a simple goal-kicking example but if you wanted to, you could use something like supercoach scores to beat your friends or the bookie. Maybe you want to use it more at a [team level](<a href="https://www.foxsports.com.au/afl/worst-in-50-years-true-extent-of-afls-scoring-woes-revealed-after-one-of-lowestscoring-rounds-in-recent-history/news-story/d0cc1c3f86844aca7e25f6e5b155455e?nk=c85e2bf5aaa4e57ec96ed23c3a076d3c-1529480215" class="uri">https://www.foxsports.com.au/afl/worst-in-50-years-true-extent-of-afls-scoring-woes-revealed-after-one-of-lowestscoring-rounds-in-recent-history/news-story/d0cc1c3f86844aca7e25f6e5b155455e?nk=c85e2bf5aaa4e57ec96ed23c3a076d3c-1529480215</a>? Will <a href="https://www.theage.com.au/sport/afl/afl-to-keep-close-watch-on-dip-in-scoring-20180503-p4zd9g.html">total scores return</a> via some regression to the mean?</p>
+<div id="step-1-create-the-dataset" class="section level1">
+<h1>Step 1 create the dataset</h1>
+<p>Thankfully we can use <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> for the data we need pretty easily. Here we will take goals (G), behinds (B) and create a variable using <code>mutate</code> called <code>shots</code> which just represent total shots on goals (we don’t have access to kicks that were out on the full or dropped short) so this becomes the sum of goals and behinds.</p>
+<p>We are looking at regression to the mean for goal kicking accuracy on a year to year bases on a player level. Hence our <code>group_by(Player, Team, Season)</code></p>
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
@@ -25,21 +29,26 @@ tags : ["regression", "fitzRoy","modelling"]
 <pre class="r"><code>library(fitzRoy)
 data&lt;-fitzRoy::player_stats
 
-data&lt;-data%&gt;%group_by(Player, Team, Season)%&gt;%
+data&lt;-data%&gt;%
+  group_by(Player, Team, Season)%&gt;%
   summarise(TG=sum(G), TB=sum(B))
 
 
 
 
-data%&gt;%group_by(Player,Team, Season)%&gt;%
+data%&gt;%
+  group_by(Player,Team, Season)%&gt;%
   mutate(shots= TG + TB)%&gt;%
   ggplot(aes(x=shots))+geom_histogram(binwidth = 5)</code></pre>
 <p><img src="/makemeauseR/2018-06-20-regression-to-the-mean_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<pre class="r"><code>data&lt;-data%&gt;%group_by(Player,Team, Season)%&gt;%
-  mutate(shots= TG + TB)
-
-
-subset = data$shots &gt; 20
+<pre class="r"><code>data&lt;-data%&gt;%
+  group_by(Player,Team, Season)%&gt;%
+  mutate(shots= TG + TB)</code></pre>
+</div>
+<div id="step-two-subsetting-our-data-finding-ours-means" class="section level1">
+<h1>Step Two Subsetting our data, finding ours means</h1>
+<p>Looking at our earlier plot we see that we have lots of players who have failed to take a single shot at goal. We don’t want this to effect what we are doing down the track so lets arbitrary cut off shots at say 20 or more.</p>
+<pre class="r"><code>subset = data$shots &gt; 19
 
 
 good = data$TG[subset]
@@ -51,7 +60,7 @@ S = good/had_a_go
 
 muT = sum(good)/sum(had_a_go)
 print(muT)</code></pre>
-<pre><code>## [1] 0.6022388</code></pre>
+<pre><code>## [1] 0.6009457</code></pre>
 <pre class="r"><code>sigma2L = muT*(1-muT)/had_a_go
 
 sigma2T = 0
@@ -61,29 +70,30 @@ for (i in 1:100000) {
   sigma2T = sum(weight*((S - muT)^2 - sigma2L))/sum(weight)
 }
 print(sigma2T)</code></pre>
-<pre><code>## [1] 0.00152793</code></pre>
+<pre><code>## [1] 0.001543792</code></pre>
 <pre class="r"><code>sqrt(sigma2T)</code></pre>
-<pre><code>## [1] 0.03908875</code></pre>
+<pre><code>## [1] 0.03929112</code></pre>
 <pre class="r"><code>skill = (muT/sigma2T + S/sigma2L)/(1/sigma2T + 1/sigma2L)
 
 
 head(sort(skill, decreasing = TRUE))</code></pre>
 <pre><code>##       Luke Breust 2014      Tory Dickson 2015 Christopher Mayne 2012 
-##              0.6706487              0.6601109              0.6579498 
+##              0.6701927              0.6595703              0.6573508 
 ##       Drew Petrie 2012        Barry Hall 2011       Cyril Rioli 2016 
-##              0.6547773              0.6531124              0.6523621</code></pre>
+##              0.6542362              0.6525512              0.6517646</code></pre>
 <pre class="r"><code>tail(sort(skill, decreasing = TRUE))</code></pre>
-<pre><code>## Marcus Bontempelli 2017      Dustin Martin 2013     Daniel Jackson 2011 
-##               0.5560256               0.5544383               0.5518497 
-##        Lewis Jetta 2010      Jack Billings 2017     Lindsay Thomas 2011 
-##               0.5488632               0.5441604               0.5398958</code></pre>
-<pre class="r"><code>plot(S, skill, xlim = c(.2, .5), col = &#39;darkorange&#39;)
-abline(0, 1, col = &#39;dodgerblue&#39;)</code></pre>
-<p><img src="/makemeauseR/2018-06-20-regression-to-the-mean_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
-<pre class="r"><code>plot(density(S), ylim = c(0, 30), col = &#39;darkorange&#39;,
+<pre><code>## Mitch Robinson 2011  Dustin Martin 2013 Daniel Jackson 2011 
+##           0.5546358           0.5531560           0.5503500 
+##    Lewis Jetta 2010  Jack Billings 2017 Lindsay Thomas 2011 
+##           0.5473482           0.5428329           0.5385269</code></pre>
+<pre class="r"><code>plot(S, skill, xlim = c(.2, .5), col = &#39;orange&#39;)
+abline(0, 1, col = &#39;blue&#39;)</code></pre>
+<p><img src="/makemeauseR/2018-06-20-regression-to-the-mean_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>plot(density(S), ylim = c(0, 30), col = &#39;orange&#39;,
      main = &#39;Distribution of Goal kicking skill in AFL&#39;,
      xlab = &#39;Goal Kicking  percentage&#39;)
-lines(density(skill), col = &#39;dodgerblue&#39;)
+lines(density(skill), col = &#39;blue&#39;)
 legend(&#39;topright&#39;, c(&#39;True skill&#39;, &#39;Observed&#39;),
-       col = c(&#39;dodgerblue&#39;, &#39;darkorange&#39;), lty = 1)</code></pre>
-<p><img src="/makemeauseR/2018-06-20-regression-to-the-mean_files/figure-html/unnamed-chunk-1-3.png" width="672" /></p>
+       col = c(&#39;blue&#39;, &#39;orange&#39;), lty = 1)</code></pre>
+<p><img src="/makemeauseR/2018-06-20-regression-to-the-mean_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+</div>

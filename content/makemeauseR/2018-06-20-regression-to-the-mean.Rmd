@@ -47,7 +47,7 @@ data<-data%>%
 
 # Step Two Subsetting our data, finding ours means
 
-Looking at our earlier plot we see that we have lots of players who have failed to take a single shot at goal. We don't want this to effect what we are doing down the track so lets arbitrary cut off shots at say 20 or more
+Looking at our earlier plot we see that we have lots of players who have failed to take a single shot at goal. We don't want this to effect what we are doing down the track so lets arbitrary cut off shots at say 20 or more.
 
 ```{r}
 subset = data$shots > 19
@@ -55,21 +55,25 @@ subset = data$shots > 19
 
 good = data$TG[subset]
 had_a_go = data$shots[subset]
-names(good) = names(had_a_go) = paste(data$Player[subset], data$Season[subset])
+names(good) = names(had_a_go) = paste(data$Player[subset], data$Season[subset], data$Team[subset])
 
+```
 
-S = good/had_a_go
+I know the above is tidyverse, but sometimes its nice to contrast it with base. 
 
-muT = sum(good)/sum(had_a_go)
-print(muT)
+```{r}
+indl_player_shot_pert = good/had_a_go
 
-sigma2L = muT*(1-muT)/had_a_go
+league_wide_pert = sum(good)/sum(had_a_go)
+print(league_wide_pert)
+
+sigma2L = league_wide_pert*(1-league_wide_pert)/had_a_go
 
 sigma2T = 0
 
 for (i in 1:100000) {
   weight = 1/(2*(sigma2T + sigma2L)^2)
-  sigma2T = sum(weight*((S - muT)^2 - sigma2L))/sum(weight)
+  sigma2T = sum(weight*((indl_player_shot_pert - league_wide_pert)^2 - sigma2L))/sum(weight)
 }
 print(sigma2T)
 
@@ -77,17 +81,17 @@ print(sigma2T)
 sqrt(sigma2T)
 
 
-skill = (muT/sigma2T + S/sigma2L)/(1/sigma2T + 1/sigma2L)
+skill = (league_wide_pert/sigma2T + indl_player_shot_pert/sigma2L)/(1/sigma2T + 1/sigma2L)
 
 
 head(sort(skill, decreasing = TRUE))
 tail(sort(skill, decreasing = TRUE))
 
-plot(S, skill, xlim = c(.2, .5), col = 'orange')
+plot(indl_player_shot_pert, skill, xlim = c(.2, .5), col = 'orange')
 abline(0, 1, col = 'blue')
 
 
-plot(density(S), ylim = c(0, 30), col = 'orange',
+plot(density(indl_player_shot_pert), ylim = c(0, 30), col = 'orange',
      main = 'Distribution of Goal kicking skill in AFL',
      xlab = 'Goal Kicking  percentage')
 lines(density(skill), col = 'blue')
@@ -95,3 +99,83 @@ legend('topright', c('True skill', 'Observed'),
        col = c('blue', 'orange'), lty = 1)
 
 ```
+
+How do we interpret these results? 
+
+You might first look at Luke Breust 2014 and it looks as though hes leading in accuracy you see the number below him `0.6701927` and are now thinking maybe that's how many shots he converted. That is easy to check and we can do that using the script below. 
+
+```{r}
+
+df%>%filter(Player=="Luke Breust" &Season==2014)%>%
+  summarise(TG=sum(G), TB=sum(B))%>%
+  mutate(shotpert=TG/(TG+TB))
+```
+
+We get `0.826087` which is not `0.6701927` so what is going on here? 
+
+Well our `0.6701927` is what we would call our luck adjusted percentage for Luke Breuest in 2014. 
+
+But what does this mean and how do we check it? 
+
+Our skill formula is as follow in R 
+
+```{r, eval=FALSE}
+skill = (league_wide_pert/sigma2T + indl_player_shot_pert/sigma2L)/(1/sigma2T + 1/sigma2L)
+
+```
+
+But what does this mean in english? 
+
+When we think about regression to the mean really we want to know these three things.
+* How good is the league or what is the population average
+* How good was the individual
+* After regressesing the indivual back what is left is their underlying true skill. 
+
+Lets look at the skill formula above, we have our 
+
+* league_wide_pert = 0.6009457 (League wide scoring shot percentage)
+* indl_player_shot_pert= 57/(57+12) (Luke Breust shot percentage for 2014)
+* sigma2T =0.001543792 (underlying true skill standard deviation of league)
+* sigma2L = 0.003475507 (underlying Luke Breust standard deviation for 2014) 
+subbing all that into our skill formula above we get
+
+```
+((0.6009457/0.001543792) + (57/(57+12))/0.003475507 )/((1/0.001543792) + (1/0.003475507))
+```
+Which just happens to be our skill for Luke Breust show earlier. 
+
+With an estimated 0.6701927 or 67.02% true skill for goal conversion, Luke Bruest is above average in true league average skill (0.6009457) and well outside one standard deviation of the population.
+His observed goal conversation percentage is 0.8261, which our estimate using regression to the mean is 0.6701927 which means he is kicking above his true talent level. It can be thought of as hes getting really lucky. Looking at his most recent completed year, he had a observed percentage of 0.66 (33/33+17) in other words as he aged and should have been getting better, he regressed towards his true mean which is still above league average. This year he is again below his best but still above league average. 
+
+```{r}
+
+ fitzRoy::player_stats%>%
+filter(Player=="Luke Breust" &Season==2018)%>%
+  summarise(TG=sum(G),TB=sum(B)) %>%
+  mutate(accuracy=TG/(TG+TB))
+```
+
+
+
+
+This shouldn't surprise us, to put in perspective just how good Luke Breusts raw accuracy is lets create a table ranking players by accuracy over the years. Where not surprisingly he comes out as top of the list, while the mean accuracy of that group is 0.6369235. So it should be no surprise that Lukes accuracy was not sustainable
+
+```{r}
+fitzRoy::afldata%>%
+  select(First.name, Surname, Playing.for, Season, ID, Goals,Behinds)%>%
+  group_by(First.name, Surname, Playing.for, Season, ID)%>%
+  summarise(TG=sum(Goals),TB=sum(Behinds))%>%
+  mutate(accuracy=(TG/(TG+TB)))%>%
+  filter(TG>49 & Season>1964)%>%
+  arrange(desc(accuracy)) 
+
+```
+
+
+
+```{r}
+plot(skill, S)
+
+```
+
+
