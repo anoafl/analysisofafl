@@ -1,6 +1,6 @@
 ---
 title : "Score Involvements"
-description : "footballistics"
+description : "footballistics recreation"
 author : "Robert Nguyen"
 date : 2018-06-21
 tags : []
