@@ -105,8 +105,11 @@ How do we interpret these results?
 You might first look at Luke Breust 2014 and it looks as though hes leading in accuracy you see the number below him `0.6701927` and are now thinking maybe that's how many shots he converted. That is easy to check and we can do that using the script below. 
 
 ```{r}
+library(tidyverse)
+library(fitzRoy)
+data<-fitzRoy::player_stats
 
-df%>%filter(Player=="Luke Breust" &Season==2014)%>%
+data%>%filter(Player=="Luke Breust" & Season==2014)%>%
   summarise(TG=sum(G), TB=sum(B))%>%
   mutate(shotpert=TG/(TG+TB))
 ```
@@ -168,13 +171,6 @@ fitzRoy::afldata%>%
   mutate(accuracy=(TG/(TG+TB)))%>%
   filter(TG>49 & Season>1964)%>%
   arrange(desc(accuracy)) 
-
-```
-
-
-
-```{r}
-plot(skill, S)
 
 ```
 

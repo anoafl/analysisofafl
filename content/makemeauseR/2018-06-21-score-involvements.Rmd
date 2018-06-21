@@ -19,6 +19,8 @@ Well ask and you shall receive:
 The graph I am interested in recreated to check I understand what is going on here, is the Adelaide Crows graph of % involvement in team scores in 2017. 
 
 ```{r}
+library(fitzRoy)
+library(tidyverse)
 fitzRoy::player_stats%>%
   filter(Season==2017 & Team=="Adelaide")%>%
   select(Player, SI, G, B, Round)%>%
