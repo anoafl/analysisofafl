@@ -100,4 +100,4 @@ df6%>%filter(Team=="Adelaide")%>%
 
 ```
 
-Ok still doesn't seem as though we know what is up post to be updated!
+Ok still doesn't seem as though we know what is up, post to be updated!
