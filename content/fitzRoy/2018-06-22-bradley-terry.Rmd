@@ -1,0 +1,11 @@
+---
+title : "Bradley Terry"
+description : "Building a quick Bradley Terry model for AFL"
+author : "Robert Nguyen"
+date : 2018-06-22
+tags : ["regression", "fitzRoy","modelling"]
+
+---
+
+
+You might be reading other sites and see lots of posts on [ELO](https://thearcfooty.com/2016/12/29/introducing-the-arcs-ratings-system/) [models](http://figuringfooty.com/2015/10/09/the-simpelo-team-ratings/)

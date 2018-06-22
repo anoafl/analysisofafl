@@ -1,6 +1,6 @@
 ---
 title : "Is There Another Way to Do Fantasy"
-description : ""
+description : "Is there?"
 author : "Robert Nguyen"
 date : 2018-06-01
 tags : ["fitzRoy", "graphics","R","fantasy","statistics"]
@@ -19,12 +19,12 @@ tags : ["fitzRoy", "graphics","R","fantasy","statistics"]
 <p>To do this using [fitzRoy] and the [tidyverse]</p>
 <pre class="r"><code>library(fitzRoy)
 library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
-## v tibble  1.4.2     v dplyr   0.7.4
-## v tidyr   0.8.0     v stringr 1.3.0
+<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.5
+## v tidyr   0.8.1     v stringr 1.3.0
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------------------------------ tidyverse_conflicts() --
+<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>df&lt;-fitzRoy::player_stats
@@ -44,24 +44,24 @@ df2%&gt;%filter(Player==&quot;Max Gawn&quot;  &amp; Opposition==&quot;Western Bu
 ## 3 2014-06-29   2014 Round 15 Etihad Stadium Max Gawn Melbourne
 ## 4 2015-08-16   2015 Round 20 Etihad Stadium Max Gawn Melbourne
 ## 5 2016-05-15   2016  Round 8            MCG Max Gawn Melbourne
-##         Opposition Status GA Match_id CP UP ED    DE CM MI5 One.Percenters
-## 1 Western Bulldogs   Home  0     5662  4  6  6  60.0  1   1              4
-## 2 Western Bulldogs   Away  0     5742  2  0  1 100.0  0   0              1
-## 3 Western Bulldogs   Away  0     5880  5  4  8  88.9  4   1              4
-## 4 Western Bulldogs   Away  0     6133  4  5  5  55.6  0   0              0
-## 5 Western Bulldogs   Home  0     6242  6  2  3  50.0  1   0              3
-##   BO TOG K HB  D M G B T HO I50 CL CG R50 FF FA  AF SC CCL SCL SI MG TO
-## 1  0  84 6  4 10 5 1 0 6 33   2  2  3   0  2  2 100 92  NA  NA NA NA NA
-## 2  0  56 0  1  1 0 0 0 0  7   0  0  0   0  0  0   9 14  NA  NA NA NA NA
-## 3  0  86 4  5  9 5 1 1 0 23   1  0  1   1  0  1  64 72  NA  NA NA NA NA
-## 4  0  92 5  4  9 2 1 0 4 32   1  2  1   1  1  1  81 74   0   2  6 94  0
-## 5  0  82 3  3  6 2 0 1 1 42   0  2  6   1  0  3  59 49   1   1  3  7  3
-##   ITC T5
-## 1  NA NA
-## 2  NA NA
-## 3  NA NA
-## 4   0  1
-## 5   2  0</code></pre>
+##         Opposition Status Match_id CP UP ED    DE CM GA MI5 One.Percenters
+## 1 Western Bulldogs   Home     5662  4  6  6  60.0  1  0   1              4
+## 2 Western Bulldogs   Away     5742  2  0  1 100.0  0  0   0              1
+## 3 Western Bulldogs   Away     5880  5  4  8  88.9  4  0   1              4
+## 4 Western Bulldogs   Away     6133  4  5  5  55.6  0  0   0              0
+## 5 Western Bulldogs   Home     6242  6  2  3  50.0  1  0   0              3
+##   BO TOG K HB  D M G B T HO GA1 I50 CL CG R50 FF FA  AF SC CCL SCL SI MG
+## 1  0  84 6  4 10 5 1 0 6 33   0   2  2  3   0  2  2 100 92  NA  NA NA NA
+## 2  0  56 0  1  1 0 0 0 0  7   0   0  0  0   0  0  0   9 14  NA  NA NA NA
+## 3  0  86 4  5  9 5 1 1 0 23   0   1  0  1   1  0  1  64 72  NA  NA NA NA
+## 4  0  92 5  4  9 2 1 0 4 32   0   1  2  1   1  1  1  81 74   0   2  6 94
+## 5  0  82 3  3  6 2 0 1 1 42   0   0  2  6   1  0  3  59 49   1   1  3  7
+##   TO ITC T5
+## 1 NA  NA NA
+## 2 NA  NA NA
+## 3 NA  NA NA
+## 4  0   0  1
+## 5  3   2  0</code></pre>
 <p>From there we can see that it is a bit misleading. As we are looking at games going back to 2013 and I do believe that Max Gawn is very different to todays Max Gawn. Another thing was raised was that Max wasn’t the first ruck. We can check this by looking at the matchIds and looking at just those games statistics we would do that like this.</p>
 <pre class="r"><code>df2%&gt;%filter(Match_id %in% c(&quot;5662&quot;,&quot;5742&quot;,&quot;5880&quot;,&quot;6133&quot;,&quot;6242&quot;))%&gt;%
   filter(Team==&quot;Melbourne&quot;)%&gt;%
