@@ -20,10 +20,7 @@ tags : ["regression", "fitzRoy","modelling"]
 <p>A simple Bradley Terry model treats outcomes of games as an independent Bernoulli random variable with a Bernoulli distribution <span class="math inline">\(p_{ij}\)</span></p>
 <p>The log odds corresponding to the probability <span class="math inline">\(p_{ij}\)</span> that team i beats team j is</p>
 <p><span class="math inline">\(log\frac{p_{ij}}{1-p_{ij}} = \beta{i} - \beta{j}\)</span></p>
-<p>The problem is that this is over-parametized which means that its exactly the same if we were to add a fixed constant to all the values of <span class="math inline">\(\beta{i}\)</span> this is a common issue when rating teams and why sometimes you might see a base team being set. For example if we made it such that $_{Adelaide} =0 $ this means that for every other team <span class="math inline">\(\beta_{j}\)</span> represents the log odds of beating adelaide.</p>
-</div>
-<div id="what-about-hga" class="section level1">
-<h1>What about HGA</h1>
+<p>The problem is that this is over-parametized which means that its exactly the same if we were to add a fixed constant to all the values of <span class="math inline">\(\beta{i}\)</span>. # What about HGA</p>
 <p>The model as it stands now doesn’t have home ground advantage. We can incorporate that by including an intercept term <span class="math inline">\(\alpha\)</span></p>
 <p><span class="math inline">\(log\frac{p_{ij}}{1-p_{ij}} = \alpha + \beta{i} - \beta{j}\)</span></p>
 <p>By rearranging the equation we can see how it increases the log-odds of the home team winning by a constant <span class="math inline">\(\alpha\)</span></p>

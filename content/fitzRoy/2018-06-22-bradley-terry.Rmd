@@ -24,7 +24,8 @@ The log odds corresponding to the probability $p_{ij}$  that team i beats team j
 
 $log\frac{p_{ij}}{1-p_{ij}} = \beta{i} - \beta{j}$
 
-The problem is that this is over-parametized which means that its exactly the same if we were to add a fixed constant to all the values of $\beta{i}$.
+The problem is that this is over-parametized which means that its exactly the same if we were to add a fixed constant to all the values of $\beta{i}$
+
 # What about HGA
 
 The model as it stands now doesn't have home ground advantage. We can incorporate that by including an intercept term $\alpha$ 
