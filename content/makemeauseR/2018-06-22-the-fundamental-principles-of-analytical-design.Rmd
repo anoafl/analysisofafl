@@ -1,0 +1,118 @@
+---
+title : "The Fundamental Principles of Analytical Design"
+description : "Learnings from Beautiful Evidence -Tufte"
+author : "Robert Nguyen"
+date : 2018-06-22
+tags : ["fitzRoy", "graphics","R","open science","statistics"]
+
+---
+
+I have just finished reading the book [Beautiful Evidence by Edward Tufte](https://www.amazon.com/Beautiful-Evidence-Edward-R-Tufte/dp/1930824165) and in it he talks about the fundamental principles of analytical design.
+
+## Henri Matisse
+> I do not paint things, I paint only the differences between things
+
+# Show Comparisons, Contrasts, Differences
+
+When looking at a graph or reading a statistic a good question and perhaps even the first question you can ask yourself is what I am comparing this too. 
+
+Think about the recent about AFL being [low scoring](http://www.afl.com.au/news/2018-05-01/leagues-watching-brief-as-scoring-rates-sink). Low scoring compared to what? 
+
+If I were to just show you a [boxplot](http://www.physics.csbsju.edu/stats/box2.html) of AFL scores from this year you might be thinking compared to what? 
+
+
+
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+fitzRoy::get_match_results()%>%
+  mutate(total=Home.Points + Away.Points)%>%
+  filter(Season == 2018)%>%
+  ggplot(aes(y=total, x=as.factor(Season)))+geom_boxplot()
+
+```
+
+That doesn't really tell us much does it? You might say I don't even know if that is low. 
+
+But if I plot the past few seasons, it suddenly becomes a lot more informative don't believe me, look below. 
+
+```{r}
+
+fitzRoy::get_match_results()%>%
+  mutate(total=Home.Points + Away.Points)%>%
+  filter(Season %in% c(2015,2016,2017,2018))%>%
+  ggplot(aes(y=total, x=as.factor(Season)))+geom_boxplot()
+
+```
+
+# Causality, Mechanism, Structure, Explanation
+
+One possible explanation for this drop in scoring rate is due to increased pressure. Players are fitter than ever and the game isn't supposed to open up as much as before. 
+
+```{r}
+
+fitzRoy::player_stats%>%
+  group_by(Season, Round, Team)%>%
+  filter(Season >2014)%>%
+  mutate(tacklesin50total=sum(T5))%>%
+  ggplot(aes(y=tacklesin50total, x=as.factor(Season)))+geom_boxplot()
+
+```
+
+# Multivariate Analysis
+
+> The analysis of cause and effect, intially bivariate, quickly becomes multivariate through such necessary elaborations as the conditions under which the causal relation holds
+
+If there is a relationship between totals and tackles inside 50 we can look at this visually by looking at a scatterplot
+
+We are going to cheat a bit here and instead of joining the match scores with `fitzRoy::get_match_results()` we are just going to sum up the player goals, behinds with the tackles. 
+
+```{r}
+fitzRoy::player_stats%>%
+  group_by(Match_id, Season)%>%
+  filter(Season>2014)%>%
+  summarise(total=6*sum(G)+ sum(B), 
+            totaltacklesin50=sum(T5))%>%
+  ggplot(aes(x=totaltacklesin50, y=total))+geom_point()+ geom_smooth(method='lm')
+
+```
+                                                        
+
+This would be a bivariate example just looking to see if there is anything that looks like a relationship between tackles and totals. It actually look likes  there is a slightly weak negative relationship between tackes inside 50 and totals
+
+We can make compare 3 variables at once by faceting 
+
+```{r}
+fitzRoy::player_stats%>%
+  group_by(Match_id, Season)%>%
+  filter(Season>2014)%>%
+  summarise(total=6*sum(G)+ sum(B), 
+            totaltacklesin50=sum(T5))%>%
+  ggplot(aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method='lm') + facet_wrap(~Season) 
+
+```
+
+# Integration of evidence
+
+```{r}
+
+fitzRoy::player_stats%>%
+  group_by(Match_id, Season)%>%
+  filter(Season>2014)%>%
+  summarise(total=6*sum(G)+ sum(B), 
+            totaltacklesin50=sum(T5))%>%
+  ggplot(aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method='lm')
+
+```
+
+# Documentation
+
+
+
+# Content that means something
+
+
+
+
+
