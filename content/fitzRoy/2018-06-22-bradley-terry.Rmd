@@ -8,4 +8,113 @@ tags : ["regression", "fitzRoy","modelling"]
 ---
 
 
-You might be reading other sites and see lots of posts on [ELO](https://thearcfooty.com/2016/12/29/introducing-the-arcs-ratings-system/) [models](http://figuringfooty.com/2015/10/09/the-simpelo-team-ratings/)
+You might be reading other sites and see lots of posts on [ELO](https://thearcfooty.com/2016/12/29/introducing-the-arcs-ratings-system/) [models](http://figuringfooty.com/2015/10/09/the-simpelo-team-ratings/) this post isn't about building an ELO model yourself that's another post. This post is about how to apply [Bradley Terry] models for AFL
+
+# Why Bother?
+
+Each of the 18 footy teams plays 22 games a year, we can see who has played who and who won each game. We could just use the [AFL ladder](http://www.afl.com.au/ladder) but each team doesn't play each other equally some teams have have easier [schedules](http://www.matterofstats.com/mafl-stats-journal/2016/10/27/an-analysis-of-strength-of-schedule-for-the-2018-fixture) than others. What strength of shedule means is that we can't use the ladder as the best measure of teams as some times might have a worse win/loss record but simply have had a tougher draw than opposing teams who might have had it a lot easier. 
+
+A model based approach can help address this problem. 
+
+# Introducing Bradley Terry
+
+A simple Bradley Terry model treats outcomes of games as an independent Bernoulli random variable with a Bernoulli distribution $p_{ij}$ 
+
+The log odds corresponding to the probability $p_{ij}$  that team i beats team j is
+
+$log\frac{p_{ij}}{1-p_{ij}} = \beta{i} - \beta{j}$
+
+The problem is that this is over-parametized which means that its exactly the same if we were to add a fixed constant to all the values of $\beta{i}$ this is a common issue when rating teams and why sometimes you might see a base team being set. For example if we made it such that $\beta_{Adelaide} =0 $ this means that for every other team $\beta_{j}$ represents the log odds of beating adelaide. 
+
+# What about HGA
+
+The model as it stands now doesn't have home ground advantage. We can incorporate that by including an intercept term $\alpha$ 
+
+$log\frac{p_{ij}}{1-p_{ij}} = \alpha + \beta{i} - \beta{j}$
+
+By rearranging the equation we can see how it increases the log-odds of the home team winning by a constant $\alpha$ 
+
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::get_match_results()
+num_teams=18
+df1<-df%>%filter(Season==2018)%>%
+  mutate(Y=if_else(Home.Points>Away.Points, 1, 0))
+
+teams=unique(df1$Home.Team)
+df1$Home.Team[df1$Home.Team == "Richmond"] <- 1
+df1$Home.Team[df1$Home.Team == "Essendon"] <- 2
+df1$Home.Team[df1$Home.Team == "Port Adelaide"] <- 3
+df1$Home.Team[df1$Home.Team == "Hawthorn"] <- 4
+df1$Home.Team[df1$Home.Team ==  "Gold Coast"] <- 5
+df1$Home.Team[df1$Home.Team == "GWS"] <- 6
+df1$Home.Team[df1$Home.Team == "Melbourne"] <- 7
+df1$Home.Team[df1$Home.Team ==  "West Coast"] <- 8
+df1$Home.Team[df1$Home.Team == "Adelaide"] <- 9
+df1$Home.Team[df1$Home.Team == "North Melbourne"] <- 10
+df1$Home.Team[df1$Home.Team == "Carlton"] <- 11
+df1$Home.Team[df1$Home.Team == "Collingwood"] <- 12
+df1$Home.Team[df1$Home.Team == "Brisbane Lions"] <- 13
+df1$Home.Team[df1$Home.Team == "Fremantle"] <- 14
+df1$Home.Team[df1$Home.Team == "Footscray"] <- 15
+df1$Home.Team[df1$Home.Team == "Sydney"] <- 16
+df1$Home.Team[df1$Home.Team == "Geelong"] <- 17
+df1$Home.Team[df1$Home.Team == "St Kilda"] <- 18
+
+df1$Home.Team<-as.integer(df1$Home.Team)
+
+
+df1$Away.Team[df1$Away.Team == "Richmond"] <- 1
+df1$Away.Team[df1$Away.Team == "Essendon"] <- 2
+df1$Away.Team[df1$Away.Team == "Port Adelaide"] <- 3
+df1$Away.Team[df1$Away.Team == "Hawthorn"] <- 4
+df1$Away.Team[df1$Away.Team ==  "Gold Coast"] <- 5
+df1$Away.Team[df1$Away.Team == "GWS"] <- 6
+df1$Away.Team[df1$Away.Team == "Melbourne"] <- 7
+df1$Away.Team[df1$Away.Team ==  "West Coast"] <- 8
+df1$Away.Team[df1$Away.Team == "Adelaide"] <- 9
+df1$Away.Team[df1$Away.Team == "North Melbourne"] <- 10
+df1$Away.Team[df1$Away.Team == "Carlton"] <- 11
+df1$Away.Team[df1$Away.Team == "Collingwood"] <- 12
+df1$Away.Team[df1$Away.Team == "Brisbane Lions"] <- 13
+df1$Away.Team[df1$Away.Team == "Fremantle"] <- 14
+df1$Away.Team[df1$Away.Team == "Footscray"] <- 15
+df1$Away.Team[df1$Away.Team == "Sydney"] <- 16
+df1$Away.Team[df1$Away.Team == "Geelong"] <- 17
+df1$Away.Team[df1$Away.Team == "St Kilda"] <- 18
+
+df1$Away.Team<-as.integer(df1$Away.Team)
+
+loglik = function(theta, Home.Team, Away.Team, Y) {
+  alpha = theta[1]
+  beta = c(0, theta[-1])
+  params = alpha + beta[Home.Team] - beta[Away.Team]
+  return(sum(Y * params - log(1 + exp(params))))
+}
+
+
+theta0 = rep(0, num_teams)
+
+result = optim(theta0, loglik,
+               Home=df1$Home.Team, Away=df1$Away.Team, Y=df1$Y,
+               method='BFGS', control=list('fnscale'=-1))
+
+coefs = c(0, result$par[-1])
+ranking = order(coefs, decreasing=TRUE)
+ranking
+
+
+
+```
+
+# So what is our HGA using a Bradley Terry Model?
+
+```{r}
+result$par[1]
+exp(-result$par[1])
+
+```
+
