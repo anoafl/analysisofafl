@@ -39,7 +39,7 @@ library(tidyverse)</code></pre>
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>df&lt;-fitzRoy::get_match_results()
 num_teams=18
-df1&lt;-df%&gt;%filter(Season==2018)%&gt;%
+df1&lt;-df%&gt;%filter(Season==2017)%&gt;%
   mutate(Y=if_else(Home.Points&gt;Away.Points, 1, 0))
 
 teams=unique(df1$Home.Team)
@@ -103,12 +103,35 @@ result = optim(theta0, loglik,
 coefs = c(0, result$par[-1])
 ranking = order(coefs, decreasing=TRUE)
 ranking</code></pre>
-<pre><code>##  [1]  8  1 16  3 17  4 12 10  7  6 14  9  2 15  5 18 11 13</code></pre>
+<pre><code>##  [1]  9  1 17  6 16  3  8  7 18  2 15  4 12 14 11 10  5 13</code></pre>
 </div>
 <div id="so-what-is-our-hga-using-a-bradley-terry-model" class="section level1">
 <h1>So what is our HGA using a Bradley Terry Model?</h1>
 <pre class="r"><code>result$par[1]</code></pre>
-<pre><code>## [1] 0.3789978</code></pre>
+<pre><code>## [1] 0.4792202</code></pre>
 <pre class="r"><code>exp(-result$par[1])</code></pre>
-<pre><code>## [1] 0.6845471</code></pre>
+<pre><code>## [1] 0.6192661</code></pre>
+</div>
+<div id="is-hga-significant" class="section level1">
+<h1>Is HGA significant?</h1>
+<pre class="r"><code>loglik_noalpha = function(theta, Home, Away, Y) {
+beta = c(0, theta)
+params = beta[Home] - beta[Away]
+return(sum(Y * params - log(1 + exp(params))))
+}
+theta0 = rep(0, num_teams - 1)
+result_noalpha = optim(theta0, loglik_noalpha,
+Home=df1$Home.Team, Away=df1$Away.Team, Y=df1$Y,
+method=&#39;BFGS&#39;, control=list(&#39;fnscale&#39;=-1))
+
+print(result$value)</code></pre>
+<pre><code>## [1] -116.2975</code></pre>
+<pre class="r"><code>print(result_noalpha$value)</code></pre>
+<pre><code>## [1] -120.8496</code></pre>
+<pre class="r"><code>statistic = -2 * (result_noalpha$value - result$value)
+p_value = 1 - pchisq(statistic, df=1)
+print(statistic)</code></pre>
+<pre><code>## [1] 9.104269</code></pre>
+<pre class="r"><code>print(p_value)</code></pre>
+<pre><code>## [1] 0.002550136</code></pre>
 </div>

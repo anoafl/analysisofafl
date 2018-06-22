@@ -41,7 +41,7 @@ library(tidyverse)
 
 df<-fitzRoy::get_match_results()
 num_teams=18
-df1<-df%>%filter(Season==2018)%>%
+df1<-df%>%filter(Season==2017)%>%
   mutate(Y=if_else(Home.Points>Away.Points, 1, 0))
 
 teams=unique(df1$Home.Team)
@@ -118,3 +118,29 @@ exp(-result$par[1])
 
 ```
 
+
+# Is HGA significant? 
+
+```{r}
+
+loglik_noalpha = function(theta, Home, Away, Y) {
+beta = c(0, theta)
+params = beta[Home] - beta[Away]
+return(sum(Y * params - log(1 + exp(params))))
+}
+theta0 = rep(0, num_teams - 1)
+result_noalpha = optim(theta0, loglik_noalpha,
+Home=df1$Home.Team, Away=df1$Away.Team, Y=df1$Y,
+method='BFGS', control=list('fnscale'=-1))
+
+print(result$value)
+
+print(result_noalpha$value)
+
+statistic = -2 * (result_noalpha$value - result$value)
+p_value = 1 - pchisq(statistic, df=1)
+print(statistic)
+
+print(p_value)
+
+```
