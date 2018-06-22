@@ -8,7 +8,7 @@ tags : ["regression", "fitzRoy","modelling"]
 ---
 
 
-You might be reading other sites and see lots of posts on [ELO](https://thearcfooty.com/2016/12/29/introducing-the-arcs-ratings-system/) [models](http://figuringfooty.com/2015/10/09/the-simpelo-team-ratings/) this post isn't about building an ELO model yourself that's another post. This post is about how to apply [Bradley Terry] models for AFL
+You might be reading other sites and see lots of posts on [ELO](https://thearcfooty.com/2016/12/29/introducing-the-arcs-ratings-system/) [models](http://figuringfooty.com/2015/10/09/the-simpelo-team-ratings/) this post isn't about building an ELO model yourself that's another post. This post is about how to apply [Bradley Terry](https://en.wikipedia.org/wiki/Bradley%E2%80%93Terry_model) models for AFL
 
 # Why Bother?
 
