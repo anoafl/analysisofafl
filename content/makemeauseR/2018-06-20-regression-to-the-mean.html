@@ -12,7 +12,7 @@ tags : ["regression", "fitzRoy","modelling"]
 <p>We also see this in sports, Hollinger refers to it as the <a href="http://www.espn.com/nba/columns/story?columnist=hollinger_john&amp;page=All-Decline-Team-081031">fluke rule</a>. Bill James calls it the <a href="http://grantland.com/the-triangle/fantasy-baseball-nerdy-keys-to-victory-the-plexiglas-principle/">plexiglas principle</a>, you might call it the <a href="https://en.wikipedia.org/wiki/Sports_Illustrated_cover_jinx">Sports Illustrated Jinx</a>. They all are different names from different people who have observed the same thing mean reversion or regression to the mean.</p>
 <p>Regression to the mean as a concept was first introduced in 1886 by Galton who observed that on average taller parents have tall kids but not as tall as them. In otherwords their heights ‘shrunk’ towards the overall average at the time.</p>
 <p>Regression to the mean is a powerful concept in statistics and how can we use it?</p>
-<p>The following will be a simple goal-kicking example but if you wanted to, you could use something like supercoach scores (SC) to beat your friends or the bookie. Maybe you want to use it more at a [team level](<a href="https://www.foxsports.com.au/afl/worst-in-50-years-true-extent-of-afls-scoring-woes-revealed-after-one-of-lowestscoring-rounds-in-recent-history/news-story/d0cc1c3f86844aca7e25f6e5b155455e?nk=c85e2bf5aaa4e57ec96ed23c3a076d3c-1529480215" class="uri">https://www.foxsports.com.au/afl/worst-in-50-years-true-extent-of-afls-scoring-woes-revealed-after-one-of-lowestscoring-rounds-in-recent-history/news-story/d0cc1c3f86844aca7e25f6e5b155455e?nk=c85e2bf5aaa4e57ec96ed23c3a076d3c-1529480215</a>? Will <a href="https://www.theage.com.au/sport/afl/afl-to-keep-close-watch-on-dip-in-scoring-20180503-p4zd9g.html">total scores return</a> via some regression to the mean?</p>
+<p>The following will be a simple goal-kicking example but if you wanted to, you could use something like supercoach scores (SC) to beat your friends or the bookie. Maybe you want to use it more at a <a href="https://www.foxsports.com.au/afl/worst-in-50-years-true-extent-of-afls-scoring-woes-revealed-after-one-of-lowestscoring-rounds-in-recent-history/news-story/d0cc1c3f86844aca7e25f6e5b155455e?nk=c85e2bf5aaa4e57ec96ed23c3a076d3c-1529480215">team level</a>? Will <a href="https://www.theage.com.au/sport/afl/afl-to-keep-close-watch-on-dip-in-scoring-20180503-p4zd9g.html">total scores return</a> via some regression to the mean?</p>
 <div id="step-1-create-the-dataset" class="section level1">
 <h1>Step 1 create the dataset</h1>
 <p>Thankfully we can use <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> for the data we need pretty easily. Here we will take goals (G), behinds (B) and create a variable using <code>mutate</code> called <code>shots</code> which just represent total shots on goals (we don’t have access to kicks that were out on the full or dropped short) so this becomes the sum of goals and behinds.</p>
@@ -21,7 +21,7 @@ tags : ["regression", "fitzRoy","modelling"]
 <pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.5
-## v tidyr   0.8.1     v stringr 1.3.0
+## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
 <pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()

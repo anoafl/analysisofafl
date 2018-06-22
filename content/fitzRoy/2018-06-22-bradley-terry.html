@@ -32,7 +32,7 @@ library(tidyverse)</code></pre>
 <pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.5
-## v tidyr   0.8.1     v stringr 1.3.0
+## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
 <pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
@@ -134,4 +134,10 @@ print(statistic)</code></pre>
 <pre><code>## [1] 9.104269</code></pre>
 <pre class="r"><code>print(p_value)</code></pre>
 <pre><code>## [1] 0.002550136</code></pre>
+<p>Some problems with Bradley-Terry here:</p>
+<ul>
+<li>I haven’t added in changes in strength, this means equal weight to recent and past games</li>
+<li>Using logistic while makes the calculations quick and easy, it has an important implication</li>
+</ul>
+<p>$ P(i beats j)=2/3, P(j beats k)= 2/3 then P(i beats k)=4/5$ * To use this for prediction for a season, would need to recompute MLEs after each game</p>
 </div>
