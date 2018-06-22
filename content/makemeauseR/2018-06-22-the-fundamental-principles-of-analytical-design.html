@@ -75,6 +75,22 @@ library(tidyverse)</code></pre>
   filter(Season&gt;2014)%&gt;%
   summarise(total=6*sum(G)+ sum(B), 
             totaltacklesin50=sum(T5))%&gt;%
-  ggplot(aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method=&#39;lm&#39;) + facet_wrap(~Season)</code></pre>
+  ggplot(aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method=&#39;lm&#39;) + facet_wrap(~Season) </code></pre>
 <p><img src="/makemeauseR/2018-06-22-the-fundamental-principles-of-analytical-design_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="integration-of-evidence" class="section level1">
+<h1>Integration of evidence</h1>
+<pre class="r"><code>fitzRoy::player_stats%&gt;%
+  group_by(Match_id, Season)%&gt;%
+  filter(Season&gt;2014)%&gt;%
+  summarise(total=6*sum(G)+ sum(B), 
+            totaltacklesin50=sum(T5))%&gt;%
+  ggplot(aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method=&#39;lm&#39;)</code></pre>
+<p><img src="/makemeauseR/2018-06-22-the-fundamental-principles-of-analytical-design_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="documentation" class="section level1">
+<h1>Documentation</h1>
+</div>
+<div id="content-that-means-something" class="section level1">
+<h1>Content that means something</h1>
 </div>
