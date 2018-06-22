@@ -1,6 +1,6 @@
 ---
 title : "Is There Another Way to Do Fantasy"
-description : ""
+description : "Is there?"
 author : "Robert Nguyen"
 date : 2018-06-01
 tags : ["fitzRoy", "graphics","R","fantasy","statistics"]

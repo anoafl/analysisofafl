@@ -1,6 +1,6 @@
 ---
 title : "Visualisation of Fantasy Points"
-description : ""
+description : "Graphics to look at fantasy points"
 author : "Robert Nguyen"
 date : 2018-05-15
 tags : ["fitzRoy", "graphics","R","open science"]

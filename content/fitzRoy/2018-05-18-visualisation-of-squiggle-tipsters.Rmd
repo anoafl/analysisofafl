@@ -1,6 +1,6 @@
 ---
 title : "Visualisation of Squiggle Tipsters"
-description : ""
+description : "http://squiggle.com.au/"
 author : "Robert Nguyen"
 date : 2018-05-18
 tags : ["fitzRoy", "graphics","R","open science", "squiggle"]
