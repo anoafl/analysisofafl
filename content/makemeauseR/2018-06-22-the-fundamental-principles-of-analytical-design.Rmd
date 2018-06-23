@@ -26,6 +26,7 @@ If I were to just show you a [boxplot](http://www.physics.csbsju.edu/stats/box2.
 ```{r}
 library(fitzRoy)
 library(tidyverse)
+library(ggpmisc)
 fitzRoy::get_match_results()%>%
   mutate(total=Home.Points + Away.Points)%>%
   filter(Season == 2018)%>%
@@ -88,30 +89,50 @@ fitzRoy::player_stats%>%
   group_by(Match_id, Season)%>%
   filter(Season>2014)%>%
   summarise(total=6*sum(G)+ sum(B), 
-            totaltacklesin50=sum(T5))%>%
-  ggplot(aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method='lm') + facet_wrap(~Season) 
+  totaltacklesin50=sum(T5))%>%
+  ggplot(aes(x=totaltacklesin50, y=total))+
+  geom_point() + 
+  geom_smooth(method='lm') + 
+  facet_wrap(~Season) 
 
 ```
 
 # Integration of evidence
 
-```{r}
 
-fitzRoy::player_stats%>%
+Theres no reason to only show a plot or only show a table, you should be able to combine different modes of presentation to make your graphic as information rich as possible. 
+
+So here, our plot becomes a bit more informative simply by adding a regression line to our plot. Here we can see what the slope is and with it we can make inference as to our relationship between tackes inside 50 and total points. 
+
+Think about it this way if I just presented you with the plot, your first question might be ok, it looks like theres a negative relationship, how does increasing tackle count effect points totals? 
+
+By adding a regression line, we can help answer this question and our plot becomes more informative.
+
+```{r}
+library(tidyverse)
+formula <- y ~ x
+df<-fitzRoy::player_stats%>%
   group_by(Match_id, Season)%>%
   filter(Season>2014)%>%
   summarise(total=6*sum(G)+ sum(B), 
-            totaltacklesin50=sum(T5))%>%
-  ggplot(aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method='lm')
+            totaltacklesin50=sum(T5))
+
+
+
+  ggplot(df,aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method='lm',formula = formula) +
+  stat_poly_eq(aes(label = ..eq.label..), formula = formula, parse = TRUE)
 
 ```
 
+
 # Documentation
+Its important to keep the code that makes the plot, this helps add credibility to your work. It also means that errors are [easy to spot](https://twitter.com/siminevazire/status/1009797855484055552) and [fix]((https://twitter.com/mcxfrank/status/1010254887618113536). 
 
 
 
 # Content that means something
 
+When your making plots, figures what is the story you are trying to tell, what is the data you have your disposal. Then what is the best way to present it. If you don't have great content then whats the point if its not interesting?
 
 
 
