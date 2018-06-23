@@ -117,10 +117,11 @@ df<-fitzRoy::player_stats%>%
   summarise(total=6*sum(G)+ sum(B), 
             totaltacklesin50=sum(T5))
 
-
-
-  ggplot(df,aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method='lm',formula = formula) +
-  stat_poly_eq(aes(label = ..eq.label..), formula = formula, parse = TRUE)
+  ggplot(df,aes(x=totaltacklesin50, y=total))+
+    geom_point() + 
+    geom_smooth(method='lm',formula = formula) +
+  stat_poly_eq(aes(label = ..eq.label..), 
+               formula = formula, parse = TRUE)
 
 ```
 
