@@ -31,6 +31,9 @@ library(tidyverse)</code></pre>
 <pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggpmisc)</code></pre>
+<pre><code>## For news about &#39;ggpmisc&#39;, please, see http://www.r4photobiology.info/</code></pre>
+<pre><code>## For on-line documentation see http://docs.r4photobiology.info/ggpmisc/</code></pre>
 <pre class="r"><code>fitzRoy::get_match_results()%&gt;%
   mutate(total=Home.Points + Away.Points)%&gt;%
   filter(Season == 2018)%&gt;%
@@ -83,17 +86,29 @@ library(tidyverse)</code></pre>
 </div>
 <div id="integration-of-evidence" class="section level1">
 <h1>Integration of evidence</h1>
-<pre class="r"><code>fitzRoy::player_stats%&gt;%
+<p>Theres no reason to only show a plot or only show a table, you should be able to combine different modes of presentation to make your graphic as information rich as possible.</p>
+<p>So here, our plot becomes a bit more informative simply by adding a regression line to our plot. Here we can see what the slope is and with it we can make inference as to our relationship between tackes inside 50 and total points.</p>
+<p>Think about it this way if I just presented you with the plot, your first question might be ok, it looks like theres a negative relationship, how does increasing tackle count effect points totals?</p>
+<p>By adding a regression line, we can help answer this question and our plot becomes more informative.</p>
+<pre class="r"><code>library(tidyverse)
+formula &lt;- y ~ x
+df&lt;-fitzRoy::player_stats%&gt;%
   group_by(Match_id, Season)%&gt;%
   filter(Season&gt;2014)%&gt;%
   summarise(total=6*sum(G)+ sum(B), 
-            totaltacklesin50=sum(T5))%&gt;%
-  ggplot(aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method=&#39;lm&#39;)</code></pre>
+            totaltacklesin50=sum(T5))
+
+
+
+  ggplot(df,aes(x=totaltacklesin50, y=total))+geom_point() + geom_smooth(method=&#39;lm&#39;,formula = formula) +
+  stat_poly_eq(aes(label = ..eq.label..), formula = formula, parse = TRUE)</code></pre>
 <p><img src="/makemeauseR/2018-06-22-the-fundamental-principles-of-analytical-design_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 </div>
 <div id="documentation" class="section level1">
 <h1>Documentation</h1>
+<p>Its important to keep the code that makes the plot, this helps add credibility to your work. It also means that errors are <a href="https://twitter.com/siminevazire/status/1009797855484055552">easy to spot</a> and [fix]((<a href="https://twitter.com/mcxfrank/status/1010254887618113536" class="uri">https://twitter.com/mcxfrank/status/1010254887618113536</a>).</p>
 </div>
 <div id="content-that-means-something" class="section level1">
 <h1>Content that means something</h1>
+<p>When your making plots, figures what is the story you are trying to tell, what is the data you have your disposal. Then what is the best way to present it. If you don’t have great content then whats the point if its not interesting?</p>
 </div>
