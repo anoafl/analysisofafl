@@ -49,7 +49,7 @@ fitzRoy::get_match_results()%>%
 
 # Causality, Mechanism, Structure, Explanation
 
-One possible explanation for this drop in scoring rate is due to increased pressure. Players are fitter than ever and the game isn't supposed to open up as much as before. 
+One possible explanation for this drop in scoring rate is due to increased pressure. Players are fitter than ever and the game isn't supposed to open up as much as before. As a possible hypothesis we might think there is a negative relationship between the total points scored in games and tackles inside 50. 
 
 ```{r}
 
