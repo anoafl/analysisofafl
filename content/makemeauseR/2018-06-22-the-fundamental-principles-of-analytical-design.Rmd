@@ -127,7 +127,7 @@ df<-fitzRoy::player_stats%>%
 
 
 # Documentation
-Its important to keep the code that makes the plot, this helps add credibility to your work. It also means that errors are [easy to spot](https://twitter.com/siminevazire/status/1009797855484055552) and [fix]((https://twitter.com/mcxfrank/status/1010254887618113536). 
+Its important to keep the code that makes the plot, this helps add credibility to your work. It also means that errors are [easy to spot](https://twitter.com/siminevazire/status/1009797855484055552) and [fix](https://twitter.com/mcxfrank/status/1010254887618113536). 
 
 
 
