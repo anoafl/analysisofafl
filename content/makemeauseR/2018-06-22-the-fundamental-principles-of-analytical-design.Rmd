@@ -16,7 +16,7 @@ I have just finished reading the book [Beautiful Evidence by Edward Tufte](https
 
 When looking at a graph or reading a statistic a good question and perhaps even the first question you can ask yourself is what I am comparing this too. 
 
-Think about the recent about AFL being [low scoring](http://www.afl.com.au/news/2018-05-01/leagues-watching-brief-as-scoring-rates-sink). Low scoring compared to what? 
+Think about the recent about AFL being [low scoring](http://www.afl.com.au/news/2018-05-01/leagues-watching-brief-as-scoring-rates-sink). Low scoring compared to what? Another 'infographic' from [NRL](https://twitter.com/NRL/status/1010666311666499584). Is this high is it low? Is he above average/below average all these things are hard to tell. 
 
 If I were to just show you a [boxplot](http://www.physics.csbsju.edu/stats/box2.html) of AFL scores from this year you might be thinking compared to what? 
 

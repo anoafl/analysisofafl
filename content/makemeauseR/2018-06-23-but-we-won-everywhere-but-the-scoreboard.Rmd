@@ -1,0 +1,102 @@
+---
+title : "But We Won Everywhere but the Scoreboard"
+description : "Introduction to logistic regression"
+author : "Robert Nguyen"
+date : 2018-06-23
+tags : ["regression", "fitzRoy","modelling"]
+
+---
+
+Something that gets to many a footy fan, is the feeling that your team has won the game in most areas expect on the scoreboard. 
+
+Thinking about this statement a little bit deeper has the following implication. That there are some areas of the game, that if you win, you tend to win the game. 
+
+We can think about this by putting it into a model. 
+
+The model I will use here, is a logistic regression model with the binary outcome being win/loss. 
+
+The data we will use here is the game differentials of the various game statistics that are available using [fitzRoy](https://github.com/jimmyday12/fitzRoy)
+
+# Step One
+
+Create the dataset we will use for modelling. 
+
+First thing we want to do is think about what variables we want to use, here I am thinking lets use the data from footywire as it has some nice extra variables like meters gained, tackles inside 50.
+
+We don't want to use things like goals or behinds. Intuitively, think about it this way, what's the point of saying if we score more goals or behinds we will win. That's obvious.  
+
+
+
+```{r}
+library(tidyverse)
+fitzRoy::player_stats%>%
+    filter(Season>2014 & Season<2018)%>%
+    select(-Player,-Date)%>%
+    group_by(Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+    summarise_all(.funs = sum)%>%
+group_by(Match_id)%>%
+  arrange(Match_id)%>%
+  mutate(diff_cp=c(-diff(CP), diff(CP)))
+
+```
+
+```{r}
+fitzRoy::player_stats%>%
+         filter(Season>2014 & Season<2018)%>%
+         select(-Player,-Date)%>%
+         group_by(Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+         summarise_all(.funs = sum)%>%
+         group_by(Match_id)%>%
+         arrange(Match_id)%>%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
+
+```
+
+```{r}
+df<-fitzRoy::player_stats%>%
+         filter(Season>2014 & Season<2018)%>%
+         select(-Player)%>%
+         group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+         summarise_all(.funs = sum)%>%
+         group_by(Match_id)%>%
+         arrange(Match_id)%>%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
+
+df2<-fitzRoy::match_results
+df2<-df2%>%filter(Season>2014 & Season<2018)
+df3<-select(df2, Date, Round, Home.Team, Home.Points)
+df4<-select(df2, Date, Round, Away.Team, Away.Points)
+colnames(df3)[3]<-"Team"
+colnames(df3)[4]<-"Points"
+colnames(df4)[3]<-"Team"
+colnames(df4)[4]<-"Points"
+
+
+df5<-rbind(df4,df3)
+
+
+
+df5<-df5 %>%mutate(Team = str_replace(Team, "Brisbane Lions", "Brisbane"))
+
+df5<-df5 %>%mutate(Team = str_replace(Team, "Footscray", "Western Bulldogs"))
+
+
+df6<-inner_join(df,df5, by=c("Team","Date"))
+
+dataset_columns <- c(81,1,2,4,6,7,8,44:80)
+dataset<-df6%>%group_by(Match_id)%>%
+  arrange(Match_id)%>%
+  mutate(Margin=c(-diff(Points), diff(Points)))%>%
+  mutate(Win_loss=if_else(Margin>0,1,0,NULL))%>%
+  select(dataset_columns)
+
+
+```
+
+
+```{r}
+
+
+```
+
+

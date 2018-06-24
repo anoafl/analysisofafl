@@ -1,0 +1,136 @@
+---
+title : "But We Won Everywhere but the Scoreboard"
+description : "Introduction to logistic regression"
+author : "Robert Nguyen"
+date : 2018-06-23
+tags : ["regression", "fitzRoy","modelling"]
+
+---
+
+
+
+<p>Something that gets to many a footy fan, is the feeling that your team has won the game in most areas expect on the scoreboard.</p>
+<p>Thinking about this statement a little bit deeper has the following implication. That there are some areas of the game, that if you win, you tend to win the game.</p>
+<p>We can think about this by putting it into a model.</p>
+<p>The model I will use here, is a logistic regression model with the binary outcome being win/loss.</p>
+<p>The data we will use here is the game differentials of the various game statistics that are available using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a></p>
+<div id="step-one" class="section level1">
+<h1>Step One</h1>
+<p>Create the dataset we will use for modelling.</p>
+<p>First thing we want to do is think about what variables we want to use, here I am thinking lets use the data from footywire as it has some nice extra variables like meters gained, tackles inside 50.</p>
+<p>We don’t want to use things like goals or behinds. Intuitively, think about it this way, what’s the point of saying if we score more goals or behinds we will win. That’s obvious.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.5
+## v tidyr   0.8.1     v stringr 1.3.1
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>fitzRoy::player_stats%&gt;%
+    filter(Season&gt;2014 &amp; Season&lt;2018)%&gt;%
+    select(-Player,-Date)%&gt;%
+    group_by(Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+    summarise_all(.funs = sum)%&gt;%
+group_by(Match_id)%&gt;%
+  arrange(Match_id)%&gt;%
+  mutate(diff_cp=c(-diff(CP), diff(CP)))</code></pre>
+<pre><code>## # A tibble: 1,240 x 42
+## # Groups:   Match_id [620]
+##    Season Round  Team   Status Opposition Venue Match_id    CP    UP    ED
+##     &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt;    &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
+##  1   2015 Round~ Carlt~ Home   Richmond   MCG       5964   127   199   233
+##  2   2015 Round~ Richm~ Away   Carlton    MCG       5964   121   227   273
+##  3   2015 Round~ Gold ~ Away   Melbourne  MCG       5965   136   165   203
+##  4   2015 Round~ Melbo~ Home   Gold Coast MCG       5965   150   198   246
+##  5   2015 Round~ Essen~ Away   Sydney     ANZ ~     5966   150   171   226
+##  6   2015 Round~ Sydney Home   Essendon   ANZ ~     5966   176   192   248
+##  7   2015 Round~ Brisb~ Home   Collingwo~ Gabba     5967   152   211   246
+##  8   2015 Round~ Colli~ Away   Brisbane   Gabba     5967   165   179   231
+##  9   2015 Round~ West ~ Away   Western B~ Etih~     5968   137   236   278
+## 10   2015 Round~ Weste~ Home   West Coast Etih~     5968   156   214   275
+## # ... with 1,230 more rows, and 32 more variables: DE &lt;dbl&gt;, CM &lt;int&gt;,
+## #   GA &lt;int&gt;, MI5 &lt;int&gt;, One.Percenters &lt;int&gt;, BO &lt;int&gt;, TOG &lt;int&gt;,
+## #   K &lt;int&gt;, HB &lt;int&gt;, D &lt;int&gt;, M &lt;int&gt;, G &lt;int&gt;, B &lt;int&gt;, T &lt;int&gt;,
+## #   HO &lt;int&gt;, GA1 &lt;int&gt;, I50 &lt;int&gt;, CL &lt;int&gt;, CG &lt;int&gt;, R50 &lt;int&gt;,
+## #   FF &lt;int&gt;, FA &lt;int&gt;, AF &lt;int&gt;, SC &lt;int&gt;, CCL &lt;int&gt;, SCL &lt;int&gt;,
+## #   SI &lt;int&gt;, MG &lt;int&gt;, TO &lt;int&gt;, ITC &lt;int&gt;, T5 &lt;int&gt;, diff_cp &lt;int&gt;</code></pre>
+<pre class="r"><code>fitzRoy::player_stats%&gt;%
+         filter(Season&gt;2014 &amp; Season&lt;2018)%&gt;%
+         select(-Player,-Date)%&gt;%
+         group_by(Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+         summarise_all(.funs = sum)%&gt;%
+         group_by(Match_id)%&gt;%
+         arrange(Match_id)%&gt;%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))</code></pre>
+<pre><code>## # A tibble: 1,240 x 76
+## # Groups:   Match_id [620]
+##    Season Round  Team   Status Opposition Venue Match_id    CP    UP    ED
+##     &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt;    &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
+##  1   2015 Round~ Carlt~ Home   Richmond   MCG       5964   127   199   233
+##  2   2015 Round~ Richm~ Away   Carlton    MCG       5964   121   227   273
+##  3   2015 Round~ Gold ~ Away   Melbourne  MCG       5965   136   165   203
+##  4   2015 Round~ Melbo~ Home   Gold Coast MCG       5965   150   198   246
+##  5   2015 Round~ Essen~ Away   Sydney     ANZ ~     5966   150   171   226
+##  6   2015 Round~ Sydney Home   Essendon   ANZ ~     5966   176   192   248
+##  7   2015 Round~ Brisb~ Home   Collingwo~ Gabba     5967   152   211   246
+##  8   2015 Round~ Colli~ Away   Brisbane   Gabba     5967   165   179   231
+##  9   2015 Round~ West ~ Away   Western B~ Etih~     5968   137   236   278
+## 10   2015 Round~ Weste~ Home   West Coast Etih~     5968   156   214   275
+## # ... with 1,230 more rows, and 66 more variables: DE &lt;dbl&gt;, CM &lt;int&gt;,
+## #   GA &lt;int&gt;, MI5 &lt;int&gt;, One.Percenters &lt;int&gt;, BO &lt;int&gt;, TOG &lt;int&gt;,
+## #   K &lt;int&gt;, HB &lt;int&gt;, D &lt;int&gt;, M &lt;int&gt;, G &lt;int&gt;, B &lt;int&gt;, T &lt;int&gt;,
+## #   HO &lt;int&gt;, GA1 &lt;int&gt;, I50 &lt;int&gt;, CL &lt;int&gt;, CG &lt;int&gt;, R50 &lt;int&gt;,
+## #   FF &lt;int&gt;, FA &lt;int&gt;, AF &lt;int&gt;, SC &lt;int&gt;, CCL &lt;int&gt;, SCL &lt;int&gt;,
+## #   SI &lt;int&gt;, MG &lt;int&gt;, TO &lt;int&gt;, ITC &lt;int&gt;, T5 &lt;int&gt;,
+## #   Season_difference &lt;dbl&gt;, CP_difference &lt;int&gt;, UP_difference &lt;int&gt;,
+## #   ED_difference &lt;int&gt;, DE_difference &lt;dbl&gt;, CM_difference &lt;int&gt;,
+## #   GA_difference &lt;int&gt;, MI5_difference &lt;int&gt;,
+## #   One.Percenters_difference &lt;int&gt;, BO_difference &lt;int&gt;,
+## #   TOG_difference &lt;int&gt;, K_difference &lt;int&gt;, HB_difference &lt;int&gt;,
+## #   D_difference &lt;int&gt;, M_difference &lt;int&gt;, G_difference &lt;int&gt;,
+## #   B_difference &lt;int&gt;, T_difference &lt;int&gt;, HO_difference &lt;int&gt;,
+## #   GA1_difference &lt;int&gt;, I50_difference &lt;int&gt;, CL_difference &lt;int&gt;,
+## #   CG_difference &lt;int&gt;, R50_difference &lt;int&gt;, FF_difference &lt;int&gt;,
+## #   FA_difference &lt;int&gt;, AF_difference &lt;int&gt;, SC_difference &lt;int&gt;,
+## #   CCL_difference &lt;int&gt;, SCL_difference &lt;int&gt;, SI_difference &lt;int&gt;,
+## #   MG_difference &lt;int&gt;, TO_difference &lt;int&gt;, ITC_difference &lt;int&gt;,
+## #   T5_difference &lt;int&gt;</code></pre>
+<pre class="r"><code>df&lt;-fitzRoy::player_stats%&gt;%
+         filter(Season&gt;2014 &amp; Season&lt;2018)%&gt;%
+         select(-Player)%&gt;%
+         group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+         summarise_all(.funs = sum)%&gt;%
+         group_by(Match_id)%&gt;%
+         arrange(Match_id)%&gt;%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
+
+df2&lt;-fitzRoy::match_results
+df2&lt;-df2%&gt;%filter(Season&gt;2014 &amp; Season&lt;2018)
+df3&lt;-select(df2, Date, Round, Home.Team, Home.Points)
+df4&lt;-select(df2, Date, Round, Away.Team, Away.Points)
+colnames(df3)[3]&lt;-&quot;Team&quot;
+colnames(df3)[4]&lt;-&quot;Points&quot;
+colnames(df4)[3]&lt;-&quot;Team&quot;
+colnames(df4)[4]&lt;-&quot;Points&quot;
+
+
+df5&lt;-rbind(df4,df3)
+
+
+
+df5&lt;-df5 %&gt;%mutate(Team = str_replace(Team, &quot;Brisbane Lions&quot;, &quot;Brisbane&quot;))
+
+df5&lt;-df5 %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
+
+
+df6&lt;-inner_join(df,df5, by=c(&quot;Team&quot;,&quot;Date&quot;))
+
+dataset_columns &lt;- c(81,1,2,4,6,7,8,44:80)
+dataset&lt;-df6%&gt;%group_by(Match_id)%&gt;%
+  arrange(Match_id)%&gt;%
+  mutate(Margin=c(-diff(Points), diff(Points)))%&gt;%
+  mutate(Win_loss=if_else(Margin&gt;0,1,0,NULL))%&gt;%
+  select(dataset_columns)</code></pre>
+</div>
