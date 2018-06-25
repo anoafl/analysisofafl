@@ -13,23 +13,27 @@ Thinking about this statement a little bit deeper has the following implication.
 
 We can think about this by putting it into a model. 
 
-The model I will use here, is a logistic regression model with the binary outcome being win/loss. 
 
 The data we will use here is the game differentials of the various game statistics that are available using [fitzRoy](https://github.com/jimmyday12/fitzRoy)
 
-# Step One
-
-Create the dataset we will use for modelling. 
 
 The general idea is its fairly obvious if you score more than the opposition you win. Shocking I know! What we are trying to do here, is come up with a concept of we won other things but not the scoreboard, usually when we win these things we tend to win a game. 
 
+So we know thanks to [fitzRoy](https://github.com/jimmyday12/fitzRoy) we have access to the data on [footywire](https://www.footywire.com/), which has a few extra variables that are not on [afltables](https://afltables.com/afl/afl_index.html). 
+
+So imagine this scenario, you don't have access to the scores, only the in game statistics as per [these](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9626) [pages](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9626&advv=Y), what variables/differentials would you look at to decide to will win? 
+
+We know that for example, looking only at [free](https://analysisofafl.netlify.com/makemeauser/2018-06-25-a-different-free-kick-ladder/) [kick](https://www.triplem.com.au/sport/afl/news/afl-free-kick-differential-ladder-round-14-2018) differential isn't very predictive. Is there a combination of differentials that when a team wins they are more likely to win? Lets build a model to find out. 
 
 
+The model I will use here, is a logistic regression model with the binary outcome being win/loss. 
+
+# Step One Build the dataset
 
 ```{r}
 library(tidyverse)
 fitzRoy::player_stats%>%
-    filter(Season>2014 & Season<2018)%>%
+    filter(Season>2014)%>%
     select(-Player)%>%
     group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
     summarise_all(.funs = sum)%>%
@@ -39,9 +43,44 @@ group_by(Match_id)%>%
 
 ```
 
+
+Something to remember with fitzRoy is that footywire doesn't have tackles inside 50, meters gained etc for games previous to 2015, so this becomes our first `filter` 
+
+The next thing we do, is we `select` all the columns except for Player, the reason being is that we don't need it and also its nice to see how to "deselect" columns as well as select them. 
+
+Remember we want data at a game level for each team and we want to be able to come up with the in game differential, this is where our next `group_by` comes in handy and its related to the `summarise_all`. 
+
+You might be thinking jeez mate that's a lot to group by can't you just use Match_id as they are already unique. Yes that is true, I could have, but one thing about `summarise_all` is that is summarises every column that is not in the `group_by`. You can test this out by running below, it should spit out an error message. `Error in summarise_impl(.data, dots) : 
+  Evaluation error: invalid 'type' (character) of argument.`
+  
+```{r, eval=FALSE}
+
+fitzRoy::player_stats%>%
+    filter(Season>2014)%>%
+    select(-Player)%>%
+    group_by( Match_id)%>%
+    summarise_all(.funs = sum)
+```
+
+After the `summarise_all`, we group by `Match_id` so we can find the differentials by `Match_id` so we can come up with as an example the contested possession differential `diff_cp`. I like to `arrange` the dataset so I can do sanity checks vs [footywire](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9626).
+
+So the next thing you might be thinking, is jeez doing that for all variables finding their differentials seems a bit tedious. 
+
+That is where we can use `mutate_if`, we can just `mutate` all columns that `is.numeric` and is not in the `group_by` which is another way we could have done original `summarise_all` instead we could have used `summarise_if` BUT match_id is numeric!
+
+You can check this by using 
+```{r}
+str(fitzRoy::player_stats)
+```
+
+So hopefully you have seen a couple of short cuts that come from knowing the dataset and this is an example of why its important to do your checks! 
+
+
+
+
 ```{r}
 fitzRoy::player_stats%>%
-         filter(Season>2014 & Season<2018)%>%
+         filter(Season>2014)%>%
          select(-Player,-Date)%>%
          group_by(Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
          summarise_all(.funs = sum)%>%
@@ -50,6 +89,12 @@ fitzRoy::player_stats%>%
          mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
 
 ```
+
+# Step Two - Joining Datasets
+
+Now we could just sum up the goals by each player and their behinds, but this would miss out on rushed behinds. So lets join our [footywire](https://www.footywire.com) dataset with the [afltables](https://afltables.com/afl/seas/2018.html) match results
+
+
 
 ```{r}
 df<-fitzRoy::player_stats%>%
@@ -91,6 +136,9 @@ dataset<-df6%>%group_by(Match_id)%>%
 
 
 ```
+
+
+
 
 
 ```{r}
