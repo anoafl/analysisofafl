@@ -14,7 +14,7 @@ But what if we did a ladder in the same style of the home and away ladder.
 * 4 points for a win (winning free kick count in game)
 * 2 points for a draw (drawn free kick count in game)
 * 0 points for a loss (losing the free kick count in game)
-* percentage which is $100 * (total_frees_for/total_frees_against)$
+* percentage which is $100 * (totalfreesfor/totalfreesagainst)$
 
 Well thankfully to the new afl R package [fitzRoy](https://github.com/jimmyday12/fitzRoy) that is possible!
 
