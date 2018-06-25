@@ -198,6 +198,9 @@ dataset&lt;-df6%&gt;%group_by(Match_id)%&gt;%
   mutate(Margin=c(-diff(Points), diff(Points)))%&gt;%
   mutate(Win_loss=if_else(Margin&gt;0,1,0,NULL))%&gt;%
   select(dataset_columns)</code></pre>
+</div>
+<div id="building-the-logistic-regression-model" class="section level1">
+<h1>Building the Logistic Regression Model</h1>
 <pre class="r"><code>library(aod)
 library(ordinal)</code></pre>
 <pre><code>## 
