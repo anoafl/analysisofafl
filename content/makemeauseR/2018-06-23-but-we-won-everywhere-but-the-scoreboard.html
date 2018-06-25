@@ -200,6 +200,53 @@ dataset&lt;-df6%&gt;%group_by(Match_id)%&gt;%
   mutate(Win_loss=if_else(Margin&gt;0,1,0,NULL))%&gt;%
   select(dataset_columns)</code></pre>
 </div>
+<div id="taking-submissions." class="section level1">
+<h1>Taking Submissions.</h1>
+<p>I asked twitter, <a href="https://twitter.com/anoafl/status/1011156299323604992">what areas do you think</a> are important to win, to win a game. I got <a href="https://twitter.com/michael_timbs/status/1011159239232876544">a response</a> and here we go!</p>
+<p>So from our above script, all we need to be able to add in is goal accuracy as a predictor or goal accuracy differential?</p>
+<pre class="r"><code>df&lt;-fitzRoy::player_stats%&gt;%
+         filter(Season&gt;2014)%&gt;%
+         select(-Player)%&gt;%
+         group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+         summarise_all(.funs = sum)%&gt;%
+         group_by(Match_id)%&gt;%
+         arrange(Match_id)%&gt;%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
+
+df2&lt;-fitzRoy::match_results
+df2&lt;-df2%&gt;%filter(Season&gt;2014)
+df3&lt;-select(df2, Date, Round, Home.Team, Home.Points,Home.Goals,Home.Behinds)
+df4&lt;-select(df2, Date, Round, Away.Team, Away.Points,Away.Goals,Away.Behinds)
+df3$Accuracy&lt;-(df3$Home.Goals/(df3$Home.Goals+df3$Home.Behinds))
+colnames(df3)[3]&lt;-&quot;Team&quot;
+colnames(df3)[4]&lt;-&quot;Points&quot;
+colnames(df3)[5]&lt;-&quot;Goals&quot;
+colnames(df3)[6]&lt;-&quot;Behinds&quot;
+df4$Accuracy&lt;-(df4$Away.Goals/(df4$Away.Goals+df4$Away.Behinds))
+colnames(df4)[3]&lt;-&quot;Team&quot;
+colnames(df4)[4]&lt;-&quot;Points&quot;
+colnames(df4)[5]&lt;-&quot;Goals&quot;
+colnames(df4)[6]&lt;-&quot;Behinds&quot;
+
+
+df5&lt;-rbind(df4,df3)
+
+
+
+df5&lt;-df5 %&gt;%mutate(Team = str_replace(Team, &quot;Brisbane Lions&quot;, &quot;Brisbane&quot;))
+
+df5&lt;-df5 %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
+
+df6&lt;-inner_join(df,df5, by=c(&quot;Team&quot;,&quot;Date&quot;))
+
+
+dataset_columns &lt;- c(1,2,4,6,7,8,45:77,82:84)
+dataset&lt;-df6%&gt;%group_by(Match_id)%&gt;%
+  arrange(Match_id)%&gt;%
+  mutate(Margin=c(-diff(Points), diff(Points)))%&gt;%
+  mutate(Win_loss=if_else(Margin&gt;0,1,0,NULL))%&gt;%
+  select(dataset_columns)</code></pre>
+</div>
 <div id="building-the-logistic-regression-model" class="section level1">
 <h1>Building the Logistic Regression Model</h1>
 <pre class="r"><code>library(aod)
@@ -227,20 +274,20 @@ out.sample &lt;- subset(dataset, Season == 2018)
 
 in.sample$Win_loss &lt;- factor(in.sample$Win_loss)
 
-out.sample$Win_loss&lt;-factor(out.sample$Win_loss)
-
-
-temp1&lt;-scale(in.sample[,7:40])
+out.sample$Win_loss&lt;-factor(out.sample$Win_loss)</code></pre>
+<p>To know which columsn we want to scale an easy way is to go names(dataset) which should print out the column names.</p>
+<pre class="r"><code>temp1&lt;-scale(in.sample[,7:40])
 in.sample[,7:40]&lt;-temp1
 #attributes(temp1)
 temp1.center&lt;-attr(temp1,&quot;scaled:center&quot;)
-temp1.scale&lt;-attr(temp1,&quot;scaled:scale&quot;)
-
-m &lt;- glm(Win_loss ~CP_difference+UP_difference+CM_difference+T_difference, 
-         data = in.sample, family =binomial)
-
-
-
+temp1.scale&lt;-attr(temp1,&quot;scaled:scale&quot;)</code></pre>
+<pre class="r"><code>m &lt;- glm(Win_loss ~I50_difference+
+           Accuracy+
+           R50_difference+
+           CCL_difference+
+           SCL_difference+
+           MI5_difference , data = in.sample, family =binomial)
+          
 newdata   &lt;- out.sample[ , -ncol(out.sample)]
 
 
@@ -254,20 +301,20 @@ colnames(pre.dict.m) &lt;- c(&quot;prob.win&quot;)
 
 newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
 newdata.pred%&gt;%
-  select(Team, Opposition, Venue, Round.y, Margin, prob.win)%&gt;%
+  select(Team, Opposition, Venue,  Margin, prob.win)%&gt;%
   filter(Margin&lt;0)%&gt;%
   arrange(desc(prob.win))%&gt;%
   top_n(10)</code></pre>
 <pre><code>## Selecting by prob.win</code></pre>
-<pre><code>##                Team Opposition          Venue Round.y Margin  prob.win
-## 1           Geelong West Coast  Optus Stadium      R3    -15 0.8031403
-## 2          St Kilda West Coast  Optus Stadium     R11    -13 0.7841533
-## 3  Western Bulldogs     Sydney Etihad Stadium      R4     -7 0.7528645
-## 4          St Kilda   Richmond            MCG     R10    -28 0.7121611
-## 5       Collingwood        GWS            MCG      R2    -16 0.7071859
-## 6               GWS     Sydney            SCG      R3    -16 0.6883663
-## 7       Collingwood    Geelong            MCG      R8    -21 0.6727448
-## 8         Melbourne   Richmond            MCG      R5    -46 0.6475927
-## 9          Essendon   Hawthorn            MCG      R7    -23 0.6003894
-## 10          Geelong   Hawthorn            MCG      R2     -1 0.5962056</code></pre>
+<pre><code>##               Team      Opposition            Venue Margin  prob.win
+## 1           Sydney North Melbourne              SCG     -2 0.9368923
+## 2           Sydney        Adelaide              SCG    -10 0.8578722
+## 3         Essendon         Carlton              MCG    -13 0.8239973
+## 4       Gold Coast        St Kilda Metricon Stadium     -2 0.7796465
+## 5         Essendon       Fremantle    Optus Stadium    -16 0.5778875
+## 6         St Kilda      West Coast    Optus Stadium    -13 0.5625316
+## 7  North Melbourne        Richmond   Etihad Stadium    -10 0.4065246
+## 8    Port Adelaide        Hawthorn     UTAS Stadium     -3 0.4063489
+## 9         Brisbane     Collingwood            Gabba     -7 0.3765427
+## 10        Adelaide   Port Adelaide    Adelaide Oval     -5 0.3601077</code></pre>
 </div>
