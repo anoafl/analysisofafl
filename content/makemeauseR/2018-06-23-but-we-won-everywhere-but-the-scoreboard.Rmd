@@ -75,6 +75,8 @@ str(fitzRoy::player_stats)
 
 So hopefully you have seen a couple of short cuts that come from knowing the dataset and this is an example of why its important to do your checks! 
 
+Here is a great a [guide to bad data](https://github.com/Quartz/bad-data-guide) which provides a nice series of steps in how to check things that might commonly go wrong. 
+
 
 
 
@@ -137,6 +139,60 @@ dataset<-df6%>%group_by(Match_id)%>%
 
 ```
 
+# Taking Submissions. 
+
+I asked twitter, [what areas do you think](https://twitter.com/anoafl/status/1011156299323604992) are important to win, to win a game. I got [a response](https://twitter.com/michael_timbs/status/1011159239232876544) and here we go!
+
+So from our above script, all we need to be able to add in is goal accuracy as a predictor or goal accuracy differential? 
+
+
+
+```{r}
+df<-fitzRoy::player_stats%>%
+         filter(Season>2014)%>%
+         select(-Player)%>%
+         group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+         summarise_all(.funs = sum)%>%
+         group_by(Match_id)%>%
+         arrange(Match_id)%>%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
+
+df2<-fitzRoy::match_results
+df2<-df2%>%filter(Season>2014)
+df3<-select(df2, Date, Round, Home.Team, Home.Points,Home.Goals,Home.Behinds)
+df4<-select(df2, Date, Round, Away.Team, Away.Points,Away.Goals,Away.Behinds)
+df3$Accuracy<-(df3$Home.Goals/(df3$Home.Goals+df3$Home.Behinds))
+colnames(df3)[3]<-"Team"
+colnames(df3)[4]<-"Points"
+colnames(df3)[5]<-"Goals"
+colnames(df3)[6]<-"Behinds"
+df4$Accuracy<-(df4$Away.Goals/(df4$Away.Goals+df4$Away.Behinds))
+colnames(df4)[3]<-"Team"
+colnames(df4)[4]<-"Points"
+colnames(df4)[5]<-"Goals"
+colnames(df4)[6]<-"Behinds"
+
+
+df5<-rbind(df4,df3)
+
+
+
+df5<-df5 %>%mutate(Team = str_replace(Team, "Brisbane Lions", "Brisbane"))
+
+df5<-df5 %>%mutate(Team = str_replace(Team, "Footscray", "Western Bulldogs"))
+
+df6<-inner_join(df,df5, by=c("Team","Date"))
+
+
+dataset_columns <- c(1,2,4,6,7,8,45:77,82:84)
+dataset<-df6%>%group_by(Match_id)%>%
+  arrange(Match_id)%>%
+  mutate(Margin=c(-diff(Points), diff(Points)))%>%
+  mutate(Win_loss=if_else(Margin>0,1,0,NULL))%>%
+  select(dataset_columns)
+
+```
+
 
 # Building the Logistic Regression Model
 
@@ -154,17 +210,34 @@ in.sample$Win_loss <- factor(in.sample$Win_loss)
 out.sample$Win_loss<-factor(out.sample$Win_loss)
 
 
+```
+
+To know which columsn we want to scale an easy way is to go names(dataset) which should print out the column names.
+
+```{r}
+
 temp1<-scale(in.sample[,7:40])
 in.sample[,7:40]<-temp1
 #attributes(temp1)
 temp1.center<-attr(temp1,"scaled:center")
 temp1.scale<-attr(temp1,"scaled:scale")
 
-m <- glm(Win_loss ~CP_difference+UP_difference+CM_difference+T_difference, 
-         data = in.sample, family =binomial)
 
 
 
+```
+
+
+```{r}
+
+
+m <- glm(Win_loss ~I50_difference+
+           Accuracy+
+           R50_difference+
+           CCL_difference+
+           SCL_difference+
+           MI5_difference , data = in.sample, family =binomial)
+          
 newdata   <- out.sample[ , -ncol(out.sample)]
 
 
@@ -178,7 +251,7 @@ colnames(pre.dict.m) <- c("prob.win")
 
 newdata.pred  <- cbind.data.frame(newdata, pre.dict.m)
 newdata.pred%>%
-  select(Team, Opposition, Venue, Round.y, Margin, prob.win)%>%
+  select(Team, Opposition, Venue,  Margin, prob.win)%>%
   filter(Margin<0)%>%
   arrange(desc(prob.win))%>%
   top_n(10)

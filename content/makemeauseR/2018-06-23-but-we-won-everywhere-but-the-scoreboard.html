@@ -117,6 +117,7 @@ group_by(Match_id)%&gt;%
 ##  $ ITC           : int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ T5            : int  NA NA NA NA NA NA NA NA NA NA ...</code></pre>
 <p>So hopefully you have seen a couple of short cuts that come from knowing the dataset and this is an example of why its important to do your checks!</p>
+<p>Here is a great a <a href="https://github.com/Quartz/bad-data-guide">guide to bad data</a> which provides a nice series of steps in how to check things that might commonly go wrong.</p>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
          filter(Season&gt;2014)%&gt;%
          select(-Player,-Date)%&gt;%
