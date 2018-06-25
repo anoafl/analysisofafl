@@ -1,0 +1,36 @@
+---
+title : "A Different Free Kick Ladder"
+description : "Doing a different ladder to Triple M"
+author : "Robert Nguyen"
+date : 2018-06-25
+tags : ["fitzRoy"]
+
+---
+
+Each week [triplemfooty](https://twitter.com/triplemfooty/status/1011093422608867329) tweets out a free kick ladder that is based only on total free kick differential throughout the season. 
+
+But what if we did a ladder in the same style of the home and away ladder. 
+
+* 4 points for a win (winning free kick count in game)
+* 2 points for a draw (drawn free kick count in game)
+* 0 points for a loss (losing the free kick count in game)
+* percentage which is $100 * (total_frees_for/total_frees_against)$
+
+Well thankfully to the new afl R package [fitzRoy](https://github.com/jimmyday12/fitzRoy) that is possible!
+
+
+```{r}
+library(tidyverse)
+fitzRoy::get_footywire_stats(9514:9630)%>%
+    group_by(Round, Team)%>%
+  mutate(Free_diff=sum(FF)-sum(FA), 
+  sumFF=sum(FF), sumFA=sum(FA))%>%
+  select(Team, sumFF, sumFA, Free_diff)%>%
+  distinct()%>%
+  mutate(points=if_else(Free_diff>0,4,if_else(Free_diff==0,2,0)))%>%
+  group_by(Team)%>%
+  summarise(total_points=sum(points),
+  percentage_Frees=100*(sum(sumFF)/sum(sumFA)))%>%
+  arrange(desc(total_points), desc(percentage_Frees))
+
+```

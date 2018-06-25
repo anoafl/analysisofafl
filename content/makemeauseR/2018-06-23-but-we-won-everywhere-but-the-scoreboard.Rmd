@@ -21,9 +21,8 @@ The data we will use here is the game differentials of the various game statisti
 
 Create the dataset we will use for modelling. 
 
-First thing we want to do is think about what variables we want to use, here I am thinking lets use the data from footywire as it has some nice extra variables like meters gained, tackles inside 50.
+The general idea is its fairly obvious if you score more than the opposition you win. Shocking I know! What we are trying to do here, is come up with a concept of we won other things but not the scoreboard, usually when we win these things we tend to win a game. 
 
-We don't want to use things like goals or behinds. Intuitively, think about it this way, what's the point of saying if we score more goals or behinds we will win. That's obvious.  
 
 
 
@@ -31,8 +30,8 @@ We don't want to use things like goals or behinds. Intuitively, think about it t
 library(tidyverse)
 fitzRoy::player_stats%>%
     filter(Season>2014 & Season<2018)%>%
-    select(-Player,-Date)%>%
-    group_by(Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+    select(-Player)%>%
+    group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
     summarise_all(.funs = sum)%>%
 group_by(Match_id)%>%
   arrange(Match_id)%>%

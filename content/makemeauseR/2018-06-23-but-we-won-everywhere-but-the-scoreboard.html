@@ -17,45 +17,45 @@ tags : ["regression", "fitzRoy","modelling"]
 <div id="step-one" class="section level1">
 <h1>Step One</h1>
 <p>Create the dataset we will use for modelling.</p>
-<p>First thing we want to do is think about what variables we want to use, here I am thinking lets use the data from footywire as it has some nice extra variables like meters gained, tackles inside 50.</p>
-<p>We don’t want to use things like goals or behinds. Intuitively, think about it this way, what’s the point of saying if we score more goals or behinds we will win. That’s obvious.</p>
+<p>The general idea is its fairly obvious if you score more than the opposition you win. Shocking I know! What we are trying to do here, is come up with a concept of we won other things but not the scoreboard, usually when we win these things we tend to win a game.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.5
 ## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts ------------------------------------------------------ tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
     filter(Season&gt;2014 &amp; Season&lt;2018)%&gt;%
-    select(-Player,-Date)%&gt;%
-    group_by(Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+    select(-Player)%&gt;%
+    group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
     summarise_all(.funs = sum)%&gt;%
 group_by(Match_id)%&gt;%
   arrange(Match_id)%&gt;%
   mutate(diff_cp=c(-diff(CP), diff(CP)))</code></pre>
-<pre><code>## # A tibble: 1,240 x 42
+<pre><code>## # A tibble: 1,240 x 43
 ## # Groups:   Match_id [620]
-##    Season Round  Team   Status Opposition Venue Match_id    CP    UP    ED
-##     &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt;    &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
-##  1   2015 Round~ Carlt~ Home   Richmond   MCG       5964   127   199   233
-##  2   2015 Round~ Richm~ Away   Carlton    MCG       5964   121   227   273
-##  3   2015 Round~ Gold ~ Away   Melbourne  MCG       5965   136   165   203
-##  4   2015 Round~ Melbo~ Home   Gold Coast MCG       5965   150   198   246
-##  5   2015 Round~ Essen~ Away   Sydney     ANZ ~     5966   150   171   226
-##  6   2015 Round~ Sydney Home   Essendon   ANZ ~     5966   176   192   248
-##  7   2015 Round~ Brisb~ Home   Collingwo~ Gabba     5967   152   211   246
-##  8   2015 Round~ Colli~ Away   Brisbane   Gabba     5967   165   179   231
-##  9   2015 Round~ West ~ Away   Western B~ Etih~     5968   137   236   278
-## 10   2015 Round~ Weste~ Home   West Coast Etih~     5968   156   214   275
-## # ... with 1,230 more rows, and 32 more variables: DE &lt;dbl&gt;, CM &lt;int&gt;,
-## #   GA &lt;int&gt;, MI5 &lt;int&gt;, One.Percenters &lt;int&gt;, BO &lt;int&gt;, TOG &lt;int&gt;,
-## #   K &lt;int&gt;, HB &lt;int&gt;, D &lt;int&gt;, M &lt;int&gt;, G &lt;int&gt;, B &lt;int&gt;, T &lt;int&gt;,
-## #   HO &lt;int&gt;, GA1 &lt;int&gt;, I50 &lt;int&gt;, CL &lt;int&gt;, CG &lt;int&gt;, R50 &lt;int&gt;,
-## #   FF &lt;int&gt;, FA &lt;int&gt;, AF &lt;int&gt;, SC &lt;int&gt;, CCL &lt;int&gt;, SCL &lt;int&gt;,
-## #   SI &lt;int&gt;, MG &lt;int&gt;, TO &lt;int&gt;, ITC &lt;int&gt;, T5 &lt;int&gt;, diff_cp &lt;int&gt;</code></pre>
+##    Date       Season Round  Team    Status Opposition Venue Match_id    CP
+##    &lt;date&gt;      &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt;    &lt;dbl&gt; &lt;int&gt;
+##  1 2015-04-02   2015 Round~ Carlton Home   Richmond   MCG       5964   127
+##  2 2015-04-02   2015 Round~ Richmo~ Away   Carlton    MCG       5964   121
+##  3 2015-04-04   2015 Round~ Gold C~ Away   Melbourne  MCG       5965   136
+##  4 2015-04-04   2015 Round~ Melbou~ Home   Gold Coast MCG       5965   150
+##  5 2015-04-04   2015 Round~ Essend~ Away   Sydney     ANZ ~     5966   150
+##  6 2015-04-04   2015 Round~ Sydney  Home   Essendon   ANZ ~     5966   176
+##  7 2015-04-04   2015 Round~ Brisba~ Home   Collingwo~ Gabba     5967   152
+##  8 2015-04-04   2015 Round~ Collin~ Away   Brisbane   Gabba     5967   165
+##  9 2015-04-04   2015 Round~ West C~ Away   Western B~ Etih~     5968   137
+## 10 2015-04-04   2015 Round~ Wester~ Home   West Coast Etih~     5968   156
+## # ... with 1,230 more rows, and 34 more variables: UP &lt;int&gt;, ED &lt;int&gt;,
+## #   DE &lt;dbl&gt;, CM &lt;int&gt;, GA &lt;int&gt;, MI5 &lt;int&gt;, One.Percenters &lt;int&gt;,
+## #   BO &lt;int&gt;, TOG &lt;int&gt;, K &lt;int&gt;, HB &lt;int&gt;, D &lt;int&gt;, M &lt;int&gt;, G &lt;int&gt;,
+## #   B &lt;int&gt;, T &lt;int&gt;, HO &lt;int&gt;, GA1 &lt;int&gt;, I50 &lt;int&gt;, CL &lt;int&gt;, CG &lt;int&gt;,
+## #   R50 &lt;int&gt;, FF &lt;int&gt;, FA &lt;int&gt;, AF &lt;int&gt;, SC &lt;int&gt;, CCL &lt;int&gt;,
+## #   SCL &lt;int&gt;, SI &lt;int&gt;, MG &lt;int&gt;, TO &lt;int&gt;, ITC &lt;int&gt;, T5 &lt;int&gt;,
+## #   diff_cp &lt;int&gt;</code></pre>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
          filter(Season&gt;2014 &amp; Season&lt;2018)%&gt;%
          select(-Player,-Date)%&gt;%
