@@ -257,5 +257,9 @@ newdata.pred%>%
   top_n(10)
 
 ```
+```{r}
+
+summary(m)
+```
 
 
