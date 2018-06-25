@@ -178,7 +178,7 @@ colnames(pre.dict.m) <- c("prob.win")
 
 newdata.pred  <- cbind.data.frame(newdata, pre.dict.m)
 newdata.pred%>%
-  select(Team, Opposition, Venue, Round.y. Margin, prob.win)
+  select(Team, Opposition, Venue, Round.y, Margin, prob.win)%>%
   filter(Margin<0)%>%
   arrange(desc(prob.win))%>%
   top_n(10)

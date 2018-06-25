@@ -12,31 +12,33 @@ tags : ["regression", "fitzRoy","modelling"]
 <p>Something that gets to many a footy fan, is the feeling that your team has won the game in most areas expect on the scoreboard.</p>
 <p>Thinking about this statement a little bit deeper has the following implication. That there are some areas of the game, that if you win, you tend to win the game.</p>
 <p>We can think about this by putting it into a model.</p>
-<p>The model I will use here, is a logistic regression model with the binary outcome being win/loss.</p>
 <p>The data we will use here is the game differentials of the various game statistics that are available using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a></p>
-<div id="step-one" class="section level1">
-<h1>Step One</h1>
-<p>Create the dataset we will use for modelling.</p>
 <p>The general idea is its fairly obvious if you score more than the opposition you win. Shocking I know! What we are trying to do here, is come up with a concept of we won other things but not the scoreboard, usually when we win these things we tend to win a game.</p>
+<p>So we know thanks to <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> we have access to the data on <a href="https://www.footywire.com/">footywire</a>, which has a few extra variables that are not on <a href="https://afltables.com/afl/afl_index.html">afltables</a>.</p>
+<p>So imagine this scenario, you don’t have access to the scores, only the in game statistics as per <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9626">these</a> <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9626&amp;advv=Y">pages</a>, what variables/differentials would you look at to decide to will win?</p>
+<p>We know that for example, looking only at <a href="https://analysisofafl.netlify.com/makemeauser/2018-06-25-a-different-free-kick-ladder/">free</a> <a href="https://www.triplem.com.au/sport/afl/news/afl-free-kick-differential-ladder-round-14-2018">kick</a> differential isn’t very predictive. Is there a combination of differentials that when a team wins they are more likely to win? Lets build a model to find out.</p>
+<p>The model I will use here, is a logistic regression model with the binary outcome being win/loss.</p>
+<div id="step-one-build-the-dataset" class="section level1">
+<h1>Step One Build the dataset</h1>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.5
 ## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------------------ tidyverse_conflicts() --
+<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
-    filter(Season&gt;2014 &amp; Season&lt;2018)%&gt;%
+    filter(Season&gt;2014)%&gt;%
     select(-Player)%&gt;%
     group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
     summarise_all(.funs = sum)%&gt;%
 group_by(Match_id)%&gt;%
   arrange(Match_id)%&gt;%
   mutate(diff_cp=c(-diff(CP), diff(CP)))</code></pre>
-<pre><code>## # A tibble: 1,240 x 43
-## # Groups:   Match_id [620]
+<pre><code>## # A tibble: 1,462 x 43
+## # Groups:   Match_id [731]
 ##    Date       Season Round  Team    Status Opposition Venue Match_id    CP
 ##    &lt;date&gt;      &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt;    &lt;dbl&gt; &lt;int&gt;
 ##  1 2015-04-02   2015 Round~ Carlton Home   Richmond   MCG       5964   127
@@ -49,23 +51,82 @@ group_by(Match_id)%&gt;%
 ##  8 2015-04-04   2015 Round~ Collin~ Away   Brisbane   Gabba     5967   165
 ##  9 2015-04-04   2015 Round~ West C~ Away   Western B~ Etih~     5968   137
 ## 10 2015-04-04   2015 Round~ Wester~ Home   West Coast Etih~     5968   156
-## # ... with 1,230 more rows, and 34 more variables: UP &lt;int&gt;, ED &lt;int&gt;,
+## # ... with 1,452 more rows, and 34 more variables: UP &lt;int&gt;, ED &lt;int&gt;,
 ## #   DE &lt;dbl&gt;, CM &lt;int&gt;, GA &lt;int&gt;, MI5 &lt;int&gt;, One.Percenters &lt;int&gt;,
 ## #   BO &lt;int&gt;, TOG &lt;int&gt;, K &lt;int&gt;, HB &lt;int&gt;, D &lt;int&gt;, M &lt;int&gt;, G &lt;int&gt;,
 ## #   B &lt;int&gt;, T &lt;int&gt;, HO &lt;int&gt;, GA1 &lt;int&gt;, I50 &lt;int&gt;, CL &lt;int&gt;, CG &lt;int&gt;,
 ## #   R50 &lt;int&gt;, FF &lt;int&gt;, FA &lt;int&gt;, AF &lt;int&gt;, SC &lt;int&gt;, CCL &lt;int&gt;,
 ## #   SCL &lt;int&gt;, SI &lt;int&gt;, MG &lt;int&gt;, TO &lt;int&gt;, ITC &lt;int&gt;, T5 &lt;int&gt;,
 ## #   diff_cp &lt;int&gt;</code></pre>
+<p>Something to remember with fitzRoy is that footywire doesn’t have tackles inside 50, meters gained etc for games previous to 2015, so this becomes our first <code>filter</code></p>
+<p>The next thing we do, is we <code>select</code> all the columns except for Player, the reason being is that we don’t need it and also its nice to see how to “deselect” columns as well as select them.</p>
+<p>Remember we want data at a game level for each team and we want to be able to come up with the in game differential, this is where our next <code>group_by</code> comes in handy and its related to the <code>summarise_all</code>.</p>
+<p>You might be thinking jeez mate that’s a lot to group by can’t you just use Match_id as they are already unique. Yes that is true, I could have, but one thing about <code>summarise_all</code> is that is summarises every column that is not in the <code>group_by</code>. You can test this out by running below, it should spit out an error message. <code>Error in summarise_impl(.data, dots) :    Evaluation error: invalid 'type' (character) of argument.</code></p>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
-         filter(Season&gt;2014 &amp; Season&lt;2018)%&gt;%
+    filter(Season&gt;2014)%&gt;%
+    select(-Player)%&gt;%
+    group_by( Match_id)%&gt;%
+    summarise_all(.funs = sum)</code></pre>
+<p>After the <code>summarise_all</code>, we group by <code>Match_id</code> so we can find the differentials by <code>Match_id</code> so we can come up with as an example the contested possession differential <code>diff_cp</code>. I like to <code>arrange</code> the dataset so I can do sanity checks vs <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9626">footywire</a>.</p>
+<p>So the next thing you might be thinking, is jeez doing that for all variables finding their differentials seems a bit tedious.</p>
+<p>That is where we can use <code>mutate_if</code>, we can just <code>mutate</code> all columns that <code>is.numeric</code> and is not in the <code>group_by</code> which is another way we could have done original <code>summarise_all</code> instead we could have used <code>summarise_if</code> BUT match_id is numeric!</p>
+<p>You can check this by using</p>
+<pre class="r"><code>str(fitzRoy::player_stats)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    76296 obs. of  43 variables:
+##  $ Date          : Date, format: &quot;2010-03-25&quot; &quot;2010-03-25&quot; ...
+##  $ Season        : num  2010 2010 2010 2010 2010 2010 2010 2010 2010 2010 ...
+##  $ Round         : chr  &quot;Round 1&quot; &quot;Round 1&quot; &quot;Round 1&quot; &quot;Round 1&quot; ...
+##  $ Venue         : chr  &quot;MCG&quot; &quot;MCG&quot; &quot;MCG&quot; &quot;MCG&quot; ...
+##  $ Player        : chr  &quot;Daniel Connors&quot; &quot;Daniel Jackson&quot; &quot;Brett Deledio&quot; &quot;Ben Cousins&quot; ...
+##  $ Team          : chr  &quot;Richmond&quot; &quot;Richmond&quot; &quot;Richmond&quot; &quot;Richmond&quot; ...
+##  $ Opposition    : chr  &quot;Carlton&quot; &quot;Carlton&quot; &quot;Carlton&quot; &quot;Carlton&quot; ...
+##  $ Status        : chr  &quot;Home&quot; &quot;Home&quot; &quot;Home&quot; &quot;Home&quot; ...
+##  $ Match_id      : num  5089 5089 5089 5089 5089 ...
+##  $ CP            : int  8 11 7 9 8 6 7 7 6 7 ...
+##  $ UP            : int  15 10 14 10 10 12 10 6 7 5 ...
+##  $ ED            : int  16 14 16 11 13 16 13 7 10 7 ...
+##  $ DE            : num  66.7 60.9 76.2 57.9 68.4 88.9 76.5 50 76.9 53.8 ...
+##  $ CM            : int  0 1 0 0 1 0 0 0 1 0 ...
+##  $ GA            : int  0 0 0 1 0 0 0 1 0 0 ...
+##  $ MI5           : int  0 0 0 0 0 0 0 2 0 0 ...
+##  $ One.Percenters: int  1 0 0 0 0 1 5 2 5 1 ...
+##  $ BO            : int  0 0 0 0 1 0 0 0 0 0 ...
+##  $ TOG           : int  69 80 89 69 77 81 84 80 100 88 ...
+##  $ K             : int  14 11 12 13 11 5 7 9 6 7 ...
+##  $ HB            : int  10 12 9 6 8 13 10 5 7 6 ...
+##  $ D             : int  24 23 21 19 19 18 17 14 13 13 ...
+##  $ M             : int  3 2 5 1 6 4 2 3 4 2 ...
+##  $ G             : int  0 0 1 1 0 0 0 1 0 0 ...
+##  $ B             : int  0 0 0 0 0 0 0 1 0 0 ...
+##  $ T             : int  1 5 6 1 1 3 2 5 4 4 ...
+##  $ HO            : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ GA1           : int  0 0 0 1 0 0 0 1 0 0 ...
+##  $ I50           : int  2 8 4 1 2 2 1 5 0 3 ...
+##  $ CL            : int  2 5 3 2 3 3 4 4 1 1 ...
+##  $ CG            : int  4 4 4 3 3 1 2 0 2 0 ...
+##  $ R50           : int  6 1 3 4 2 0 2 0 3 1 ...
+##  $ FF            : int  2 2 1 1 0 0 1 4 1 1 ...
+##  $ FA            : int  0 0 2 0 2 1 0 0 0 0 ...
+##  $ AF            : int  77 85 94 65 65 62 56 77 61 56 ...
+##  $ SC            : int  85 89 93 70 63 72 79 73 68 59 ...
+##  $ CCL           : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ SCL           : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ SI            : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ MG            : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ TO            : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ ITC           : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ T5            : int  NA NA NA NA NA NA NA NA NA NA ...</code></pre>
+<p>So hopefully you have seen a couple of short cuts that come from knowing the dataset and this is an example of why its important to do your checks!</p>
+<pre class="r"><code>fitzRoy::player_stats%&gt;%
+         filter(Season&gt;2014)%&gt;%
          select(-Player,-Date)%&gt;%
          group_by(Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
          summarise_all(.funs = sum)%&gt;%
          group_by(Match_id)%&gt;%
          arrange(Match_id)%&gt;%
          mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))</code></pre>
-<pre><code>## # A tibble: 1,240 x 76
-## # Groups:   Match_id [620]
+<pre><code>## # A tibble: 1,462 x 76
+## # Groups:   Match_id [731]
 ##    Season Round  Team   Status Opposition Venue Match_id    CP    UP    ED
 ##     &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt;    &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
 ##  1   2015 Round~ Carlt~ Home   Richmond   MCG       5964   127   199   233
@@ -78,7 +139,7 @@ group_by(Match_id)%&gt;%
 ##  8   2015 Round~ Colli~ Away   Brisbane   Gabba     5967   165   179   231
 ##  9   2015 Round~ West ~ Away   Western B~ Etih~     5968   137   236   278
 ## 10   2015 Round~ Weste~ Home   West Coast Etih~     5968   156   214   275
-## # ... with 1,230 more rows, and 66 more variables: DE &lt;dbl&gt;, CM &lt;int&gt;,
+## # ... with 1,452 more rows, and 66 more variables: DE &lt;dbl&gt;, CM &lt;int&gt;,
 ## #   GA &lt;int&gt;, MI5 &lt;int&gt;, One.Percenters &lt;int&gt;, BO &lt;int&gt;, TOG &lt;int&gt;,
 ## #   K &lt;int&gt;, HB &lt;int&gt;, D &lt;int&gt;, M &lt;int&gt;, G &lt;int&gt;, B &lt;int&gt;, T &lt;int&gt;,
 ## #   HO &lt;int&gt;, GA1 &lt;int&gt;, I50 &lt;int&gt;, CL &lt;int&gt;, CG &lt;int&gt;, R50 &lt;int&gt;,
@@ -97,6 +158,10 @@ group_by(Match_id)%&gt;%
 ## #   CCL_difference &lt;int&gt;, SCL_difference &lt;int&gt;, SI_difference &lt;int&gt;,
 ## #   MG_difference &lt;int&gt;, TO_difference &lt;int&gt;, ITC_difference &lt;int&gt;,
 ## #   T5_difference &lt;int&gt;</code></pre>
+</div>
+<div id="step-two---joining-datasets" class="section level1">
+<h1>Step Two - Joining Datasets</h1>
+<p>Now we could just sum up the goals by each player and their behinds, but this would miss out on rushed behinds. So lets join our <a href="https://www.footywire.com">footywire</a> dataset with the <a href="https://afltables.com/afl/seas/2018.html">afltables</a> match results</p>
 <pre class="r"><code>df&lt;-fitzRoy::player_stats%&gt;%
          filter(Season&gt;2014)%&gt;%
          select(-Player)%&gt;%
@@ -185,107 +250,20 @@ colnames(pre.dict.m) &lt;- c(&quot;prob.win&quot;)
 
 newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
 newdata.pred%&gt;%
+  select(Team, Opposition, Venue, Round.y, Margin, prob.win)%&gt;%
   filter(Margin&lt;0)%&gt;%
   arrange(desc(prob.win))%&gt;%
   top_n(10)</code></pre>
 <pre><code>## Selecting by prob.win</code></pre>
-<pre><code>##          Date Season             Team Opposition          Venue Match_id
-## 1  2018-04-08   2018          Geelong West Coast  Optus Stadium     9540
-## 2  2018-06-02   2018         St Kilda West Coast  Optus Stadium     9608
-## 3  2018-04-14   2018 Western Bulldogs     Sydney Etihad Stadium     9544
-## 4  2018-05-26   2018         St Kilda   Richmond            MCG     9596
-## 5  2018-03-31   2018      Collingwood        GWS            MCG     9526
-## 6  2018-04-07   2018              GWS     Sydney            SCG     9536
-## 7  2018-05-13   2018      Collingwood    Geelong            MCG     9585
-## 8  2018-04-24   2018        Melbourne   Richmond            MCG     9557
-## 9  2018-05-05   2018         Essendon   Hawthorn            MCG     9570
-## 10 2018-04-02   2018          Geelong   Hawthorn            MCG     9531
-##    CP_difference UP_difference ED_difference DE_difference CM_difference
-## 1     0.21206978     0.6604902     0.4908878   -0.25506727     1.3445332
-## 2     0.10603489     1.3209804     0.8765853    0.30509969    -1.0083999
-## 3     0.10603489     1.0945266     0.6311414   -0.05591859    -0.5041999
-## 4    -0.15905234     1.5096919     1.3674731    2.24459196    -1.3445332
-## 5     0.21206978     0.3396807     0.2980390   -0.73871405     0.5041999
-## 6     0.05301745     0.0377423    -0.2103805   -0.60137014     0.0000000
-## 7    -0.47715701     0.9058151     0.3155707   -0.12164747    -0.6722666
-## 8     0.31810467    -0.1509692    -0.3506341   -0.14813522     1.3445332
-## 9     0.68922680     0.5472633     0.4908878   -0.18050914     0.3361333
-## 10    0.00000000     0.9624286     0.7889268    0.38063885    -0.1680666
-##    GA_difference MI5_difference One.Percenters_difference BO_difference
-## 1      0.3496939      0.7048802                 0.2662789    -0.4672399
-## 2      0.0000000     -0.7048802                 0.1775193     0.9344799
-## 3      0.0000000      0.2819521                 0.9763559    -0.7787332
-## 4      0.0000000     -0.7048802                -0.5325578    -1.0902265
-## 5     -1.3987756     -0.9868322                -0.7100770    -0.3114933
-## 6     -0.1748470     -0.7048802                 0.3550385    -0.3114933
-## 7     -0.5245409      0.2819521                 1.6864329     1.2459732
-## 8     -1.3987756     -0.2819521                -2.3965099    -1.7132131
-## 9      0.5245409     -0.5639041                 0.5325578    -0.3114933
-## 10    -0.1748470     -0.5639041                -0.8875963    -0.1557466
-##    TOG_difference K_difference HB_difference D_difference M_difference
-## 1       0.3432091  -0.08066657    1.15524392   0.66759213    0.3435361
-## 2       0.6864181  -0.59155481    2.20546567   1.00952957   -0.9275476
-## 3      -0.3432091   1.42510932    0.00000000   0.86298495    0.9619012
-## 4      -0.1716045   0.59155481    1.39154382   1.22120512    0.6527187
-## 5       0.1716045  -0.32266626    0.97145512   0.40706837   -0.3778898
-## 6       0.0000000  -0.24199970    0.18378881  -0.03256547   -0.2404753
-## 7      -0.3432091   0.16133313    0.55136642   0.43963384    0.8588404
-## 8      -0.6864181  -0.45711054    0.02625554  -0.26052376    0.5496578
-## 9      -0.1716045  -0.53777710    1.68035480   0.71644034   -0.2748289
-## 10      0.0000000   0.32266626    0.97145512   0.79785401    0.4809506
-##    G_difference B_difference T_difference HO_difference GA1_difference
-## 1    -0.4198681    0.3816792   0.60267258    -1.6148566      0.3496939
-## 2    -0.2799121   -0.5725188   1.00445430    -0.3341083      0.0000000
-## 3    -0.2799121    0.3816792   0.66963620    -0.8352706      0.0000000
-## 4    -0.4198681   -1.5267168   0.60267258     0.6125318      0.0000000
-## 5    -0.4198681    0.5725188   0.60267258     1.4478024     -1.3987756
-## 6    -0.5598242    0.7633584   1.67409050    -1.3364330     -0.1748470
-## 7    -0.5598242    0.3816792   1.54016326     1.5034871     -0.5245409
-## 8    -0.9796923   -0.7633584   0.06696362     2.3387578     -1.3987756
-## 9    -0.4198681   -0.7633584  -1.80801774     0.0000000      0.5245409
-## 10    0.1399560   -1.7175564  -0.73659982    -0.8352706     -0.1748470
-##    I50_difference CL_difference CG_difference R50_difference FF_difference
-## 1      -0.3153089    -0.1054745     0.6397841     0.26238699    -1.3286057
-## 2       0.2522471     0.7383218     2.1326136    -0.52477398    -2.1589842
-## 3       1.1351120     1.0547454    -1.4928295    -1.92417126     2.1589842
-## 4      -0.9459266     0.0000000     1.8127216     0.87462330     0.8303785
-## 5       0.1261236    -0.4218982    -0.9596761    -0.61223631     1.3286057
-## 6       0.2522471     1.4766436     0.2132614    -0.43731165    -1.3286057
-## 7       0.0000000    -0.3164236     0.8530454     0.00000000    -0.3321514
-## 8      -0.8198031    -0.5273727     1.0663068     0.08746233     0.3321514
-## 9      -0.9459266    -0.1054745     2.1326136     0.87462330    -0.8303785
-## 10     -1.1981737    -0.6328472    -0.6397841     1.39939728     1.3286057
-##    FA_difference AF_difference SC_difference CCL_difference SCL_difference
-## 1      1.1626594    0.25610465    0.36311537     -0.5632730      0.2781803
-## 2      2.1592245    0.02885686   -0.28854704      1.1265461      0.1390902
-## 3     -2.1592245    1.11820341    0.42795740      0.9387884      0.6954508
-## 4     -0.8304710    0.97391910    0.41823110      0.1877577     -0.1390902
-## 5     -1.3287536    0.30299705   -0.09402094     -0.5632730     -0.1390902
-## 6      1.3287536   -0.03607108   -0.23018921      0.9387884      1.2518115
-## 7      0.3321884    0.80799214    0.38256798      0.0000000     -0.4172705
-## 8     -0.3321884    0.02524975   -0.31448385     -1.5020614      0.4172705
-## 9      0.8304710   -0.38235342   -0.51549415      0.1877577     -0.2781803
-## 10    -1.3287536    0.44006715    0.20101030     -1.6898191      0.4172705
-##    SI_difference MG_difference TO_difference ITC_difference T5_difference
-## 1     0.04356015   -0.09808171    -0.3746883      0.3715625    -0.6493697
-## 2     0.08712030   -0.07927152     0.6244804     -0.6192708     0.0000000
-## 3     1.00188346    0.24050172     0.9991687     -0.7431250     0.1298739
-## 4    -0.65340226   -0.65701307     1.2489609     -1.2385416    -1.1688655
-## 5    -0.52272181   -0.19750700    -0.3746883      0.6192708     0.5194958
-## 6     0.30492105    0.06583567    -0.2497922      0.3715625     0.3896218
-## 7     0.76230263    0.22840945     0.2497922     -0.2477083     0.1298739
-## 8    -1.02366354   -0.89348403     0.1248961     -0.2477083    -0.1298739
-## 9    -0.32670113   -0.30365021     0.6244804     -0.6192708    -0.5194958
-## 10   -0.10890038   -0.48369060     0.6244804     -0.6192708    -0.6493697
-##    Round.y Points Margin  prob.win
-## 1       R3     80    -15 0.8031403
-## 2      R11     88    -13 0.7841533
-## 3       R4     79     -7 0.7528645
-## 4      R10     77    -28 0.7121611
-## 5       R2     79    -16 0.7071859
-## 6       R3     87    -16 0.6883663
-## 7       R8     45    -21 0.6727448
-## 8       R5     56    -46 0.6475927
-## 9       R7     67    -23 0.6003894
-## 10      R2    117     -1 0.5962056</code></pre>
+<pre><code>##                Team Opposition          Venue Round.y Margin  prob.win
+## 1           Geelong West Coast  Optus Stadium      R3    -15 0.8031403
+## 2          St Kilda West Coast  Optus Stadium     R11    -13 0.7841533
+## 3  Western Bulldogs     Sydney Etihad Stadium      R4     -7 0.7528645
+## 4          St Kilda   Richmond            MCG     R10    -28 0.7121611
+## 5       Collingwood        GWS            MCG      R2    -16 0.7071859
+## 6               GWS     Sydney            SCG      R3    -16 0.6883663
+## 7       Collingwood    Geelong            MCG      R8    -21 0.6727448
+## 8         Melbourne   Richmond            MCG      R5    -46 0.6475927
+## 9          Essendon   Hawthorn            MCG      R7    -23 0.6003894
+## 10          Geelong   Hawthorn            MCG      R2     -1 0.5962056</code></pre>
 </div>
