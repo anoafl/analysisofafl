@@ -54,7 +54,7 @@ fitzRoy::player_stats%>%
 
 ```{r}
 df<-fitzRoy::player_stats%>%
-         filter(Season>2014 & Season<2018)%>%
+         filter(Season>2014)%>%
          select(-Player)%>%
          group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
          summarise_all(.funs = sum)%>%
@@ -63,7 +63,7 @@ df<-fitzRoy::player_stats%>%
          mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
 
 df2<-fitzRoy::match_results
-df2<-df2%>%filter(Season>2014 & Season<2018)
+df2<-df2%>%filter(Season>2014)
 df3<-select(df2, Date, Round, Home.Team, Home.Points)
 df4<-select(df2, Date, Round, Away.Team, Away.Points)
 colnames(df3)[3]<-"Team"
@@ -83,7 +83,7 @@ df5<-df5 %>%mutate(Team = str_replace(Team, "Footscray", "Western Bulldogs"))
 
 df6<-inner_join(df,df5, by=c("Team","Date"))
 
-dataset_columns <- c(81,1,2,4,6,7,8,44:80)
+dataset_columns <- c(1,2,4,6,7,8,44:80,81)
 dataset<-df6%>%group_by(Match_id)%>%
   arrange(Match_id)%>%
   mutate(Margin=c(-diff(Points), diff(Points)))%>%
@@ -95,7 +95,45 @@ dataset<-df6%>%group_by(Match_id)%>%
 
 
 ```{r}
+library(aod)
+library(ordinal)
+library(lme4)
+in.sample  <- subset(dataset, Season %in% c(2015:2017))
+#in.sample  <- subset(mydata, year ==2008)
+out.sample <- subset(dataset, Season == 2018)
 
+in.sample$Win_loss <- factor(in.sample$Win_loss)
+
+out.sample$Win_loss<-factor(out.sample$Win_loss)
+
+
+temp1<-scale(in.sample[,7:40])
+in.sample[,7:40]<-temp1
+#attributes(temp1)
+temp1.center<-attr(temp1,"scaled:center")
+temp1.scale<-attr(temp1,"scaled:scale")
+
+m <- glm(Win_loss ~CP_difference+UP_difference+CM_difference+T_difference, 
+         data = in.sample, family =binomial)
+
+
+
+newdata   <- out.sample[ , -ncol(out.sample)]
+
+
+newdata[,7:40]<-scale(newdata[,7:40],center=temp1.center,scale=temp1.scale) 
+
+
+
+pre.dict    <- predict(m,newdata=newdata, type="response")
+pre.dict.m  <- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) <- c("prob.win")
+
+newdata.pred  <- cbind.data.frame(newdata, pre.dict.m)
+newdata.pred%>%
+  filter(Margin<0)%>%
+  arrange(desc(prob.win))%>%
+  top_n(10)
 
 ```
 
