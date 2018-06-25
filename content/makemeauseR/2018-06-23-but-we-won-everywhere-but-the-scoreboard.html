@@ -317,4 +317,34 @@ newdata.pred%&gt;%
 ## 8    Port Adelaide        Hawthorn     UTAS Stadium     -3 0.4063489
 ## 9         Brisbane     Collingwood            Gabba     -7 0.3765427
 ## 10        Adelaide   Port Adelaide    Adelaide Oval     -5 0.3601077</code></pre>
+<pre class="r"><code>summary(m)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Win_loss ~ I50_difference + Accuracy + R50_difference + 
+##     CCL_difference + SCL_difference + MI5_difference, family = binomial, 
+##     data = in.sample)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -2.43728  -0.28649  -0.00212   0.26964   2.63087  
+## 
+## Coefficients:
+##                Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)    -0.04373    0.10171  -0.430    0.667    
+## I50_difference  7.17314    0.51782  13.853  &lt; 2e-16 ***
+## Accuracy        0.70676    0.11998   5.891 3.84e-09 ***
+## R50_difference  5.11442    0.38536  13.272  &lt; 2e-16 ***
+## CCL_difference  0.16421    0.11256   1.459    0.145    
+## SCL_difference  0.04502    0.10581   0.425    0.671    
+## MI5_difference  0.87950    0.16978   5.180 2.22e-07 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1718.92  on 1239  degrees of freedom
+## Residual deviance:  620.62  on 1233  degrees of freedom
+## AIC: 634.62
+## 
+## Number of Fisher Scoring iterations: 7</code></pre>
 </div>
