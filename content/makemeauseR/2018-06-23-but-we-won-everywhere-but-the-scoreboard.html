@@ -288,36 +288,7 @@ temp1.scale&lt;-attr(temp1,&quot;scaled:scale&quot;)</code></pre>
            SCL_difference+
            MI5_difference , data = in.sample, family =binomial)
           
-newdata   &lt;- out.sample[ , -ncol(out.sample)]
-
-
-newdata[,7:40]&lt;-scale(newdata[,7:40],center=temp1.center,scale=temp1.scale) 
-
-
-
-pre.dict    &lt;- predict(m,newdata=newdata, type=&quot;response&quot;)
-pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
-colnames(pre.dict.m) &lt;- c(&quot;prob.win&quot;)
-
-newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
-newdata.pred%&gt;%
-  select(Team, Opposition, Venue,  Margin, prob.win)%&gt;%
-  filter(Margin&lt;0)%&gt;%
-  arrange(desc(prob.win))%&gt;%
-  top_n(10)</code></pre>
-<pre><code>## Selecting by prob.win</code></pre>
-<pre><code>##               Team      Opposition            Venue Margin  prob.win
-## 1           Sydney North Melbourne              SCG     -2 0.9368923
-## 2           Sydney        Adelaide              SCG    -10 0.8578722
-## 3         Essendon         Carlton              MCG    -13 0.8239973
-## 4       Gold Coast        St Kilda Metricon Stadium     -2 0.7796465
-## 5         Essendon       Fremantle    Optus Stadium    -16 0.5778875
-## 6         St Kilda      West Coast    Optus Stadium    -13 0.5625316
-## 7  North Melbourne        Richmond   Etihad Stadium    -10 0.4065246
-## 8    Port Adelaide        Hawthorn     UTAS Stadium     -3 0.4063489
-## 9         Brisbane     Collingwood            Gabba     -7 0.3765427
-## 10        Adelaide   Port Adelaide    Adelaide Oval     -5 0.3601077</code></pre>
-<pre class="r"><code>summary(m)</code></pre>
+summary(m)</code></pre>
 <pre><code>## 
 ## Call:
 ## glm(formula = Win_loss ~ I50_difference + Accuracy + R50_difference + 
@@ -347,4 +318,103 @@ newdata.pred%&gt;%
 ## AIC: 634.62
 ## 
 ## Number of Fisher Scoring iterations: 7</code></pre>
+<pre class="r"><code>newdata   &lt;- out.sample[ , -ncol(out.sample)]
+
+
+newdata[,7:40]&lt;-scale(newdata[,7:40],center=temp1.center,scale=temp1.scale) 
+
+
+
+pre.dict    &lt;- predict(m,newdata=newdata, type=&quot;response&quot;)
+pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) &lt;- c(&quot;prob.win&quot;)
+
+
+newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
+newdata.pred%&gt;%
+  select(Team, Opposition, Venue,  Margin, prob.win)%&gt;%
+  filter(Margin&lt;0)%&gt;%
+  arrange(desc(prob.win))%&gt;%
+  top_n(10)</code></pre>
+<pre><code>## Selecting by prob.win</code></pre>
+<pre><code>##               Team      Opposition            Venue Margin  prob.win
+## 1           Sydney North Melbourne              SCG     -2 0.9368923
+## 2           Sydney        Adelaide              SCG    -10 0.8578722
+## 3         Essendon         Carlton              MCG    -13 0.8239973
+## 4       Gold Coast        St Kilda Metricon Stadium     -2 0.7796465
+## 5         Essendon       Fremantle    Optus Stadium    -16 0.5778875
+## 6         St Kilda      West Coast    Optus Stadium    -13 0.5625316
+## 7  North Melbourne        Richmond   Etihad Stadium    -10 0.4065246
+## 8    Port Adelaide        Hawthorn     UTAS Stadium     -3 0.4063489
+## 9         Brisbane     Collingwood            Gabba     -7 0.3765427
+## 10        Adelaide   Port Adelaide    Adelaide Oval     -5 0.3601077</code></pre>
+<p>The good thing about having a template sorted out, is that you can make quick changes as you think of other variables you want to test.</p>
+<p>For example <a href="https://twitter.com/Trooa/status/1011406234207916032">JT</a> asked about kicks, inside 50s, marks in 50, tackles in 50 and meters gained.</p>
+<p>Well lets look at his list of games</p>
+<pre class="r"><code>m &lt;- glm(Win_loss ~I50_difference+
+           K_difference+
+          I50_difference+
+           MI5_difference+
+           T5_difference+
+           MG_difference, data = in.sample, family =binomial)
+          
+summary(m)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Win_loss ~ I50_difference + K_difference + I50_difference + 
+##     MI5_difference + T5_difference + MG_difference, family = binomial, 
+##     data = in.sample)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -2.68051  -0.29449  -0.00427   0.29706   2.71729  
+## 
+## Coefficients:
+##                Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)    -0.05097    0.10101  -0.505 0.613808    
+## I50_difference -0.50237    0.17403  -2.887 0.003892 ** 
+## K_difference    0.47670    0.15356   3.104 0.001907 ** 
+## MI5_difference  0.63284    0.17320   3.654 0.000258 ***
+## T5_difference  -0.03405    0.11939  -0.285 0.775503    
+## MG_difference   4.19630    0.31214  13.444  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1718.92  on 1239  degrees of freedom
+## Residual deviance:  631.05  on 1234  degrees of freedom
+## AIC: 643.05
+## 
+## Number of Fisher Scoring iterations: 7</code></pre>
+<pre class="r"><code>newdata   &lt;- out.sample[ , -ncol(out.sample)]
+
+
+newdata[,7:40]&lt;-scale(newdata[,7:40],center=temp1.center,scale=temp1.scale) 
+
+
+
+pre.dict    &lt;- predict(m,newdata=newdata, type=&quot;response&quot;)
+pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) &lt;- c(&quot;prob.win&quot;)
+
+
+newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
+newdata.pred%&gt;%
+  select(Team, Opposition, Venue,  Margin, prob.win)%&gt;%
+  filter(Margin&lt;0)%&gt;%
+  arrange(desc(prob.win))%&gt;%
+  top_n(10)</code></pre>
+<pre><code>## Selecting by prob.win</code></pre>
+<pre><code>##                Team      Opposition          Venue Margin  prob.win
+## 1            Sydney        Adelaide            SCG    -10 0.9441431
+## 2          Essendon         Carlton            MCG    -13 0.9373812
+## 3          Brisbane      Gold Coast          Gabba     -5 0.8991898
+## 4  Western Bulldogs          Sydney Etihad Stadium     -7 0.7757990
+## 5       Collingwood         Geelong            MCG    -21 0.7610453
+## 6     Port Adelaide         Geelong  Adelaide Oval    -34 0.6678467
+## 7            Sydney North Melbourne            SCG     -2 0.5908486
+## 8           Geelong      West Coast  Optus Stadium    -15 0.5313548
+## 9          Hawthorn      West Coast Etihad Stadium    -15 0.4912265
+## 10              GWS          Sydney            SCG    -16 0.3831652</code></pre>
 </div>

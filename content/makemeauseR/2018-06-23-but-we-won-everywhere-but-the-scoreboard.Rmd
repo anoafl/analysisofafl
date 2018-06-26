@@ -238,6 +238,9 @@ m <- glm(Win_loss ~I50_difference+
            SCL_difference+
            MI5_difference , data = in.sample, family =binomial)
           
+summary(m)
+
+
 newdata   <- out.sample[ , -ncol(out.sample)]
 
 
@@ -249,6 +252,7 @@ pre.dict    <- predict(m,newdata=newdata, type="response")
 pre.dict.m  <- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
 colnames(pre.dict.m) <- c("prob.win")
 
+
 newdata.pred  <- cbind.data.frame(newdata, pre.dict.m)
 newdata.pred%>%
   select(Team, Opposition, Venue,  Margin, prob.win)%>%
@@ -257,9 +261,44 @@ newdata.pred%>%
   top_n(10)
 
 ```
-```{r}
 
+The good thing about having a template sorted out, is that you can make quick changes as you think of other variables you want to test. 
+
+For example [JT](https://twitter.com/Trooa/status/1011406234207916032) asked about kicks, inside 50s, marks in 50, tackles in 50 and meters gained. 
+
+Well lets look at his list of games
+
+```{r}
+m <- glm(Win_loss ~I50_difference+
+           K_difference+
+          I50_difference+
+           MI5_difference+
+           T5_difference+
+           MG_difference, data = in.sample, family =binomial)
+          
 summary(m)
+
+
+newdata   <- out.sample[ , -ncol(out.sample)]
+
+
+newdata[,7:40]<-scale(newdata[,7:40],center=temp1.center,scale=temp1.scale) 
+
+
+
+pre.dict    <- predict(m,newdata=newdata, type="response")
+pre.dict.m  <- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) <- c("prob.win")
+
+
+newdata.pred  <- cbind.data.frame(newdata, pre.dict.m)
+newdata.pred%>%
+  select(Team, Opposition, Venue,  Margin, prob.win)%>%
+  filter(Margin<0)%>%
+  arrange(desc(prob.win))%>%
+  top_n(10)
 ```
+
+
 
 
