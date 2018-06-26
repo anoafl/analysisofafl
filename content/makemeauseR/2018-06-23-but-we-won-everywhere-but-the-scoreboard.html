@@ -240,7 +240,7 @@ df5&lt;-df5 %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;W
 df6&lt;-inner_join(df,df5, by=c(&quot;Team&quot;,&quot;Date&quot;))
 
 
-dataset_columns &lt;- c(1,2,4,6,7,8,45:77,82:84)
+dataset_columns &lt;- c(1,2,4,6,7,8,44:77,82:84)
 dataset&lt;-df6%&gt;%group_by(Match_id)%&gt;%
   arrange(Match_id)%&gt;%
   mutate(Margin=c(-diff(Points), diff(Points)))%&gt;%
@@ -301,9 +301,9 @@ summary(m)</code></pre>
 ## 
 ## Coefficients:
 ##                Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)    -0.04373    0.10171  -0.430    0.667    
+## (Intercept)    -3.45340    0.58793  -5.874 4.26e-09 ***
 ## I50_difference  7.17314    0.51782  13.853  &lt; 2e-16 ***
-## Accuracy        0.70676    0.11998   5.891 3.84e-09 ***
+## Accuracy        6.43892    1.09304   5.891 3.84e-09 ***
 ## R50_difference  5.11442    0.38536  13.272  &lt; 2e-16 ***
 ## CCL_difference  0.16421    0.11256   1.459    0.145    
 ## SCL_difference  0.04502    0.10581   0.425    0.671    
@@ -417,4 +417,86 @@ newdata.pred%&gt;%
 ## 8           Geelong      West Coast  Optus Stadium    -15 0.5313548
 ## 9          Hawthorn      West Coast Etihad Stadium    -15 0.4912265
 ## 10              GWS          Sydney            SCG    -16 0.3831652</code></pre>
+<p>Another example <a href="https://twitter.com/troywheatley/status/1011539422439862272">Troy Wheatley</a></p>
+<pre class="r"><code>m &lt;- glm(Win_loss ~I50_difference+
+           MG_difference+
+           CP_difference+
+           CM_difference+
+           CCL_difference+
+           CL_difference+
+           HO_difference+
+           ITC_difference+
+           D_difference+
+           CG_difference+
+           R50_difference+
+           One.Percenters_difference, 
+         data = in.sample, family =binomial)
+          
+summary(m)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Win_loss ~ I50_difference + MG_difference + CP_difference + 
+##     CM_difference + CCL_difference + CL_difference + HO_difference + 
+##     ITC_difference + D_difference + CG_difference + R50_difference + 
+##     One.Percenters_difference, family = binomial, data = in.sample)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -3.09976  -0.24111  -0.00167   0.23880   3.13712  
+## 
+## Coefficients:
+##                           Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)               -0.05870    0.10841  -0.541  0.58818    
+## I50_difference             3.63170    0.68743   5.283 1.27e-07 ***
+## MG_difference              3.06213    0.41218   7.429 1.09e-13 ***
+## CP_difference             -0.13434    0.16628  -0.808  0.41915    
+## CM_difference              0.18235    0.13033   1.399  0.16176    
+## CCL_difference             0.40136    0.14838   2.705  0.00683 ** 
+## CL_difference              0.06447    0.19133   0.337  0.73613    
+## HO_difference              0.15043    0.11475   1.311  0.18988    
+## ITC_difference             0.40376    0.18444   2.189  0.02859 *  
+## D_difference              -0.12950    0.17347  -0.747  0.45534    
+## CG_difference             -0.54681    0.12910  -4.235 2.28e-05 ***
+## R50_difference             3.20051    0.48150   6.647 2.99e-11 ***
+## One.Percenters_difference -0.07831    0.12351  -0.634  0.52606    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1718.92  on 1239  degrees of freedom
+## Residual deviance:  556.62  on 1227  degrees of freedom
+## AIC: 582.62
+## 
+## Number of Fisher Scoring iterations: 7</code></pre>
+<pre class="r"><code>newdata   &lt;- out.sample[ , -ncol(out.sample)]
+
+
+newdata[,7:40]&lt;-scale(newdata[,7:40],center=temp1.center,scale=temp1.scale) 
+
+
+
+pre.dict    &lt;- predict(m,newdata=newdata, type=&quot;response&quot;)
+pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) &lt;- c(&quot;prob.win&quot;)
+
+
+newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
+newdata.pred%&gt;%
+  select(Team, Opposition, Venue,  Margin, prob.win)%&gt;%
+  filter(Margin&lt;0)%&gt;%
+  arrange(desc(prob.win))%&gt;%
+  top_n(10)</code></pre>
+<pre><code>## Selecting by prob.win</code></pre>
+<pre><code>##               Team      Opposition            Venue Margin  prob.win
+## 1         Essendon         Carlton              MCG    -13 0.9225119
+## 2           Sydney        Adelaide              SCG    -10 0.8943902
+## 3           Sydney North Melbourne              SCG     -2 0.8911554
+## 4         Adelaide       Fremantle    Optus Stadium     -3 0.5566460
+## 5      Collingwood         Geelong              MCG    -21 0.5081333
+## 6              GWS          Sydney              SCG    -16 0.4832603
+## 7       Gold Coast        St Kilda Metricon Stadium     -2 0.4386997
+## 8  North Melbourne        Richmond   Etihad Stadium    -10 0.4137897
+## 9         Hawthorn      West Coast   Etihad Stadium    -15 0.3802405
+## 10        Brisbane   Port Adelaide    Adelaide Oval     -5 0.3625098</code></pre>
 </div>
