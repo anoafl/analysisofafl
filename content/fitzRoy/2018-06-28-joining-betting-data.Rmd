@@ -153,3 +153,4 @@ Our dimension for df3 is 7842 rows and 11 columns, and our joined data `df_joine
 So it seems as though we have a clean dataset to analyse. Now we just got to go ahead and do it!
 
 
+
