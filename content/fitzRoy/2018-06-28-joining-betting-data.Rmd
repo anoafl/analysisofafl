@@ -153,4 +153,23 @@ Our dimension for df3 is 7842 rows and 11 columns, and our joined data `df_joine
 So it seems as though we have a clean dataset to analyse. Now we just got to go ahead and do it!
 
 
+# A quick analysis
+
+Someone asked me who do you think tips underdogs the best? 
+
+Well if you just wanted to know who has most winning underdog 'bets' (I don't know if any of the squigglers bet).
+
+
+```{r}
+df_joined%>%filter(WAP>2 &correct ==1 & Team==tip)%>%
+  group_by(source)%>%
+  summarise(count=n())%>%
+  arrange(desc(count))
+
+```
+
+
+
+
+
 
