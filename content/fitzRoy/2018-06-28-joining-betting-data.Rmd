@@ -8,12 +8,13 @@ tags : ["betting","fitzRoy"]
 ---
 
 
-This first example will be using [Betfair](https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/) which we hope to add to fitzRoy in the future. 
+This example will be using [Betfair](https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/) which we hope to add to fitzRoy in the future. Making it easier to compare [Squiggle](http://squiggle.com.au) and maybe your own models vs the market!
 
-# Step One
+# Step One Read in the Betfair Data
 
-Read in the Betfair Data
+The first step is just go to the [betfair site](https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/) and download the AFL file with the data we need.
 
+I will only be joining the 2017-onwards data because that's what squiggle has!
 
 ```{r}
 library(readxl)
@@ -32,7 +33,7 @@ names(df_bookie)
 
 ```
 
-The columns of interest to join on would be, the Date, the selection name and WAP and we want to maybe join this on to the  [squiggle guys](http://squiggle.com.au)
+The columns of interest to join on would be, the Date, the selection name and WAP and we want to maybe join this on to the  [squiggle guys](http://squiggle.com.au). The next thing we notice by viewing the dataset `View(Copy_of_Weekly_AFL_Data_Dump_2017_YTD)` is that if we look at the column `INPLAY` we want when it is `N` the reason being is that we want to compare the squiggle pre game tips with what the market was doing pre game.
 
 # Step Two Get the squiggle data
 
@@ -60,6 +61,13 @@ colnames(df2)[6]<-"margin"
 df3<-rbind(df1,df2)
 colnames(df3)[2]<-"Date"
 
+
+
+```
+# Step Three make sure the names of columns align!
+
+
+```{r}
 colnames(df_bookie)[1] <- "Date"
 colnames(df_bookie)[10] <- "Team"
 colnames(df_bookie)[3]<-"x3"
@@ -70,7 +78,8 @@ df_bookie$Date<-as.Date(df_bookie$Date)
 df3$Date<-as.Date(df3$Date)
 
 ```
-# Check what you are joining by!
+
+# Step 4 Check what you are joining by!
 
 Before we join on the datasets, we need to make sure that our IDs line up, so that our teams are named the same in *both* datasets. 
 
@@ -85,15 +94,19 @@ unique(df3$Team)
 
 From here we can see that not all the team names are aligned so we need to fix them up, as an example we have the Adelaide Crows in 2017 and Adelaide in 2018. When we try and join to Squiggle we will miss out some games in 2017 because its trying to match Adelaide (from squiggle) with Adelaide Crows from betfair. 
 
+To confirm this we can use below
+
 ```{r}
-#looking at Betfair Data
+
 df_bookie%>%filter(Team %in% c("Adelaide Crows", "Adelaide"))
 
-#if we didn't change the names and just joined, we can see we miss out on the 2017 adelaide Crows
+
 
 inner_join(df_bookie,df3, by=c("Team","Date"))%>%
   filter(Team %in% c("Adelaide Crows", "Adelaide"))
 ```
+
+
 So lets just fix up the team names
 
 
@@ -118,7 +131,9 @@ df_joined<-left_join(df3,df_bookie, by=c("Team","Date"))
 
 ```
 
-# Step 3 Check the Betting Data
+# Step 5 Check the Join
+
+
 
 ```{r}
 dim(df3)
