@@ -1,0 +1,131 @@
+---
+title : "Joining Betting Data"
+description : "Joining on Betting Data to fitzRoy"
+author : "Robert Nguyen"
+date : 2018-06-27
+tags : ["betting","fitzRoy"]
+
+---
+
+
+This first example will be using [Betfair](https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/) which we hope to add to fitzRoy in the future. 
+
+# Step One
+
+Read in the Betfair Data
+
+
+```{r}
+library(readxl)
+library(tidyverse)
+Copy_of_Weekly_AFL_Data_Dump_2017_YTD <- read_excel("C:/Users/rober/Downloads/Copy-of-Weekly-AFL-Data-Dump-2017-YTD.xlsx", 
+    col_types = c("date", "text", "numeric", 
+         "text", "text", "text", "text", "numeric", 
+        "text", "text", "text", "text", "text", 
+         "text", "text", "text"))
+dim(Copy_of_Weekly_AFL_Data_Dump_2017_YTD)
+head(Copy_of_Weekly_AFL_Data_Dump_2017_YTD)
+
+df_bookie<-slice(Copy_of_Weekly_AFL_Data_Dump_2017_YTD,2:1430)
+names(df_bookie) <- lapply(df_bookie[1, ], as.character)
+names(df_bookie)
+
+```
+
+The columns of interest to join on would be, the Date, the selection name and WAP and we want to maybe join this on to the  [squiggle guys](http://squiggle.com.au)
+
+# Step Two Get the squiggle data
+
+```{r}
+library(fitzRoy)
+tips <- get_squiggle_data("tips")
+df<-tips%>%mutate(home.margin=ifelse(hteam==tip, margin,-margin))%>%
+  mutate(away.margin=ifelse(ateam==tip, margin,-margin)) %>%
+  select(source,date,correct,  hconfidence,hteam,
+         ateam,home.margin,away.margin,err ,tip,round, year)
+ 
+
+df1<-select(df,source, date, correct, hconfidence,hteam, home.margin, err, tip, round, year )
+df1$H_A<-"HOME"
+df2<-select(df, source, date, correct, hconfidence, ateam, away.margin, err, tip, round, year)
+df2$H_A<-"AWAY"
+colnames(df1)[5]<-"Team"
+
+colnames(df1)[6] <- "margin"
+
+colnames(df2)[5]<-"Team"
+
+colnames(df2)[6]<-"margin"
+
+df3<-rbind(df1,df2)
+colnames(df3)[2]<-"Date"
+
+colnames(df_bookie)[1] <- "Date"
+colnames(df_bookie)[10] <- "Team"
+colnames(df_bookie)[3]<-"x3"
+colnames(df_bookie)[8]<-"x8"
+df_bookie<-df_bookie%>%filter(INPLAY=="N")%>%
+  select(Date, Team, WAP)
+df_bookie$Date<-as.Date(df_bookie$Date)
+df3$Date<-as.Date(df3$Date)
+
+```
+# Check what you are joining by!
+
+Before we join on the datasets, we need to make sure that our IDs line up, so that our teams are named the same in *both* datasets. 
+
+
+
+```{r}
+unique(df_bookie$Team)
+unique(df3$Team)
+
+```
+
+
+From here we can see that not all the team names are aligned so we need to fix them up, as an example we have the Adelaide Crows in 2017 and Adelaide in 2018. When we try and join to Squiggle we will miss out some games in 2017 because its trying to match Adelaide (from squiggle) with Adelaide Crows from betfair. 
+
+```{r}
+#looking at Betfair Data
+df_bookie%>%filter(Team %in% c("Adelaide Crows", "Adelaide"))
+
+#if we didn't change the names and just joined, we can see we miss out on the 2017 adelaide Crows
+
+inner_join(df_bookie,df3, by=c("Team","Date"))%>%
+  filter(Team %in% c("Adelaide Crows", "Adelaide"))
+```
+So lets just fix up the team names
+
+
+
+```{r}
+
+
+df_bookie<-df_bookie %>%
+     mutate(Team=replace(Team,Team=="Adelaide Crows", "Adelaide")) %>%
+   mutate(Team=replace(Team,Team=="Sydney Swans", "Sydney")) %>%
+   mutate(Team=replace(Team,Team=="Gold Coast Suns", "Gold Coast")) %>%
+   mutate(Team=replace(Team,Team=="GWS Giants", "Greater Western Sydney")) %>%
+   mutate(Team=replace(Team,Team=="GWS", "Greater Western Sydney")) %>%
+   mutate(Team=replace(Team,Team=="West Coast Eagles", "West Coast")) %>%
+   mutate(Team=replace(Team,Team=="Brisbane", "Brisbane Lions")) %>%
+   mutate(Team=replace(Team,Team=="Geelong Cats", "Geelong")) %>%
+   mutate(Team=replace(Team,Team=="Melbourne Demons", "Melbourne")) %>%
+       as.data.frame()
+
+
+df_joined<-left_join(df3,df_bookie, by=c("Team","Date"))
+
+```
+
+# Step 3 Check the Betting Data
+
+```{r}
+dim(df3)
+
+dim(df_bookie)
+dim(df_joined)
+
+```
+
+

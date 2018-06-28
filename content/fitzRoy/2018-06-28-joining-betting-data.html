@@ -1,0 +1,388 @@
+---
+title : "Joining Betting Data"
+description : "Joining on Betting Data to fitzRoy"
+author : "Robert Nguyen"
+date : 2018-06-27
+tags : ["betting","fitzRoy"]
+
+---
+
+
+
+<p>This first example will be using <a href="https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/">Betfair</a> which we hope to add to fitzRoy in the future.</p>
+<div id="step-one" class="section level1">
+<h1>Step One</h1>
+<p>Read in the Betfair Data</p>
+<pre class="r"><code>library(readxl)
+library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.5
+## v tidyr   0.8.1     v stringr 1.3.1
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>Copy_of_Weekly_AFL_Data_Dump_2017_YTD &lt;- read_excel(&quot;C:/Users/rober/Downloads/Copy-of-Weekly-AFL-Data-Dump-2017-YTD.xlsx&quot;, 
+    col_types = c(&quot;date&quot;, &quot;text&quot;, &quot;numeric&quot;, 
+         &quot;text&quot;, &quot;text&quot;, &quot;text&quot;, &quot;text&quot;, &quot;numeric&quot;, 
+        &quot;text&quot;, &quot;text&quot;, &quot;text&quot;, &quot;text&quot;, &quot;text&quot;, 
+         &quot;text&quot;, &quot;text&quot;, &quot;text&quot;))</code></pre>
+<pre><code>## Warning in read_fun(path = path, sheet_i = sheet, limits = limits, shim =
+## shim, : Expecting date in B4 / R4C2: got &#39;SETT_DATE&#39;</code></pre>
+<pre class="r"><code>dim(Copy_of_Weekly_AFL_Data_Dump_2017_YTD)</code></pre>
+<pre><code>## [1] 1430   16</code></pre>
+<pre class="r"><code>head(Copy_of_Weekly_AFL_Data_Dump_2017_YTD)</code></pre>
+<pre><code>## # A tibble: 6 x 16
+##   X__1                X__2  `AFL 2017 - YTD` X__3  X__4  X__5  X__6   X__7
+##   &lt;dttm&gt;              &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;
+## 1 NA                  &lt;NA&gt;                NA &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;     NA
+## 2 NA                  EVEN~               NA MENU~ EVEN~ PATHS PARE~    NA
+## 3 2017-03-23 00:00:00 1281~               NA AFL ~ Matc~ AFL ~ Aust~    NA
+## 4 2017-03-23 00:00:00 1281~               NA AFL ~ Matc~ AFL ~ Aust~    NA
+## 5 2017-03-23 00:00:00 1281~               NA AFL ~ Matc~ AFL ~ Aust~    NA
+## 6 2017-03-23 00:00:00 1281~               NA AFL ~ Matc~ AFL ~ Aust~    NA
+## # ... with 8 more variables: X__8 &lt;chr&gt;, X__9 &lt;chr&gt;, X__10 &lt;chr&gt;,
+## #   X__11 &lt;chr&gt;, X__12 &lt;chr&gt;, X__13 &lt;chr&gt;, X__14 &lt;chr&gt;, X__15 &lt;chr&gt;</code></pre>
+<pre class="r"><code>df_bookie&lt;-slice(Copy_of_Weekly_AFL_Data_Dump_2017_YTD,2:1430)
+names(df_bookie) &lt;- lapply(df_bookie[1, ], as.character)
+names(df_bookie)</code></pre>
+<pre><code>##  [1] NA                   &quot;EVENT_ID&quot;           NA                  
+##  [4] &quot;MENU_HINT&quot;          &quot;EVENT_NAME&quot;         &quot;PATHS&quot;             
+##  [7] &quot;PARENT_MENU_HINT&quot;   NA                   &quot;PARENT_EVENT_NAME&quot; 
+## [10] &quot;SELECTION_NAME&quot;     &quot;INPLAY&quot;             &quot;MIN_PRICE&quot;         
+## [13] &quot;MAX_PRICE&quot;          &quot;LAST_MATCHED_PRICE&quot; &quot;WAP&quot;               
+## [16] &quot;VOLUME_AUD&quot;</code></pre>
+<p>The columns of interest to join on would be, the Date, the selection name and WAP and we want to maybe join this on to the <a href="http://squiggle.com.au">squiggle guys</a></p>
+</div>
+<div id="step-two-get-the-squiggle-data" class="section level1">
+<h1>Step Two Get the squiggle data</h1>
+<pre class="r"><code>library(fitzRoy)
+tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
+<pre><code>## Getting data from https://api.squiggle.com.au/?q=tips</code></pre>
+<pre class="r"><code>df&lt;-tips%&gt;%mutate(home.margin=ifelse(hteam==tip, margin,-margin))%&gt;%
+  mutate(away.margin=ifelse(ateam==tip, margin,-margin)) %&gt;%
+  select(source,date,correct,  hconfidence,hteam,
+         ateam,home.margin,away.margin,err ,tip,round, year)
+ 
+
+df1&lt;-select(df,source, date, correct, hconfidence,hteam, home.margin, err, tip, round, year )
+df1$H_A&lt;-&quot;HOME&quot;
+df2&lt;-select(df, source, date, correct, hconfidence, ateam, away.margin, err, tip, round, year)
+df2$H_A&lt;-&quot;AWAY&quot;
+colnames(df1)[5]&lt;-&quot;Team&quot;
+
+colnames(df1)[6] &lt;- &quot;margin&quot;
+
+colnames(df2)[5]&lt;-&quot;Team&quot;
+
+colnames(df2)[6]&lt;-&quot;margin&quot;
+
+df3&lt;-rbind(df1,df2)
+colnames(df3)[2]&lt;-&quot;Date&quot;
+
+colnames(df_bookie)[1] &lt;- &quot;Date&quot;
+colnames(df_bookie)[10] &lt;- &quot;Team&quot;
+colnames(df_bookie)[3]&lt;-&quot;x3&quot;
+colnames(df_bookie)[8]&lt;-&quot;x8&quot;
+df_bookie&lt;-df_bookie%&gt;%filter(INPLAY==&quot;N&quot;)%&gt;%
+  select(Date, Team, WAP)
+df_bookie$Date&lt;-as.Date(df_bookie$Date)
+df3$Date&lt;-as.Date(df3$Date)</code></pre>
+</div>
+<div id="check-what-you-are-joining-by" class="section level1">
+<h1>Check what you are joining by!</h1>
+<p>Before we join on the datasets, we need to make sure that our IDs line up, so that our teams are named the same in <em>both</em> datasets.</p>
+<pre class="r"><code>unique(df_bookie$Team)</code></pre>
+<pre><code>##   [1] &quot;Carlton&quot;                   &quot;Richmond&quot;                 
+##   [3] &quot;Carlton +14.5pts&quot;          &quot;Richmond -14.5pts&quot;        
+##   [5] &quot;Collingwood +14.5pts&quot;      &quot;Western Bulldogs -14.5pts&quot;
+##   [7] &quot;Brisbane Lions&quot;            &quot;Gold Coast Suns&quot;          
+##   [9] &quot;Brisbane +26.5pts&quot;         &quot;Gold Coast -26.5pts&quot;      
+##  [11] &quot;North Melbourne&quot;           &quot;West Coast Eagles&quot;        
+##  [13] &quot;North Melbourne +22.5pts&quot;  &quot;West Coast -22.5pts&quot;      
+##  [15] &quot;Fremantle&quot;                 &quot;Geelong Cats&quot;             
+##  [17] &quot;Fremantle +8.5pts&quot;         &quot;Geelong -8.5pts&quot;          
+##  [19] &quot;Collingwood&quot;               &quot;Collingwood -5.5pts&quot;      
+##  [21] &quot;Richmond +5.5pts&quot;          &quot;Sydney Swans&quot;             
+##  [23] &quot;Western Bulldogs&quot;          &quot;Sydney +22.5pts&quot;          
+##  [25] &quot;Western Bulldogs -22.5pts&quot; &quot;Adelaide Crows&quot;           
+##  [27] &quot;Hawthorn&quot;                  &quot;Essendon&quot;                 
+##  [29] &quot;Brisbane +15.5pts&quot;         &quot;Essendon -15.5pts&quot;        
+##  [31] &quot;St Kilda +38.5pts&quot;         &quot;West Coast -38.5pts&quot;      
+##  [33] &quot;Melbourne Demons&quot;          &quot;Carlton +29.5pts&quot;         
+##  [35] &quot;Melbourne -29.5pts&quot;        &quot;Fremantle +28.5pts&quot;       
+##  [37] &quot;Port Adelaide -28.5pts&quot;    &quot;Collingwood +12.5pts&quot;     
+##  [39] &quot;Sydney -12.5pts&quot;           &quot;Richmond +12.5pts&quot;        
+##  [41] &quot;West Coast -12.5pts&quot;       &quot;Geelong -18.5pts&quot;         
+##  [43] &quot;Melbourne +18.5pts&quot;        &quot;Adelaide -8.5pts&quot;         
+##  [45] &quot;Port Adelaide +8.5pts&quot;     &quot;St Kilda&quot;                 
+##  [47] &quot;Carlton +17.5pts&quot;          &quot;Essendon -17.5pts&quot;        
+##  [49] &quot;Gold Coast +20.5pts&quot;       &quot;Hawthorn -20.5pts&quot;        
+##  [51] &quot;Sydney +20.5pts&quot;           &quot;West Coast -20.5pts&quot;      
+##  [53] &quot;North Melbourne +23.5pts&quot;  &quot;Western Bulldogs -23.5pts&quot;
+##  [55] &quot;Fremantle +22.5pts&quot;        &quot;Melbourne -22.5pts&quot;       
+##  [57] &quot;GWS Giants&quot;                &quot;Port Adelaide Power&quot;      
+##  [59] &quot;GWS -17.5pts&quot;              &quot;Port Adelaide +17.5pts&quot;   
+##  [61] &quot;Adelaide -35.5pts&quot;         &quot;Essendon +35.5pts&quot;        
+##  [63] &quot;Collingwood -6.5pts&quot;       &quot;St Kilda +6.5pts&quot;         
+##  [65] &quot;Brisbane +17.5pts&quot;         &quot;Richmond -17.5pts&quot;        
+##  [67] &quot;Geelong -14.5pts&quot;          &quot;Hawthorn +14.5pts&quot;        
+##  [69] &quot;Carlton +52.5pts&quot;          &quot;Port Adelaide -52.5pts&quot;   
+##  [71] &quot;Adelaide -27.5pts&quot;         &quot;Gold Coast +27.5pts&quot;      
+##  [73] &quot;GWS -13.5pts&quot;              &quot;Sydney +13.5pts&quot;          
+##  [75] &quot;Fremantle -6.5pts&quot;         &quot;North Melbourne +6.5pts&quot;  
+##  [77] &quot;Geelong -15.5pts&quot;          &quot;St Kilda +15.5pts&quot;        
+##  [79] &quot;Hawthorn +16.5pts&quot;         &quot;West Coast -16.5pts&quot;      
+##  [81] &quot;Melbourne +5.5pts&quot;         &quot;Richmond -5.5pts&quot;         
+##  [83] &quot;Collingwood -10.5pts&quot;      &quot;Essendon +10.5pts&quot;        
+##  [85] &quot;GWS -24.5pts&quot;              &quot;Western Bulldogs +24.5pts&quot;
+##  [87] &quot;Carlton +30.5pts&quot;          &quot;Sydney -30.5pts&quot;          
+##  [89] &quot;Brisbane +40.5pts&quot;         &quot;Port Adelaide -40.5pts&quot;   
+##  [91] &quot;Gold Coast +14.5pts&quot;       &quot;North Melbourne -14.5pts&quot; 
+##  [93] &quot;Fremantle +25.5pts&quot;        &quot;West Coast -25.5pts&quot;      
+##  [95] &quot;Collingwood +26.5pts&quot;      &quot;Geelong -26.5pts&quot;         
+##  [97] &quot;Adelaide -39.5pts&quot;         &quot;Richmond +39.5pts&quot;        
+##  [99] &quot;GWS -14.5pts&quot;              &quot;St Kilda +14.5pts&quot;        
+## [101] &quot;Adelaide -37.5pts&quot;         &quot;North Melbourne +37.5pts&quot; 
+## [103] &quot;Carlton +20.5pts&quot;          &quot;Collingwood -20.5pts&quot;     
+## [105] &quot;Port Adelaide -23.5pts&quot;    &quot;West Coast +23.5pts&quot;      
+## [107] &quot;Geelong -16.5pts&quot;          &quot;Gold Coast +16.5pts&quot;      
+## [109] &quot;Richmond +26.5pts&quot;         &quot;Western Bulldogs -26.5pts&quot;
+## [111] &quot;Brisbane +49.5pts&quot;         &quot;Sydney -49.5pts&quot;          
+## [113] &quot;Melbourne -14.5pts&quot;        &quot;Western Bulldogs +16.5pts&quot;
+## [115] &quot;Brisbane +47.5pts&quot;         &quot;Hawthorn -47.5pts&quot;        
+## [117] &quot;Carlton +25.5pts&quot;          &quot;St Kilda -25.5pts&quot;        
+## [119] &quot;Collingwood +31.5pts&quot;      &quot;GWS -31.5pts&quot;             
+## [121] &quot;Essendon +27.5pts&quot;         &quot;Geelong -27.5pts&quot;         
+## [123] &quot;Adelaide -38.5pts&quot;         &quot;Melbourne +38.5pts&quot;       
+## [125] &quot;North Melbourne -7.5pts&quot;   &quot;Sydney +7.5pts&quot;           
+## [127] &quot;Port Adelaide -27.5pts&quot;    &quot;Wetsern Bulldogs&quot;         
+## [129] &quot;Geelong +3.5pts&quot;           &quot;Western Bulldogs -3.5pts&quot; 
+## [131] &quot;GWS -29.5pts&quot;              &quot;Richmond +29.5pts&quot;        
+## [133] &quot;Adelaide -54.5pts&quot;         &quot;Brisbane +54.5pts&quot;        
+## [135] &quot;Collingwood -12.5pts&quot;      &quot;Hawthorn +12.5pts&quot;        
+## [137] &quot;Essendon +11.5pts&quot;         &quot;West Coast -11.5pts&quot;      
+## [139] &quot;Carlton +22.5pts&quot;          &quot;Fremantle -22.5pts&quot;       
+## [141] &quot;Geelong -9.5pts&quot;           &quot;Port Adelaide +9.5pts&quot;    
+## [143] &quot;Hawthorn +40.5pts&quot;         &quot;Sydney -40.5pts&quot;          
+## [145] &quot;St Kilda +15.5&quot;            &quot;Western Bulldogs -15.5pts&quot;
+## [147] &quot;Melbourne -20.5pts&quot;        &quot;Essendon +4.5pts&quot;         
+## [149] &quot;Richmond -4.5pts&quot;          &quot;Fremantle +35.5pts&quot;       
+## [151] &quot;Brisbane +51.5pts&quot;         &quot;Collingwood -51.5pts&quot;     
+## [153] &quot;Carlton +21.5pts&quot;          &quot;North Melbourne -21.5pts&quot; 
+## [155] &quot;GWS +12.5pts&quot;              &quot;Hawthorn +42.5pts&quot;        
+## [157] &quot;Port Adelaide -42.5pts&quot;    &quot;Adelaide -6.5pts&quot;         
+## [159] &quot;Geelong +6.5pts&quot;           &quot;Gold Coast +8.5pts&quot;       
+## [161] &quot;West Coast -8.5pts&quot;        &quot;Essendon +29.5pts&quot;        
+## [163] &quot;Collingwood -2.5pts&quot;       &quot;Fremantle +2.5pts&quot;        
+## [165] &quot;Sydney -7.5pts&quot;            &quot;Western Bulldogs +7.5pts&quot; 
+## [167] &quot;Adelaide -36.5pts&quot;         &quot;St Kilda +36.5pts&quot;        
+## [169] &quot;Hawthorn -8.5pts&quot;          &quot;Essendon +25.5pts&quot;        
+## [171] &quot;Port Adelaide -25.5pts&quot;    &quot;Brisbane +7.5pts&quot;         
+## [173] &quot;Fremantle -7.5pts&quot;         &quot;GWS -25.5pts&quot;             
+## [175] &quot;Geelong -5.5pts&quot;           &quot;West Coast +5.5pts&quot;       
+## [177] &quot;Richmond +1.5pts&quot;          &quot;Sydney -1.5pts&quot;           
+## [179] &quot;Carlton +24.5pts&quot;          &quot;Gold Coast -24.5pts&quot;      
+## [181] &quot;Adelaide -48.5pts&quot;         &quot;Hawthorn +48.5pts&quot;        
+## [183] &quot;Collingwood +4.5pts&quot;       &quot;Port Adelaide -4.5pts&quot;    
+## [185] &quot;Brisbane +30.5pts&quot;         &quot;GWS -30.5pts&quot;             
+## [187] &quot;North Melbourne +8.5pts&quot;   &quot;Western Bulldogs -8.5pts&quot; 
+## [189] &quot;Melbourne +1.5pts&quot;         &quot;West Coast -1.5pts&quot;       
+## [191] &quot;Fremantle +57.5pts&quot;        &quot;Geelong -57.5pts&quot;         
+## [193] &quot;Gold Coast +37.5pts&quot;       &quot;St Kilda -37.5pts&quot;        
+## [195] &quot;Melbourne +2.5pts&quot;         &quot;Sydney -2.5pts&quot;           
+## [197] &quot;West Coast +25.5pts&quot;       &quot;Western Bulldogs -25.5pts&quot;
+## [199] &quot;Adelaide -24.5pts&quot;         &quot;Gold Coast -10.5pts&quot;      
+## [201] &quot;North Melbourne +10.5pts&quot;  &quot;Geelong +21.5pts&quot;         
+## [203] &quot;GWS -21.5pts&quot;              &quot;Collingwood -9.5pts&quot;      
+## [205] &quot;Hawthorn +9.5pts&quot;          &quot;Fremantle +11.5pts&quot;       
+## [207] &quot;St Kilda -11.5pts&quot;         &quot;Brisbane +44.5pts&quot;        
+## [209] &quot;Essendon -44.5pts&quot;         &quot;Gold Coast +45.5pts&quot;      
+## [211] &quot;Sydney -45.5pts&quot;           &quot;Geelong -30.5pts&quot;         
+## [213] &quot;Richmond -8.5pts&quot;          &quot;St Kilda +8.5pts&quot;         
+## [215] &quot;Fremantle +16.5pts&quot;        &quot;North Melbourne -16.5pts&quot; 
+## [217] &quot;Essendon +5.5pts&quot;          &quot;St Kilda -5.5pts&quot;         
+## [219] &quot;North Melbourne +46.5pts&quot;  &quot;Port Adelaide -46.5pts&quot;   
+## [221] &quot;Collingwood +1.5pts&quot;       &quot;Gold Coast -1.5pts&quot;       
+## [223] &quot;GWS -2.5pts&quot;               &quot;Sydney +2.5pts&quot;           
+## [225] &quot;Carlton +12.5pts&quot;          &quot;Western Bulldogs -12.5pts&quot;
+## [227] &quot;Fremantle +26.5pts&quot;        &quot;West Coast -26.5pts&quot;      
+## [229] &quot;Essendon -34.5pts&quot;         &quot;North Melbourne +34.5pts&quot; 
+## [231] &quot;Melbourne +9.5pts&quot;         &quot;Port Adelaide -9.5pts&quot;    
+## [233] &quot;St Kilda +31.5pts&quot;         &quot;Sydney -31.5pts&quot;          
+## [235] &quot;Fremantle +6.5pts&quot;         &quot;Hawthorn -6.5pts&quot;         
+## [237] &quot;Collingwood +8.5pts&quot;       &quot;Brisbane +8.5pts&quot;         
+## [239] &quot;Carlton -8.5pts&quot;           &quot;Sydney -14.5pts&quot;          
+## [241] &quot;Melbourne -19.5pts&quot;        &quot;North Melbourne +19.5pts&quot; 
+## [243] &quot;Port Adelaide -37.5pts&quot;    &quot;St Kilda +37.5pts&quot;        
+## [245] &quot;Gold Coast +15.5pts&quot;       &quot;Richmond -15.5pts&quot;        
+## [247] &quot;Essendon -5.5pts&quot;          &quot;Western Bulldogs +5.5pts&quot; 
+## [249] &quot;Adelaide -12.5pts&quot;         &quot;West Coast -54.5pts&quot;      
+## [251] &quot;Melbourne +13.5pts&quot;        &quot;Carlton +26.5pts&quot;         
+## [253] &quot;Essendon -26.5pts&quot;         &quot;Brisbane +29.5pts&quot;        
+## [255] &quot;Western Bulldogs -29.5pts&quot; &quot;Collingwood -19.5pts&quot;     
+## [257] &quot;Fremantle -12.5pts&quot;        &quot;Gold Coast +12.5pts&quot;      
+## [259] &quot;Hawthorn +7.5pts&quot;          &quot;Richmond -7.5pts&quot;         
+## [261] &quot;Adelaide -11.5pts&quot;         &quot;Port Adelaide +11.5pts&quot;   
+## [263] &quot;GWS -5.5pts&quot;               &quot;Geelong +8.5pts&quot;          
+## [265] &quot;Adelaide -28.5pts&quot;         &quot;Essendon +28.5pts&quot;        
+## [267] &quot;Carlton +42.5pts&quot;          &quot;West Coast -42.5pts&quot;      
+## [269] &quot;Melbourne -11.5pts&quot;        &quot;St Kilda +11.5pts&quot;        
+## [271] &quot;Hawthorn -16.5pts&quot;         &quot;North Melbourne +16.5pts&quot; 
+## [273] &quot;Collingwood +22.5pts&quot;      &quot;Port Adelaide -22.5pts&quot;   
+## [275] &quot;Sydney +11.5pts&quot;           &quot;Port Adelaide&quot;            
+## [277] &quot;Port Adelaide +1.5pts&quot;     &quot;Western Bulldogs -1.5pts&quot; 
+## [279] &quot;Essendon -20.5pts&quot;         &quot;Hawthorn -21.5pts&quot;        
+## [281] &quot;Brisbane +45.5pts&quot;         &quot;Melbourne -45.5pts&quot;       
+## [283] &quot;North Melbourne +17.5pts&quot;  &quot;St Kilda -17.5pts&quot;        
+## [285] &quot;Richmond -26.5pts&quot;         &quot;Hawthorn +3.5pts&quot;         
+## [287] &quot;Collingwood +20.5pts&quot;      &quot;Brisbane -18.5pts&quot;        
+## [289] &quot;North Melbourne +18.5pts&quot;  &quot;Gold Coast +56.5pts&quot;      
+## [291] &quot;Port Adelaide -56.5pts&quot;    &quot;Essendon -42.5pts&quot;        
+## [293] &quot;Fremantle +42.5pts&quot;        &quot;Adelaide +2.5pts&quot;         
+## [295] &quot;West Coast -2.5pts&quot;        &quot;Essendon +37.5pts&quot;        
+## [297] &quot;Sydney -37.5pts&quot;           &quot;Geelong +16.5pts&quot;         
+## [299] &quot;Sydney -16.5pts&quot;           &quot;GWS -16.5pts&quot;             
+## [301] &quot;West Coast +16.5pts&quot;       &quot;Adelaide -16.5pts&quot;        
+## [303] &quot;GWS +9.5pts&quot;               &quot;Richmond -9.5pts&quot;         
+## [305] &quot;Richmond -30.5pts&quot;         &quot;Brisbane +24.5pts&quot;        
+## [307] &quot;St Kilda -24.5pts&quot;         &quot;Western Bullbogs&quot;         
+## [309] &quot;GWS Giants -17.5pts&quot;       &quot;Western Bulldogs +17.5pts&quot;
+## [311] &quot;Melbourne -6.5pts&quot;         &quot;St Kilda -19.5pts&quot;        
+## [313] &quot;Gold Coast&quot;                &quot;Carlton -13.5pts&quot;         
+## [315] &quot;Gold Coast +13.5pts&quot;       &quot;GWS&quot;                      
+## [317] &quot;GWS -20.5pts&quot;              &quot;Brisbane&quot;                 
+## [319] &quot;Melbourne&quot;                 &quot;Brisbane +18.5pts&quot;        
+## [321] &quot;Melbourne -18.5pts&quot;        &quot;Essendon -11.5pts&quot;        
+## [323] &quot;West Coast&quot;                &quot;Sydney&quot;                   
+## [325] &quot;Port Adelaide +16.5pts&quot;    &quot;Geelong&quot;                  
+## [327] &quot;Hawthorn +8.5pts&quot;          &quot;Carlton +11.5pts&quot;         
+## [329] &quot;Collingwood -11.5pts&quot;      &quot;Melbourne -21.5pts&quot;       
+## [331] &quot;North Melbourne +21.5pts&quot;  &quot;Fremantle -11.5pts&quot;       
+## [333] &quot;Gold Coast +11.5pts&quot;       &quot;Adelaide&quot;                 
+## [335] &quot;Adelaide -20.5pts&quot;         &quot;St Kilda +20.5pts&quot;        
+## [337] &quot;Brisbane +52.5pts&quot;         &quot;Adelaide -31.5pts&quot;        
+## [339] &quot;Fremantle +32.5pts&quot;        &quot;GWS -32.5pts&quot;             
+## [341] &quot;Brisbane +42.5pts&quot;         &quot;Richmond -42.5pts&quot;        
+## [343] &quot;Carlton +13.5pts&quot;          &quot;North Melbourne -13.5pts&quot; 
+## [345] &quot;Gold Coast +36.5pts&quot;       &quot;West Coast -36.5pts&quot;      
+## [347] &quot;Melbourne -7.5pts&quot;         &quot;Geelong -29.5pts&quot;         
+## [349] &quot;St Kilda +29.5pts&quot;         &quot;Adelaide +26.5pts&quot;        
+## [351] &quot;Sydney -26.5pts&quot;           &quot;Carlton +33.5pts&quot;         
+## [353] &quot;West Coast -33.5pts&quot;       &quot;Geelong +14.5pts&quot;         
+## [355] &quot;Port Adelaide -14.5pts&quot;    &quot;Fremantle -10.5pts&quot;       
+## [357] &quot;Western Bulldogs +10.5pts&quot; &quot;Hawthorn -12.5pts&quot;        
+## [359] &quot;North Melbourne +12.5pts&quot;  &quot;Brisbane -6.5pts&quot;         
+## [361] &quot;Gold Coast +6.5pts&quot;        &quot;Richmond -13.5pts&quot;        
+## [363] &quot;Western Bulldogs -17.5pts&quot; &quot;Brisbane +38.5pts&quot;        
+## [365] &quot;GWS -38.5pts&quot;              &quot;St Kilda +16.5pts&quot;        
+## [367] &quot;Adelaide -45.5pts&quot;         &quot;North Melbourne +7.5pts&quot;  
+## [369] &quot;Port Adelaide -7.5pts&quot;     &quot;Essendon +3.5pts&quot;         
+## [371] &quot;Melbourne -3.5pts&quot;         &quot;Collingwood +13.5pts&quot;     
+## [373] &quot;Geelong -17.5pts&quot;          &quot;GWS +17.5pts&quot;             
+## [375] &quot;Gold Coast +28.5pts&quot;       &quot;Western Bulldogs -28.5pts&quot;
+## [377] &quot;Essendon +13.5pts&quot;         &quot;Hawthorn -13.5pts&quot;        
+## [379] &quot;Port Adelaide +4.5pts&quot;     &quot;West Coast -4.5pts&quot;       
+## [381] &quot;North Melbourne +29.5pts&quot;  &quot;Sydney -29.5pts&quot;          
+## [383] &quot;Adelaide -55.5pts&quot;         &quot;Carlton +55.5pts&quot;         
+## [385] &quot;Richmond -35.5pts&quot;         &quot;St Kilda +18.5pts&quot;        
+## [387] &quot;Brisbane +22.5pts&quot;         &quot;Collingwood -22.5pts&quot;     
+## [389] &quot;Gold Coast +23.5pts&quot;       &quot;Melbourne -23.5pts&quot;       
+## [391] &quot;North Melbourne +26.5pts&quot;  &quot;Collingwood +9.5pts&quot;      
+## [393] &quot;Adelaide -23.5pts&quot;         &quot;Western Bulldogs +23.5pts&quot;
+## [395] &quot;Fremantle +34.5pts&quot;        &quot;Sydney -34.5pts&quot;          
+## [397] &quot;Collingwood -25.5pts&quot;      &quot;St Kilda +25.5pts&quot;        
+## [399] &quot;GWS +14.5pts&quot;              &quot;Carlton +38.5pts&quot;         
+## [401] &quot;Melbourne -38.5pts&quot;        &quot;Hawthorn -15.5pts&quot;        
+## [403] &quot;Richmond -2.5pts&quot;          &quot;West Coast +2.5pts&quot;       
+## [405] &quot;Richmond -44.5pts&quot;         &quot;St Kilda +44.5pts&quot;        
+## [407] &quot;Brisbane +19.5pts&quot;         &quot;Sydney -19.5pts&quot;          
+## [409] &quot;Carlton +49.5pts&quot;          &quot;Geelong -49.5pts&quot;         
+## [411] &quot;Adelaide +5.5pts&quot;          &quot;Melbourne -5.5pts&quot;        
+## [413] &quot;Sydney -52.5pts&quot;           &quot;Melbourne -37.5pts&quot;       
+## [415] &quot;Western Bulldogs +37.5pts&quot; &quot;Port Adelaide -3.5pts&quot;    
+## [417] &quot;Essendon +22.5pts&quot;         &quot;Richmond -22.5pts&quot;        
+## [419] &quot;Brisbane +27.5pts&quot;         &quot;North Melbourne -27.5pts&quot; 
+## [421] &quot;Adelaide -21.5pts&quot;         &quot;GWS +21.5pts&quot;             
+## [423] &quot;Collingwood -39.5pts&quot;      &quot;Fremantle +39.5pts&quot;       
+## [425] &quot;Port Adelaide -6.5pts&quot;     &quot;Richmond +6.5pts&quot;         
+## [427] &quot;North Melbourne +15.5pts&quot;  &quot;Gold Coast +46.5pts&quot;      
+## [429] &quot;GWS -46.5pts&quot;              &quot;St Kilda +26.5pts&quot;        
+## [431] &quot;Fremantle +23.5pts&quot;        &quot;Collingwood +10.5pts&quot;     
+## [433] &quot;Melbourne -10.5pts&quot;        &quot;Sydney -13.5pts&quot;          
+## [435] &quot;West Coast +13.5pts&quot;       &quot;Carlton +4.5pts&quot;          
+## [437] &quot;Fremantle -4.5pts&quot;         &quot;Gold Coast +10.5pts&quot;      
+## [439] &quot;St Kilda -10.5pts&quot;         &quot;Adelaide +14.5pts&quot;        
+## [441] &quot;Hawthorn -14.5pts&quot;</code></pre>
+<pre class="r"><code>unique(df3$Team)</code></pre>
+<pre><code>##  [1] &quot;Carlton&quot;                &quot;Collingwood&quot;           
+##  [3] &quot;Adelaide&quot;               &quot;St Kilda&quot;              
+##  [5] &quot;Sydney&quot;                 &quot;Gold Coast&quot;            
+##  [7] &quot;Essendon&quot;               &quot;North Melbourne&quot;       
+##  [9] &quot;Fremantle&quot;              &quot;Richmond&quot;              
+## [11] &quot;Western Bulldogs&quot;       &quot;Hawthorn&quot;              
+## [13] &quot;Greater Western Sydney&quot; &quot;West Coast&quot;            
+## [15] &quot;Brisbane Lions&quot;         &quot;Geelong&quot;               
+## [17] &quot;Melbourne&quot;              &quot;Port Adelaide&quot;</code></pre>
+<p>From here we can see that not all the team names are aligned so we need to fix them up, as an example we have the Adelaide Crows in 2017 and Adelaide in 2018. When we try and join to Squiggle we will miss out some games in 2017 because its trying to match Adelaide (from squiggle) with Adelaide Crows from betfair.</p>
+<pre class="r"><code>#looking at Betfair Data
+df_bookie%&gt;%filter(Team %in% c(&quot;Adelaide Crows&quot;, &quot;Adelaide&quot;))</code></pre>
+<pre><code>## # A tibble: 28 x 3
+##    Date       Team           WAP               
+##    &lt;date&gt;     &lt;chr&gt;          &lt;chr&gt;             
+##  1 2017-04-01 Adelaide Crows 1.8413133095902039
+##  2 2017-04-15 Adelaide Crows 1.1876003204498842
+##  3 2017-04-22 Adelaide Crows 1.2818905566923648
+##  4 2017-05-06 Adelaide Crows 1.1829114641026119
+##  5 2017-05-13 Adelaide Crows 1.1650166582850383
+##  6 2017-05-20 Adelaide Crows 1.0862776082495305
+##  7 2017-05-27 Adelaide Crows 1.19012452955724  
+##  8 2017-06-02 Adelaide Crows 1.817133213487137 
+##  9 2017-06-09 Adelaide Crows 1.1764993689503755
+## 10 2017-06-22 Adelaide Crows 1.116772609240404 
+## # ... with 18 more rows</code></pre>
+<pre class="r"><code>#if we didn&#39;t change the names and just joined, we can see we miss out on the 2017 adelaide Crows
+
+inner_join(df_bookie,df3, by=c(&quot;Team&quot;,&quot;Date&quot;))%&gt;%
+  filter(Team %in% c(&quot;Adelaide Crows&quot;, &quot;Adelaide&quot;))</code></pre>
+<pre><code>## # A tibble: 117 x 12
+##    Date       Team   WAP    source  correct hconfidence margin   err tip  
+##    &lt;date&gt;     &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;     &lt;int&gt;       &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+##  1 2018-04-07 Adela~ 1.364~ Squigg~       1        31     24    25   Adel~
+##  2 2018-04-07 Adela~ 1.364~ Aggreg~       1        33.7   16.7  32.3 Adel~
+##  3 2018-04-07 Adela~ 1.364~ The Arc       1        34.8   14    35   Adel~
+##  4 2018-04-07 Adela~ 1.364~ Punters       1        27.1   NA    NA   Adel~
+##  5 2018-04-07 Adela~ 1.364~ Graft         1        29.1   21    28   Adel~
+##  6 2018-04-07 Adela~ 1.364~ PlusSi~       1        42.2   12    37   Adel~
+##  7 2018-04-07 Adela~ 1.364~ Matter~       1        31.1   18.9  30.1 Adel~
+##  8 2018-04-07 Adela~ 1.364~ Footy ~       1        33     22    27   Adel~
+##  9 2018-04-07 Adela~ 1.364~ Live L~       1        38.2   11    38   Adel~
+## 10 2018-04-07 Adela~ 1.364~ Stattr~       1        40.3   11    38   Adel~
+## # ... with 107 more rows, and 3 more variables: round &lt;int&gt;, year &lt;int&gt;,
+## #   H_A &lt;chr&gt;</code></pre>
+<p>So lets just fix up the team names</p>
+<pre class="r"><code>df_bookie&lt;-df_bookie %&gt;%
+     mutate(Team=replace(Team,Team==&quot;Adelaide Crows&quot;, &quot;Adelaide&quot;)) %&gt;%
+   mutate(Team=replace(Team,Team==&quot;Sydney Swans&quot;, &quot;Sydney&quot;)) %&gt;%
+   mutate(Team=replace(Team,Team==&quot;Gold Coast Suns&quot;, &quot;Gold Coast&quot;)) %&gt;%
+   mutate(Team=replace(Team,Team==&quot;GWS Giants&quot;, &quot;Greater Western Sydney&quot;)) %&gt;%
+   mutate(Team=replace(Team,Team==&quot;GWS&quot;, &quot;Greater Western Sydney&quot;)) %&gt;%
+   mutate(Team=replace(Team,Team==&quot;West Coast Eagles&quot;, &quot;West Coast&quot;)) %&gt;%
+   mutate(Team=replace(Team,Team==&quot;Brisbane&quot;, &quot;Brisbane Lions&quot;)) %&gt;%
+   mutate(Team=replace(Team,Team==&quot;Geelong Cats&quot;, &quot;Geelong&quot;)) %&gt;%
+   mutate(Team=replace(Team,Team==&quot;Melbourne Demons&quot;, &quot;Melbourne&quot;)) %&gt;%
+       as.data.frame()
+
+
+df_joined&lt;-left_join(df3,df_bookie, by=c(&quot;Team&quot;,&quot;Date&quot;))</code></pre>
+</div>
+<div id="step-3-check-the-betting-data" class="section level1">
+<h1>Step 3 Check the Betting Data</h1>
+<pre class="r"><code>dim(df3)</code></pre>
+<pre><code>## [1] 7842   11</code></pre>
+<pre class="r"><code>dim(df_bookie)</code></pre>
+<pre><code>## [1] 952   3</code></pre>
+<pre class="r"><code>dim(df_joined)</code></pre>
+<pre><code>## [1] 7842   12</code></pre>
+</div>
