@@ -302,7 +302,7 @@ newdata.pred%>%
 
 
 
-Another example [Troy Wheatley](https://twitter.com/troywheatley/status/1011539422439862272)
+Another example [Troy Wheatley](https://twitter.com/troywheatley/status/1011539422439862272). 
 
 ```{r}
 
@@ -343,3 +343,99 @@ newdata.pred%>%
   top_n(10)
 
 ```
+
+We have an idea from [insightlane](https://twitter.com/insightlane/status/1011377765684113408)
+
+```{r}
+
+
+df<-fitzRoy::player_stats%>%
+         filter(Season>2014)%>%
+         select(-Player)%>%
+         group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+         summarise_all(.funs = sum)%>%
+  mutate(disposaltoturnover=D/TO)%>%
+         group_by(Match_id)%>%
+         arrange(Match_id)%>%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
+
+df2<-fitzRoy::match_results
+df2<-df2%>%filter(Season>2014)
+df3<-select(df2, Date, Round, Home.Team, Home.Points,Home.Goals,Home.Behinds)
+df4<-select(df2, Date, Round, Away.Team, Away.Points,Away.Goals,Away.Behinds)
+df3$Accuracy<-(df3$Home.Goals/(df3$Home.Goals+df3$Home.Behinds))
+colnames(df3)[3]<-"Team"
+colnames(df3)[4]<-"Points"
+colnames(df3)[5]<-"Goals"
+colnames(df3)[6]<-"Behinds"
+df4$Accuracy<-(df4$Away.Goals/(df4$Away.Goals+df4$Away.Behinds))
+colnames(df4)[3]<-"Team"
+colnames(df4)[4]<-"Points"
+colnames(df4)[5]<-"Goals"
+colnames(df4)[6]<-"Behinds"
+
+
+df5<-rbind(df4,df3)
+
+
+
+df5<-df5 %>%mutate(Team = str_replace(Team, "Brisbane Lions", "Brisbane"))
+
+df5<-df5 %>%mutate(Team = str_replace(Team, "Footscray", "Western Bulldogs"))
+
+df6<-inner_join(df,df5, by=c("Team","Date"))
+
+
+dataset_columns <- c(1,2,4,6,7,8,45:79,81:86)
+dataset<-df6%>%group_by(Match_id)%>%
+  arrange(Match_id)%>%
+  mutate(Margin=c(-diff(Points), diff(Points)))%>%
+  mutate(Win_loss=if_else(Margin>0,1,0,NULL))%>%
+  select(dataset_columns)
+
+
+```
+
+```{r}
+in.sample  <- subset(dataset, Season %in% c(2015:2017))
+#in.sample  <- subset(mydata, year ==2008)
+out.sample <- subset(dataset, Season == 2018)
+
+in.sample$Win_loss <- factor(in.sample$Win_loss)
+
+out.sample$Win_loss<-factor(out.sample$Win_loss)
+
+
+temp1<-scale(in.sample[,7:41])
+in.sample[,7:41]<-temp1
+#attributes(temp1)
+temp1.center<-attr(temp1,"scaled:center")
+temp1.scale<-attr(temp1,"scaled:scale")
+
+
+m <- glm(Win_loss ~K_difference+
+           MG_difference+
+           disposaltoturnover_difference,
+         data = in.sample, family =binomial)
+          
+summary(m)
+
+
+newdata   <- out.sample[ , -ncol(out.sample)]
+
+
+newdata[,7:41]<-scale(newdata[,7:41],center=temp1.center,scale=temp1.scale) 
+
+
+
+pre.dict    <- predict(m,newdata=newdata, type="response")
+pre.dict.m  <- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) <- c("prob.win")
+
+
+newdata.pred  <- cbind.data.frame(newdata, pre.dict.m)
+newdata.pred%>%
+  select(Team, Opposition, Venue,  Margin, prob.win)%>%
+  filter(Margin<0)%>%
+  arrange(desc(prob.win))%>%
+  top_n(10)

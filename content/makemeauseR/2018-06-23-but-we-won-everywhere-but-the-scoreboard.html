@@ -417,7 +417,7 @@ newdata.pred%&gt;%
 ## 8           Geelong      West Coast  Optus Stadium    -15 0.5313548
 ## 9          Hawthorn      West Coast Etihad Stadium    -15 0.4912265
 ## 10              GWS          Sydney            SCG    -16 0.3831652</code></pre>
-<p>Another example <a href="https://twitter.com/troywheatley/status/1011539422439862272">Troy Wheatley</a></p>
+<p>Another example <a href="https://twitter.com/troywheatley/status/1011539422439862272">Troy Wheatley</a>.</p>
 <pre class="r"><code>m &lt;- glm(Win_loss ~I50_difference+
            MG_difference+
            CP_difference+
@@ -499,4 +499,126 @@ newdata.pred%&gt;%
 ## 8  North Melbourne        Richmond   Etihad Stadium    -10 0.4137897
 ## 9         Hawthorn      West Coast   Etihad Stadium    -15 0.3802405
 ## 10        Brisbane   Port Adelaide    Adelaide Oval     -5 0.3625098</code></pre>
+<p>We have an idea from <a href="https://twitter.com/insightlane/status/1011377765684113408">insightlane</a></p>
+<pre class="r"><code>df&lt;-fitzRoy::player_stats%&gt;%
+         filter(Season&gt;2014)%&gt;%
+         select(-Player)%&gt;%
+         group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+         summarise_all(.funs = sum)%&gt;%
+  mutate(disposaltoturnover=D/TO)%&gt;%
+         group_by(Match_id)%&gt;%
+         arrange(Match_id)%&gt;%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))
+
+df2&lt;-fitzRoy::match_results
+df2&lt;-df2%&gt;%filter(Season&gt;2014)
+df3&lt;-select(df2, Date, Round, Home.Team, Home.Points,Home.Goals,Home.Behinds)
+df4&lt;-select(df2, Date, Round, Away.Team, Away.Points,Away.Goals,Away.Behinds)
+df3$Accuracy&lt;-(df3$Home.Goals/(df3$Home.Goals+df3$Home.Behinds))
+colnames(df3)[3]&lt;-&quot;Team&quot;
+colnames(df3)[4]&lt;-&quot;Points&quot;
+colnames(df3)[5]&lt;-&quot;Goals&quot;
+colnames(df3)[6]&lt;-&quot;Behinds&quot;
+df4$Accuracy&lt;-(df4$Away.Goals/(df4$Away.Goals+df4$Away.Behinds))
+colnames(df4)[3]&lt;-&quot;Team&quot;
+colnames(df4)[4]&lt;-&quot;Points&quot;
+colnames(df4)[5]&lt;-&quot;Goals&quot;
+colnames(df4)[6]&lt;-&quot;Behinds&quot;
+
+
+df5&lt;-rbind(df4,df3)
+
+
+
+df5&lt;-df5 %&gt;%mutate(Team = str_replace(Team, &quot;Brisbane Lions&quot;, &quot;Brisbane&quot;))
+
+df5&lt;-df5 %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
+
+df6&lt;-inner_join(df,df5, by=c(&quot;Team&quot;,&quot;Date&quot;))
+
+
+dataset_columns &lt;- c(1,2,4,6,7,8,45:79,81:86)
+dataset&lt;-df6%&gt;%group_by(Match_id)%&gt;%
+  arrange(Match_id)%&gt;%
+  mutate(Margin=c(-diff(Points), diff(Points)))%&gt;%
+  mutate(Win_loss=if_else(Margin&gt;0,1,0,NULL))%&gt;%
+  select(dataset_columns)</code></pre>
+<pre class="r"><code>in.sample  &lt;- subset(dataset, Season %in% c(2015:2017))
+#in.sample  &lt;- subset(mydata, year ==2008)
+out.sample &lt;- subset(dataset, Season == 2018)
+
+in.sample$Win_loss &lt;- factor(in.sample$Win_loss)
+
+out.sample$Win_loss&lt;-factor(out.sample$Win_loss)
+
+
+temp1&lt;-scale(in.sample[,7:41])
+in.sample[,7:41]&lt;-temp1
+#attributes(temp1)
+temp1.center&lt;-attr(temp1,&quot;scaled:center&quot;)
+temp1.scale&lt;-attr(temp1,&quot;scaled:scale&quot;)
+
+
+m &lt;- glm(Win_loss ~K_difference+
+           MG_difference+
+           disposaltoturnover_difference,
+         data = in.sample, family =binomial)
+          
+summary(m)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Win_loss ~ K_difference + MG_difference + disposaltoturnover_difference, 
+##     family = binomial, data = in.sample)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -2.63495  -0.30591  -0.00522   0.30866   2.67106  
+## 
+## Coefficients:
+##                               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                   -0.04937    0.09940  -0.497    0.619    
+## K_difference                   0.70737    0.17504   4.041 5.32e-05 ***
+## MG_difference                  4.05987    0.29071  13.965  &lt; 2e-16 ***
+## disposaltoturnover_difference -0.13159    0.18617  -0.707    0.480    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1716.15  on 1237  degrees of freedom
+## Residual deviance:  651.09  on 1234  degrees of freedom
+##   (2 observations deleted due to missingness)
+## AIC: 659.09
+## 
+## Number of Fisher Scoring iterations: 7</code></pre>
+<pre class="r"><code>newdata   &lt;- out.sample[ , -ncol(out.sample)]
+
+
+newdata[,7:41]&lt;-scale(newdata[,7:41],center=temp1.center,scale=temp1.scale) 
+
+
+
+pre.dict    &lt;- predict(m,newdata=newdata, type=&quot;response&quot;)
+pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) &lt;- c(&quot;prob.win&quot;)
+
+
+newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
+newdata.pred%&gt;%
+  select(Team, Opposition, Venue,  Margin, prob.win)%&gt;%
+  filter(Margin&lt;0)%&gt;%
+  arrange(desc(prob.win))%&gt;%
+  top_n(10)</code></pre>
+<pre><code>## Selecting by prob.win</code></pre>
+<pre><code>##                Team      Opposition          Venue Margin  prob.win
+## 1            Sydney        Adelaide            SCG    -10 0.9249691
+## 2          Essendon         Carlton            MCG    -13 0.8865205
+## 3  Western Bulldogs          Sydney Etihad Stadium     -7 0.8724064
+## 4          Brisbane      Gold Coast          Gabba     -5 0.8617977
+## 5     Port Adelaide         Geelong  Adelaide Oval    -34 0.8094733
+## 6       Collingwood         Geelong            MCG    -21 0.7254149
+## 7            Sydney North Melbourne            SCG     -2 0.6606187
+## 8          Hawthorn      West Coast Etihad Stadium    -15 0.5825785
+## 9               GWS          Sydney            SCG    -16 0.5081239
+## 10         Brisbane     Collingwood          Gabba     -7 0.3885346</code></pre>
 </div>
