@@ -133,6 +133,10 @@ df_joined<-left_join(df3,df_bookie, by=c("Team","Date"))
 
 # Step 5 Check the Join
 
+So remember what we wanted originally, we wanted to join betting data to the squiggle data. Our squiggle data was a dataframe called `df3` and our bookie data was a dataframe called `df_bookie`. One way to check our join, is to make sure the dimension lines up. 
+
+We do this using `dim`.
+
 
 
 ```{r}
@@ -142,5 +146,10 @@ dim(df_bookie)
 dim(df_joined)
 
 ```
+
+Our dimension for df3 is 7842 rows and 11 columns, and our joined data `df_joined` is 7842 rows and 12 columns, i.e. it is the same as df3 (squiggle data) but has an extra column (betfair odds)
+
+
+So it seems as though we have a clean dataset to analyse. Now we just got to go ahead and do it!
 
 

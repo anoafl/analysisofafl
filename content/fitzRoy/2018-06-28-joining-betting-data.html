@@ -9,10 +9,11 @@ tags : ["betting","fitzRoy"]
 
 
 
-<p>This first example will be using <a href="https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/">Betfair</a> which we hope to add to fitzRoy in the future.</p>
-<div id="step-one" class="section level1">
-<h1>Step One</h1>
-<p>Read in the Betfair Data</p>
+<p>This example will be using <a href="https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/">Betfair</a> which we hope to add to fitzRoy in the future. Making it easier to compare <a href="http://squiggle.com.au">Squiggle</a> and maybe your own models vs the market!</p>
+<div id="step-one-read-in-the-betfair-data" class="section level1">
+<h1>Step One Read in the Betfair Data</h1>
+<p>The first step is just go to the <a href="https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/">betfair site</a> and download the AFL file with the data we need.</p>
+<p>I will only be joining the 2017-onwards data because that’s what squiggle has!</p>
 <pre class="r"><code>library(readxl)
 library(tidyverse)</code></pre>
 <pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
@@ -53,7 +54,7 @@ names(df_bookie)</code></pre>
 ## [10] &quot;SELECTION_NAME&quot;     &quot;INPLAY&quot;             &quot;MIN_PRICE&quot;         
 ## [13] &quot;MAX_PRICE&quot;          &quot;LAST_MATCHED_PRICE&quot; &quot;WAP&quot;               
 ## [16] &quot;VOLUME_AUD&quot;</code></pre>
-<p>The columns of interest to join on would be, the Date, the selection name and WAP and we want to maybe join this on to the <a href="http://squiggle.com.au">squiggle guys</a></p>
+<p>The columns of interest to join on would be, the Date, the selection name and WAP and we want to maybe join this on to the <a href="http://squiggle.com.au">squiggle guys</a>. The next thing we notice by viewing the dataset <code>View(Copy_of_Weekly_AFL_Data_Dump_2017_YTD)</code> is that if we look at the column <code>INPLAY</code> we want when it is <code>N</code> the reason being is that we want to compare the squiggle pre game tips with what the market was doing pre game.</p>
 </div>
 <div id="step-two-get-the-squiggle-data" class="section level1">
 <h1>Step Two Get the squiggle data</h1>
@@ -79,9 +80,11 @@ colnames(df2)[5]&lt;-&quot;Team&quot;
 colnames(df2)[6]&lt;-&quot;margin&quot;
 
 df3&lt;-rbind(df1,df2)
-colnames(df3)[2]&lt;-&quot;Date&quot;
-
-colnames(df_bookie)[1] &lt;- &quot;Date&quot;
+colnames(df3)[2]&lt;-&quot;Date&quot;</code></pre>
+</div>
+<div id="step-three-make-sure-the-names-of-columns-align" class="section level1">
+<h1>Step Three make sure the names of columns align!</h1>
+<pre class="r"><code>colnames(df_bookie)[1] &lt;- &quot;Date&quot;
 colnames(df_bookie)[10] &lt;- &quot;Team&quot;
 colnames(df_bookie)[3]&lt;-&quot;x3&quot;
 colnames(df_bookie)[8]&lt;-&quot;x8&quot;
@@ -90,8 +93,8 @@ df_bookie&lt;-df_bookie%&gt;%filter(INPLAY==&quot;N&quot;)%&gt;%
 df_bookie$Date&lt;-as.Date(df_bookie$Date)
 df3$Date&lt;-as.Date(df3$Date)</code></pre>
 </div>
-<div id="check-what-you-are-joining-by" class="section level1">
-<h1>Check what you are joining by!</h1>
+<div id="step-4-check-what-you-are-joining-by" class="section level1">
+<h1>Step 4 Check what you are joining by!</h1>
 <p>Before we join on the datasets, we need to make sure that our IDs line up, so that our teams are named the same in <em>both</em> datasets.</p>
 <pre class="r"><code>unique(df_bookie$Team)</code></pre>
 <pre><code>##   [1] &quot;Carlton&quot;                   &quot;Richmond&quot;                 
@@ -326,8 +329,8 @@ df3$Date&lt;-as.Date(df3$Date)</code></pre>
 ## [15] &quot;Brisbane Lions&quot;         &quot;Geelong&quot;               
 ## [17] &quot;Melbourne&quot;              &quot;Port Adelaide&quot;</code></pre>
 <p>From here we can see that not all the team names are aligned so we need to fix them up, as an example we have the Adelaide Crows in 2017 and Adelaide in 2018. When we try and join to Squiggle we will miss out some games in 2017 because its trying to match Adelaide (from squiggle) with Adelaide Crows from betfair.</p>
-<pre class="r"><code>#looking at Betfair Data
-df_bookie%&gt;%filter(Team %in% c(&quot;Adelaide Crows&quot;, &quot;Adelaide&quot;))</code></pre>
+<p>To confirm this we can use below</p>
+<pre class="r"><code>df_bookie%&gt;%filter(Team %in% c(&quot;Adelaide Crows&quot;, &quot;Adelaide&quot;))</code></pre>
 <pre><code>## # A tibble: 28 x 3
 ##    Date       Team           WAP               
 ##    &lt;date&gt;     &lt;chr&gt;          &lt;chr&gt;             
@@ -342,9 +345,7 @@ df_bookie%&gt;%filter(Team %in% c(&quot;Adelaide Crows&quot;, &quot;Adelaide&quo
 ##  9 2017-06-09 Adelaide Crows 1.1764993689503755
 ## 10 2017-06-22 Adelaide Crows 1.116772609240404 
 ## # ... with 18 more rows</code></pre>
-<pre class="r"><code>#if we didn&#39;t change the names and just joined, we can see we miss out on the 2017 adelaide Crows
-
-inner_join(df_bookie,df3, by=c(&quot;Team&quot;,&quot;Date&quot;))%&gt;%
+<pre class="r"><code>inner_join(df_bookie,df3, by=c(&quot;Team&quot;,&quot;Date&quot;))%&gt;%
   filter(Team %in% c(&quot;Adelaide Crows&quot;, &quot;Adelaide&quot;))</code></pre>
 <pre><code>## # A tibble: 117 x 12
 ##    Date       Team   WAP    source  correct hconfidence margin   err tip  
@@ -377,12 +378,16 @@ inner_join(df_bookie,df3, by=c(&quot;Team&quot;,&quot;Date&quot;))%&gt;%
 
 df_joined&lt;-left_join(df3,df_bookie, by=c(&quot;Team&quot;,&quot;Date&quot;))</code></pre>
 </div>
-<div id="step-3-check-the-betting-data" class="section level1">
-<h1>Step 3 Check the Betting Data</h1>
+<div id="step-5-check-the-join" class="section level1">
+<h1>Step 5 Check the Join</h1>
+<p>So remember what we wanted originally, we wanted to join betting data to the squiggle data. Our squiggle data was a dataframe called <code>df3</code> and our bookie data was a dataframe called <code>df_bookie</code>. One way to check our join, is to make sure the dimension lines up.</p>
+<p>We do this using <code>dim</code>.</p>
 <pre class="r"><code>dim(df3)</code></pre>
 <pre><code>## [1] 7842   11</code></pre>
 <pre class="r"><code>dim(df_bookie)</code></pre>
 <pre><code>## [1] 952   3</code></pre>
 <pre class="r"><code>dim(df_joined)</code></pre>
 <pre><code>## [1] 7842   12</code></pre>
+<p>Our dimension for df3 is 7842 rows and 11 columns, and our joined data <code>df_joined</code> is 7842 rows and 12 columns, i.e. it is the same as df3 (squiggle data) but has an extra column (betfair odds)</p>
+<p>So it seems as though we have a clean dataset to analyse. Now we just got to go ahead and do it!</p>
 </div>
