@@ -34,3 +34,112 @@ fitzRoy::get_footywire_stats(9514:9630)%>%
   arrange(desc(total_points), desc(percentage_Frees))
 
 ```
+
+So there has been a lot of [talk](https://www.sen.com.au/news/2018/06/05/afl-cant-ignore-eagles-free-kicks-says-former-umpires-boss/) [recently](https://www.foxsports.com.au/afl/why-home-teams-get-more-free-kicks-unbalanced-free-kick-counts-explained/news-story/a212665ad4d54849f18119f3d88ebca3) about how [West Coast](https://www.perthnow.com.au/sport/west-coast-eagles/adam-simpson-has-no-answer-for-west-coast-eagles-frees-advantage-at-optus-stadium-ng-b88881644z) receive a free kick advantage at home. The media hype has got to the point where the [AFL will investigate](https://www.heraldsun.com.au/sport/afl/teams/west-coast/west-coasts-free-kick-domination-puzzles-afl-umpires/news-story/febbc87b37b79a945d890ddc0898629b).
+
+So how can we use this ladder concept to see if there might be something there?
+
+Lets first start by looking at the free kick ladder for 2018.
+
+```{r}
+library(tidyverse)
+fitzRoy::get_footywire_stats(9514:9630)%>%
+    group_by(Round, Team)%>%
+  mutate(Free_diff=sum(FF)-sum(FA), 
+  sumFF=sum(FF), sumFA=sum(FA))%>%
+  select(Team, sumFF, sumFA, Free_diff)%>%
+  distinct()%>%
+  mutate(points=if_else(Free_diff>0,4,if_else(Free_diff==0,2,0)))%>%
+  group_by(Team)%>%
+  summarise(total_points=sum(points),
+  percentage_Frees=100*(sum(sumFF)/sum(sumFA)))%>%
+  arrange(desc(total_points), desc(percentage_Frees))
+
+```
+
+So West Coast do well on frees but certainly they are not top of the comp. 
+
+But the perception is that West Coast are being favoured at home, so lets divide up this table into home and away.
+
+```{r}
+df<-fitzRoy::get_footywire_stats(9514:9630)%>%
+  group_by(Round, Team, Status)%>%
+  mutate(Free_diff=sum(FF)-sum(FA), 
+         sumFF=sum(FF), sumFA=sum(FA))%>%
+  select(Team, sumFF, sumFA, Free_diff)%>%
+  distinct()%>%
+  mutate(points=if_else(Free_diff>0,4,if_else(Free_diff==0,2,0)))%>%
+  group_by(Team,Status)%>%
+  summarise(total_points=sum(points),
+            percentage_Frees=100*(sum(sumFF)/sum(sumFA)))%>%
+  arrange(desc(total_points), desc(percentage_Frees))
+
+df%>%
+  filter(Status=="Home")%>%
+   arrange(desc(total_points), desc(percentage_Frees))
+
+df%>%
+  filter(Status=="Away")%>%
+   arrange(desc(total_points), desc(percentage_Frees))
+
+
+```
+
+Looking at our tables for Home vs Away, it would seem as though for this year at least that Adelaide is being favoured more, they lead the home free kick table are 4th on the overall table and just outside the eight on the away table. What's the go with North Melbourne they lead the overall table and the away table but finish a mere 7th for games at home. 
+
+Other people might want to see a plot of free kicks differential but graphically. So lets do that. 
+
+```{r}
+fitzRoy::player_stats%>%
+  select(-Player)%>%
+  mutate(Round = parse_number(Round))%>%
+  mutate(Season_round=Round+Season)%>%
+  group_by(Season_round,Season, Round, Venue, Team, Status, Match_id,Date)%>%
+  summarise(Fdiff=sum(FF)-sum(FA))%>%
+  ggplot(aes(x=Season_round, y=Fdiff))+
+  geom_point(aes(colour = factor(Status))) + 
+  geom_hline(yintercept = 0)+
+  facet_wrap(~Team)
+
+```
+
+
+Visually if we look at the WCE plot it does look as though they get the rub of the green at home but not away. 
+
+Are they just making less mistakes at home?
+
+
+```{r}
+fitzRoy::player_stats%>%
+  select(-Player)%>%
+  mutate(Round = parse_number(Round))%>%
+  mutate(Season_round=Round+Season)%>%
+  group_by(Season_round,Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+  summarise_all(.funs = sum)%>%
+  group_by(Match_id)%>%
+  arrange(Match_id)%>%
+  mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))%>%
+  ggplot(aes(x=Season_round,y=CG_difference))+
+  geom_point(aes(colour = factor(Status))) + geom_hline(yintercept = 0)+
+  facet_wrap(~Team)
+
+```
+
+```{r}
+fitzRoy::player_stats%>%
+  select(-Player)%>%
+  mutate(Round = parse_number(Round))%>%
+  mutate(Season_round=Round+Season)%>%
+  group_by(Season_round,Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+  summarise_all(.funs = sum)%>%
+  group_by(Match_id)%>%
+  arrange(Match_id)%>%
+  mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))%>%
+  ggplot(aes(x=Season_round,y=CG_difference))+
+  geom_point(aes(colour = factor(Status))) + geom_hline(yintercept = 0)+
+  facet_wrap(~Team)
+
+```
+
+
+

@@ -383,11 +383,37 @@ df_joined&lt;-left_join(df3,df_bookie, by=c(&quot;Team&quot;,&quot;Date&quot;))<
 <p>So remember what we wanted originally, we wanted to join betting data to the squiggle data. Our squiggle data was a dataframe called <code>df3</code> and our bookie data was a dataframe called <code>df_bookie</code>. One way to check our join, is to make sure the dimension lines up.</p>
 <p>We do this using <code>dim</code>.</p>
 <pre class="r"><code>dim(df3)</code></pre>
-<pre><code>## [1] 7842   11</code></pre>
+<pre><code>## [1] 7856   11</code></pre>
 <pre class="r"><code>dim(df_bookie)</code></pre>
 <pre><code>## [1] 952   3</code></pre>
 <pre class="r"><code>dim(df_joined)</code></pre>
-<pre><code>## [1] 7842   12</code></pre>
+<pre><code>## [1] 7856   12</code></pre>
 <p>Our dimension for df3 is 7842 rows and 11 columns, and our joined data <code>df_joined</code> is 7842 rows and 12 columns, i.e. it is the same as df3 (squiggle data) but has an extra column (betfair odds)</p>
 <p>So it seems as though we have a clean dataset to analyse. Now we just got to go ahead and do it!</p>
+</div>
+<div id="a-quick-analysis" class="section level1">
+<h1>A quick analysis</h1>
+<p>Someone asked me who do you think tips underdogs the best?</p>
+<p>Well if you just wanted to know who has most winning underdog ‘bets’ (I don’t know if any of the squigglers bet).</p>
+<pre class="r"><code>df_joined%&gt;%filter(WAP&gt;2 &amp;correct ==1 &amp; Team==tip)%&gt;%
+  group_by(source)%&gt;%
+  summarise(count=n())%&gt;%
+  arrange(desc(count))</code></pre>
+<pre><code>## # A tibble: 14 x 2
+##    source                count
+##    &lt;chr&gt;                 &lt;int&gt;
+##  1 Footy Maths Institute    12
+##  2 Matter of Stats          11
+##  3 Figuring Footy            9
+##  4 PlusSixOne                9
+##  5 The Arc                   8
+##  6 Graft                     7
+##  7 HPN                       7
+##  8 Squiggle                  7
+##  9 Stattraction              5
+## 10 Aggregate                 4
+## 11 Massey Ratings            4
+## 12 Live Ladders              3
+## 13 Swinburne                 3
+## 14 Punters                   2</code></pre>
 </div>

@@ -19,12 +19,12 @@ tags : ["fitzRoy"]
 </ul>
 <p>Well thankfully to the new afl R package <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> that is possible!</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.5
 ## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------------------ tidyverse_conflicts() --
+<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>fitzRoy::get_footywire_stats(9514:9630)%&gt;%
@@ -62,3 +62,125 @@ tags : ["fitzRoy"]
 ## 16 St Kilda                   12             87.7
 ## 17 Fremantle                  10             85.8
 ## 18 Richmond                    8             77.6</code></pre>
+<p>So there has been a lot of <a href="https://www.sen.com.au/news/2018/06/05/afl-cant-ignore-eagles-free-kicks-says-former-umpires-boss/">talk</a> <a href="https://www.foxsports.com.au/afl/why-home-teams-get-more-free-kicks-unbalanced-free-kick-counts-explained/news-story/a212665ad4d54849f18119f3d88ebca3">recently</a> about how <a href="https://www.perthnow.com.au/sport/west-coast-eagles/adam-simpson-has-no-answer-for-west-coast-eagles-frees-advantage-at-optus-stadium-ng-b88881644z">West Coast</a> receive a free kick advantage at home. The media hype has got to the point where the <a href="https://www.heraldsun.com.au/sport/afl/teams/west-coast/west-coasts-free-kick-domination-puzzles-afl-umpires/news-story/febbc87b37b79a945d890ddc0898629b">AFL will investigate</a>.</p>
+<p>So how can we use this ladder concept to see if there might be something there?</p>
+<p>Lets first start by looking at the free kick ladder for 2018.</p>
+<pre class="r"><code>library(tidyverse)
+fitzRoy::get_footywire_stats(9514:9630)%&gt;%
+    group_by(Round, Team)%&gt;%
+  mutate(Free_diff=sum(FF)-sum(FA), 
+  sumFF=sum(FF), sumFA=sum(FA))%&gt;%
+  select(Team, sumFF, sumFA, Free_diff)%&gt;%
+  distinct()%&gt;%
+  mutate(points=if_else(Free_diff&gt;0,4,if_else(Free_diff==0,2,0)))%&gt;%
+  group_by(Team)%&gt;%
+  summarise(total_points=sum(points),
+  percentage_Frees=100*(sum(sumFF)/sum(sumFA)))%&gt;%
+  arrange(desc(total_points), desc(percentage_Frees))</code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`</code></pre>
+<pre><code>## # A tibble: 18 x 3
+##    Team             total_points percentage_Frees
+##    &lt;chr&gt;                   &lt;dbl&gt;            &lt;dbl&gt;
+##  1 North Melbourne            38            118. 
+##  2 Western Bulldogs           38            115. 
+##  3 Collingwood                36            126. 
+##  4 Adelaide                   36            117. 
+##  5 Brisbane                   36            114. 
+##  6 West Coast                 34            123. 
+##  7 Hawthorn                   34            103. 
+##  8 Geelong                    32             98.3
+##  9 Carlton                    30            103. 
+## 10 Melbourne                  28             98.6
+## 11 Port Adelaide              26             93.6
+## 12 Gold Coast                 18             95.1
+## 13 Sydney                     18             91.6
+## 14 Essendon                   18             86.6
+## 15 GWS                        16             83.5
+## 16 St Kilda                   12             87.7
+## 17 Fremantle                  10             85.8
+## 18 Richmond                    8             77.6</code></pre>
+<p>So West Coast do well on frees but certainly they are not top of the comp.</p>
+<p>But the perception is that West Coast are being favoured at home, so lets divide up this table into home and away.</p>
+<pre class="r"><code>df&lt;-fitzRoy::get_footywire_stats(9514:9630)%&gt;%
+  group_by(Round, Team, Status)%&gt;%
+  mutate(Free_diff=sum(FF)-sum(FA), 
+         sumFF=sum(FF), sumFA=sum(FA))%&gt;%
+  select(Team, sumFF, sumFA, Free_diff)%&gt;%
+  distinct()%&gt;%
+  mutate(points=if_else(Free_diff&gt;0,4,if_else(Free_diff==0,2,0)))%&gt;%
+  group_by(Team,Status)%&gt;%
+  summarise(total_points=sum(points),
+            percentage_Frees=100*(sum(sumFF)/sum(sumFA)))%&gt;%
+  arrange(desc(total_points), desc(percentage_Frees))</code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Status`</code></pre>
+<pre class="r"><code>df%&gt;%
+  filter(Status==&quot;Home&quot;)%&gt;%
+   arrange(desc(total_points), desc(percentage_Frees))</code></pre>
+<pre><code>## # A tibble: 18 x 4
+## # Groups:   Team [18]
+##    Team             Status total_points percentage_Frees
+##    &lt;chr&gt;            &lt;chr&gt;         &lt;dbl&gt;            &lt;dbl&gt;
+##  1 Adelaide         Home             24            168. 
+##  2 West Coast       Home             24            155. 
+##  3 Western Bulldogs Home             22            113. 
+##  4 Hawthorn         Home             22            103. 
+##  5 Collingwood      Home             20            131. 
+##  6 Carlton          Home             20            121. 
+##  7 North Melbourne  Home             20            116. 
+##  8 Brisbane         Home             20            115. 
+##  9 Geelong          Home             20            105. 
+## 10 Melbourne        Home             16            120. 
+## 11 Port Adelaide    Home             16            107. 
+## 12 Essendon         Home             12            101. 
+## 13 GWS              Home             12            101. 
+## 14 Gold Coast       Home              8            101. 
+## 15 Sydney           Home              8             94.7
+## 16 Richmond         Home              8             86.7
+## 17 Fremantle        Home              4             83.7
+## 18 St Kilda         Home              0             80</code></pre>
+<pre class="r"><code>df%&gt;%
+  filter(Status==&quot;Away&quot;)%&gt;%
+   arrange(desc(total_points), desc(percentage_Frees))</code></pre>
+<pre><code>## # A tibble: 18 x 4
+## # Groups:   Team [18]
+##    Team             Status total_points percentage_Frees
+##    &lt;chr&gt;            &lt;chr&gt;         &lt;dbl&gt;            &lt;dbl&gt;
+##  1 North Melbourne  Away             18            119. 
+##  2 Collingwood      Away             16            120. 
+##  3 Western Bulldogs Away             16            117. 
+##  4 Brisbane         Away             16            114. 
+##  5 Hawthorn         Away             12            102. 
+##  6 St Kilda         Away             12             95.1
+##  7 Geelong          Away             12             90.2
+##  8 Melbourne        Away             12             87.9
+##  9 Adelaide         Away             12             85  
+## 10 West Coast       Away             10             93.8
+## 11 Gold Coast       Away             10             90.4
+## 12 Carlton          Away             10             90.3
+## 13 Sydney           Away             10             88.4
+## 14 Port Adelaide    Away             10             80.7
+## 15 Fremantle        Away              6             87.8
+## 16 Essendon         Away              6             76.6
+## 17 GWS              Away              4             71.5
+## 18 Richmond         Away              0             72.5</code></pre>
+<p>Looking at our tables for Home vs Away, it would seem as though for this year at least that Adelaide is being favoured more, they lead the home free kick table are 4th on the overall table and just outside the eight on the away table. What’s the go with North Melbourne they lead the overall table and the away table but finish a mere 7th for games at home.</p>
+<p>Other people might want to see a plot of free kicks differential but graphically. So lets do that.</p>
+<pre class="r"><code>fitzRoy::player_stats%&gt;%
+  select(-Player)%&gt;%
+  mutate(Round = parse_number(Round))%&gt;%
+  mutate(Season_round=Round+Season)%&gt;%
+  group_by(Season_round,Season, Round, Venue, Team, Status, Match_id,Date)%&gt;%
+  summarise(Fdiff=sum(FF)-sum(FA))%&gt;%
+  ggplot(aes(x=Season_round, y=Fdiff))+
+  geom_point(aes(colour = factor(Status))) + geom_hline(yintercept = 0)+
+  facet_wrap(~Team)</code></pre>
+<pre><code>## Warning: 3212 parsing failures.
+## row # A tibble: 5 x 4 col     row   col expected actual           expected   &lt;int&gt; &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;            actual 1  7745    NA a number Qualifying Final row 2  7746    NA a number Qualifying Final col 3  7747    NA a number Qualifying Final expected 4  7748    NA a number Qualifying Final actual 5  7749    NA a number Qualifying Final
+## ... ................. ... ....................................... ........ ....................................... ...... ....................................... ... ....................................... ... ....................................... ........ ....................................... ...... .......................................
+## See problems(...) for more details.</code></pre>
+<pre><code>## Warning: Removed 146 rows containing missing values (geom_point).</code></pre>
+<p><img src="/makemeauseR/2018-06-25-a-different-free-kick-ladder_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
