@@ -141,5 +141,7 @@ fitzRoy::player_stats%>%
 
 ```
 
+Again visually it looks like the eagles are making less mistakes at home. 
+
 
 
