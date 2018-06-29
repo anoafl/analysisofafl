@@ -1,0 +1,101 @@
+---
+title : "Exploring Different Squigglers HGA"
+description : "How do different squigglers take into account HGA"
+author : "Robert Nguyen"
+date : 2018-06-30
+tags : ["fitzRoy", "open science", "modelling"]
+
+---
+
+
+
+<pre class="r"><code>library(fitzRoy)
+library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.5
+## v tidyr   0.8.1     v stringr 1.3.1
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(lubridate)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;lubridate&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     date</code></pre>
+<pre class="r"><code>library(mgcv)</code></pre>
+<pre><code>## Loading required package: nlme</code></pre>
+<pre><code>## 
+## Attaching package: &#39;nlme&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     collapse</code></pre>
+<pre><code>## This is mgcv 1.8-23. For overview type &#39;help(&quot;mgcv-package&quot;)&#39;.</code></pre>
+<pre class="r"><code>afltables&lt;-fitzRoy::get_match_results()
+tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
+<pre><code>## Getting data from https://api.squiggle.com.au/?q=tips</code></pre>
+<pre class="r"><code>afltables&lt;-afltables%&gt;%mutate(Home.Team = str_replace(Home.Team, &quot;GWS&quot;, &quot;Greater Western Sydney&quot;))
+
+afltables&lt;-afltables %&gt;%mutate(Home.Team = str_replace(Home.Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
+
+unique(afltables$Home.Team)</code></pre>
+<pre><code>##  [1] &quot;Fitzroy&quot;                &quot;Collingwood&quot;           
+##  [3] &quot;Geelong&quot;                &quot;Sydney&quot;                
+##  [5] &quot;Essendon&quot;               &quot;St Kilda&quot;              
+##  [7] &quot;Melbourne&quot;              &quot;Carlton&quot;               
+##  [9] &quot;Richmond&quot;               &quot;University&quot;            
+## [11] &quot;Hawthorn&quot;               &quot;North Melbourne&quot;       
+## [13] &quot;Western Bulldogs&quot;       &quot;West Coast&quot;            
+## [15] &quot;Brisbane Lions&quot;         &quot;Adelaide&quot;              
+## [17] &quot;Fremantle&quot;              &quot;Port Adelaide&quot;         
+## [19] &quot;Gold Coast&quot;             &quot;Greater Western Sydney&quot;</code></pre>
+<pre class="r"><code>names(afltables)</code></pre>
+<pre><code>##  [1] &quot;Game&quot;         &quot;Date&quot;         &quot;Round&quot;        &quot;Home.Team&quot;   
+##  [5] &quot;Home.Goals&quot;   &quot;Home.Behinds&quot; &quot;Home.Points&quot;  &quot;Away.Team&quot;   
+##  [9] &quot;Away.Goals&quot;   &quot;Away.Behinds&quot; &quot;Away.Points&quot;  &quot;Venue&quot;       
+## [13] &quot;Margin&quot;       &quot;Season&quot;       &quot;Round.Type&quot;   &quot;Round.Number&quot;</code></pre>
+<pre class="r"><code>names(tips)</code></pre>
+<pre><code>##  [1] &quot;hteamid&quot;     &quot;gameid&quot;      &quot;bits&quot;        &quot;date&quot;        &quot;round&quot;      
+##  [6] &quot;hconfidence&quot; &quot;ateamid&quot;     &quot;venue&quot;       &quot;margin&quot;      &quot;tipteamid&quot;  
+## [11] &quot;year&quot;        &quot;updated&quot;     &quot;hteam&quot;       &quot;tip&quot;         &quot;sourceid&quot;   
+## [16] &quot;correct&quot;     &quot;err&quot;         &quot;confidence&quot;  &quot;source&quot;      &quot;ateam&quot;</code></pre>
+<pre class="r"><code>tips$date&lt;-ymd_hms(tips$date)
+
+tips$date&lt;-as.Date(tips$date)
+
+afltables$Date&lt;-ymd(afltables$Date)
+joined_dataset&lt;-left_join(tips, afltables, by=c(&quot;hteam&quot;=&quot;Home.Team&quot;, &quot;date&quot;=&quot;Date&quot;))
+
+df&lt;-joined_dataset%&gt;%
+  select(hteam, ateam,tip,correct, hconfidence, round, date,
+         source, margin, Home.Points, Away.Points, year)%&gt;%
+  mutate(squigglehomemargin=if_else(hteam==tip, margin, -margin), 
+         actualhomemargin=Home.Points-Away.Points, 
+         hconfidence=hconfidence/100)%&gt;%
+  filter(source==&quot;PlusSixOne&quot;)%&gt;%
+    select(round, hteam, ateam, hconfidence, squigglehomemargin, actualhomemargin, correct)
+df&lt;-df[complete.cases(df),]
+
+df$hteam&lt;-as.factor(df$hteam)
+df$ateam&lt;-as.factor(df$ateam)
+ft=gam(I(actualhomemargin&gt;0)~s(hconfidence),data=df,family=&quot;binomial&quot;)
+
+df$logitChance = log(df$hconfidence)/log(100-df$hconfidence)
+
+
+ft=gam(I(actualhomemargin&gt;0)~s(logitChance),data=df,family=&quot;binomial&quot;)
+
+
+preds = predict(ft,type=&quot;response&quot;,se.fit=TRUE)
+predSort=sort(preds$fit,index.return=TRUE)
+
+plot(predSort$x~df$hconfidence[predSort$ix],col=&quot;red&quot;,type=&quot;l&quot;)
+
+abline(h=0.5,col=&quot;blue&quot;)
+abline(v=50,col=&quot;blue&quot;)
+abline(c(0,1),col=&quot;purple&quot;)
+lines(df$hconfidence[predSort$ix],predSort$x+2*preds$se.fit[predSort$ix])
+lines(df$hconfidence[predSort$ix],predSort$x-2*preds$se.fit[predSort$ix])</code></pre>
+<p><img src="/fitzRoy/2018-06-30-exploring-different-squigglers-hga_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>

@@ -1,0 +1,72 @@
+---
+title : "Exploring Different Squigglers HGA"
+description : "How do different squigglers take into account HGA"
+author : "Robert Nguyen"
+date : 2018-06-30
+tags : ["fitzRoy", "open science", "modelling"]
+
+---
+
+
+
+```{r}
+
+library(fitzRoy)
+library(tidyverse)
+library(lubridate)
+library(mgcv)
+afltables<-fitzRoy::get_match_results()
+tips <- get_squiggle_data("tips")
+
+
+
+afltables<-afltables%>%mutate(Home.Team = str_replace(Home.Team, "GWS", "Greater Western Sydney"))
+
+afltables<-afltables %>%mutate(Home.Team = str_replace(Home.Team, "Footscray", "Western Bulldogs"))
+
+unique(afltables$Home.Team)
+
+names(afltables)
+names(tips)
+
+
+tips$date<-ymd_hms(tips$date)
+
+tips$date<-as.Date(tips$date)
+
+afltables$Date<-ymd(afltables$Date)
+joined_dataset<-left_join(tips, afltables, by=c("hteam"="Home.Team", "date"="Date"))
+
+df<-joined_dataset%>%
+  select(hteam, ateam,tip,correct, hconfidence, round, date,
+         source, margin, Home.Points, Away.Points, year)%>%
+  mutate(squigglehomemargin=if_else(hteam==tip, margin, -margin), 
+         actualhomemargin=Home.Points-Away.Points, 
+         hconfidence=hconfidence/100)%>%
+  filter(source=="PlusSixOne")%>%
+    select(round, hteam, ateam, hconfidence, squigglehomemargin, actualhomemargin, correct)
+df<-df[complete.cases(df),]
+
+df$hteam<-as.factor(df$hteam)
+df$ateam<-as.factor(df$ateam)
+ft=gam(I(actualhomemargin>0)~s(hconfidence),data=df,family="binomial")
+
+df$logitChance = log(df$hconfidence)/log(100-df$hconfidence)
+
+
+ft=gam(I(actualhomemargin>0)~s(logitChance),data=df,family="binomial")
+
+
+preds = predict(ft,type="response",se.fit=TRUE)
+predSort=sort(preds$fit,index.return=TRUE)
+
+plot(predSort$x~df$hconfidence[predSort$ix],col="red",type="l")
+
+abline(h=0.5,col="blue")
+abline(v=50,col="blue")
+abline(c(0,1),col="purple")
+lines(df$hconfidence[predSort$ix],predSort$x+2*preds$se.fit[predSort$ix])
+lines(df$hconfidence[predSort$ix],predSort$x-2*preds$se.fit[predSort$ix])
+
+
+```
