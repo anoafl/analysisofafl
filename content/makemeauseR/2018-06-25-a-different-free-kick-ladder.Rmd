@@ -87,6 +87,8 @@ df%>%
 
 Looking at our tables for Home vs Away, it would seem as though for this year at least that Adelaide is being favoured more, they lead the home free kick table are 4th on the overall table and just outside the eight on the away table. What's the go with North Melbourne they lead the overall table and the away table but finish a mere 7th for games at home. 
 
+What about those tigers? For all the talk about home ground advantage and there being some influence on umpires it doesn't seem to bother them if its 80,000 screaming tigers fans. Could the noise of affirmation over in the west, be louder than the tiger roar?
+
 Other people might want to see a plot of free kicks differential but graphically. So lets do that. 
 
 ```{r}

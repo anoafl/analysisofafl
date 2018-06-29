@@ -205,3 +205,22 @@ fitzRoy::get_footywire_stats(9514:9630)%&gt;%
 ## See problems(...) for more details.</code></pre>
 <pre><code>## Warning: Removed 146 rows containing missing values (geom_point).</code></pre>
 <p><img src="/makemeauseR/2018-06-25-a-different-free-kick-ladder_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>fitzRoy::player_stats%&gt;%
+  select(-Player)%&gt;%
+  mutate(Round = parse_number(Round))%&gt;%
+  mutate(Season_round=Round+Season)%&gt;%
+  group_by(Season_round,Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+  summarise_all(.funs = sum)%&gt;%
+  group_by(Match_id)%&gt;%
+  arrange(Match_id)%&gt;%
+  mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))%&gt;%
+  ggplot(aes(x=Season_round,y=CG_difference))+
+  geom_point(aes(colour = factor(Status))) + geom_hline(yintercept = 0)+
+  facet_wrap(~Team)</code></pre>
+<pre><code>## Warning: 3212 parsing failures.
+## row # A tibble: 5 x 4 col     row   col expected actual           expected   &lt;int&gt; &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;            actual 1  7745    NA a number Qualifying Final row 2  7746    NA a number Qualifying Final col 3  7747    NA a number Qualifying Final expected 4  7748    NA a number Qualifying Final actual 5  7749    NA a number Qualifying Final
+## ... ................. ... ....................................... ........ ....................................... ...... ....................................... ... ....................................... ... ....................................... ........ ....................................... ...... .......................................
+## See problems(...) for more details.</code></pre>
+<pre><code>## Warning: Removed 146 rows containing missing values (geom_point).</code></pre>
+<p><img src="/makemeauseR/2018-06-25-a-different-free-kick-ladder_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Again visually it looks like the eagles are making less mistakes at home.</p>
