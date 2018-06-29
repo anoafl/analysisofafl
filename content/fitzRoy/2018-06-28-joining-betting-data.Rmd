@@ -169,6 +169,16 @@ df_joined%>%filter(WAP>2 &correct ==1 & Team==tip)%>%
 ```
 
 
+That tells me Footy Maths institute had the most winning underdog bets, but just how many times did they have to bet?
+
+
+```{r}
+df_joined%>%filter(WAP>2  & Team==tip)%>%
+  group_by(source, correct)%>%
+  summarise(count=n())%>%
+  arrange(desc(count))
+
+```
 
 
 

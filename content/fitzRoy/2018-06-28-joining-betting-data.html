@@ -383,11 +383,11 @@ df_joined&lt;-left_join(df3,df_bookie, by=c(&quot;Team&quot;,&quot;Date&quot;))<
 <p>So remember what we wanted originally, we wanted to join betting data to the squiggle data. Our squiggle data was a dataframe called <code>df3</code> and our bookie data was a dataframe called <code>df_bookie</code>. One way to check our join, is to make sure the dimension lines up.</p>
 <p>We do this using <code>dim</code>.</p>
 <pre class="r"><code>dim(df3)</code></pre>
-<pre><code>## [1] 7856   11</code></pre>
+<pre><code>## [1] 7858   11</code></pre>
 <pre class="r"><code>dim(df_bookie)</code></pre>
 <pre><code>## [1] 952   3</code></pre>
 <pre class="r"><code>dim(df_joined)</code></pre>
-<pre><code>## [1] 7856   12</code></pre>
+<pre><code>## [1] 7858   12</code></pre>
 <p>Our dimension for df3 is 7842 rows and 11 columns, and our joined data <code>df_joined</code> is 7842 rows and 12 columns, i.e. it is the same as df3 (squiggle data) but has an extra column (betfair odds)</p>
 <p>So it seems as though we have a clean dataset to analyse. Now we just got to go ahead and do it!</p>
 </div>
@@ -416,4 +416,24 @@ df_joined&lt;-left_join(df3,df_bookie, by=c(&quot;Team&quot;,&quot;Date&quot;))<
 ## 12 Live Ladders              3
 ## 13 Swinburne                 3
 ## 14 Punters                   2</code></pre>
+<p>That tells me Footy Maths institute had the most winning underdog bets, but just how many times did they have to bet?</p>
+<pre class="r"><code>df_joined%&gt;%filter(WAP&gt;2  &amp; Team==tip)%&gt;%
+  group_by(source, correct)%&gt;%
+  summarise(count=n())%&gt;%
+  arrange(desc(count))</code></pre>
+<pre><code>## # A tibble: 27 x 3
+## # Groups:   source [14]
+##    source                correct count
+##    &lt;chr&gt;                   &lt;int&gt; &lt;int&gt;
+##  1 The Arc                     0    15
+##  2 Matter of Stats             0    13
+##  3 Footy Maths Institute       1    12
+##  4 PlusSixOne                  0    12
+##  5 Footy Maths Institute       0    11
+##  6 Graft                       0    11
+##  7 Matter of Stats             1    11
+##  8 Figuring Footy              1     9
+##  9 PlusSixOne                  1     9
+## 10 Stattraction                0     9
+## # ... with 17 more rows</code></pre>
 </div>
