@@ -173,10 +173,13 @@ That tells me Footy Maths institute had the most winning underdog bets, but just
 
 
 ```{r}
-df_joined%>%filter(WAP>2  & Team==tip)%>%
-  group_by(source, correct)%>%
-  summarise(count=n())%>%
-  arrange(desc(count))
+df_joined%>%filter(WAP>2 & Team==tip)%>%
+    group_by(source, correct)%>%
+    summarise(count=n())%>%
+    group_by(source)%>%
+    mutate(total_bets=sum(count), pert=count/total_bets)%>%
+    filter(correct==1)%>%
+    arrange(desc(pert))
 
 ```
 
