@@ -145,5 +145,29 @@ fitzRoy::player_stats%>%
 
 Again visually it looks like the eagles are making less mistakes at home. 
 
+What about their tackle differential?
 
+
+
+```{r}
+
+fitzRoy::player_stats%>%
+  select(-Player)%>%
+  mutate(Round = parse_number(Round))%>%
+  mutate(Season_round=Round+Season)%>%
+  group_by(Season_round,Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%>%
+  summarise_all(.funs = sum)%>%
+  group_by(Match_id)%>%
+  arrange(Match_id)%>%
+  mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))%>%
+  ggplot(aes(x=Season_round,y=T_difference))+
+  geom_point(aes(colour = factor(Status))) + geom_hline(yintercept = 0)+
+  facet_wrap(~Team)
+
+```
+
+Doesn't look like their is much difference, so for WCE it looks as though they do get more free kicks at home vs away, they make less mistakes at home but tackles don't seem to change by home/away status. 
+
+
+So while these plots paint a picture, we should always dig in a bit more to see if there is something there, or if it is just the mind trying to spot a pattern when there is none. 
 

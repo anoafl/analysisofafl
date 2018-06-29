@@ -168,6 +168,7 @@ fitzRoy::get_footywire_stats(9514:9630)%&gt;%
 ## 17 GWS              Away              4             71.5
 ## 18 Richmond         Away              0             72.5</code></pre>
 <p>Looking at our tables for Home vs Away, it would seem as though for this year at least that Adelaide is being favoured more, they lead the home free kick table are 4th on the overall table and just outside the eight on the away table. What’s the go with North Melbourne they lead the overall table and the away table but finish a mere 7th for games at home.</p>
+<p>What about those tigers? For all the talk about home ground advantage and there being some influence on umpires it doesn’t seem to bother them if its 80,000 screaming tigers fans. Could the noise of affirmation over in the west, be louder than the tiger roar?</p>
 <p>Other people might want to see a plot of free kicks differential but graphically. So lets do that.</p>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
   select(-Player)%&gt;%
@@ -224,3 +225,24 @@ fitzRoy::get_footywire_stats(9514:9630)%&gt;%
 <pre><code>## Warning: Removed 146 rows containing missing values (geom_point).</code></pre>
 <p><img src="/makemeauseR/2018-06-25-a-different-free-kick-ladder_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>Again visually it looks like the eagles are making less mistakes at home.</p>
+<p>What about their tackle differential?</p>
+<pre class="r"><code>fitzRoy::player_stats%&gt;%
+  select(-Player)%&gt;%
+  mutate(Round = parse_number(Round))%&gt;%
+  mutate(Season_round=Round+Season)%&gt;%
+  group_by(Season_round,Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+  summarise_all(.funs = sum)%&gt;%
+  group_by(Match_id)%&gt;%
+  arrange(Match_id)%&gt;%
+  mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))%&gt;%
+  ggplot(aes(x=Season_round,y=T_difference))+
+  geom_point(aes(colour = factor(Status))) + geom_hline(yintercept = 0)+
+  facet_wrap(~Team)</code></pre>
+<pre><code>## Warning: 3212 parsing failures.
+## row # A tibble: 5 x 4 col     row   col expected actual           expected   &lt;int&gt; &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;            actual 1  7745    NA a number Qualifying Final row 2  7746    NA a number Qualifying Final col 3  7747    NA a number Qualifying Final expected 4  7748    NA a number Qualifying Final actual 5  7749    NA a number Qualifying Final
+## ... ................. ... ....................................... ........ ....................................... ...... ....................................... ... ....................................... ... ....................................... ........ ....................................... ...... .......................................
+## See problems(...) for more details.</code></pre>
+<pre><code>## Warning: Removed 146 rows containing missing values (geom_point).</code></pre>
+<p><img src="/makemeauseR/2018-06-25-a-different-free-kick-ladder_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Doesn’t look like their is much difference, so for WCE it looks as though they do get more free kicks at home vs away, they make less mistakes at home but tackles don’t seem to change by home/away status.</p>
+<p>So while these plots paint a picture, we should always dig in a bit more to see if there is something there, or if it is just the mind trying to spot a pattern when there is none.</p>
