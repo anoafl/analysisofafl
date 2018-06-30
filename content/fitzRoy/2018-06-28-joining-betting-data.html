@@ -16,12 +16,12 @@ tags : ["betting","fitzRoy"]
 <p>I will only be joining the 2017-onwards data because that’s what squiggle has!</p>
 <pre class="r"><code>library(readxl)
 library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.5
 ## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>Copy_of_Weekly_AFL_Data_Dump_2017_YTD &lt;- read_excel(&quot;C:/Users/rober/Downloads/Copy-of-Weekly-AFL-Data-Dump-2017-YTD.xlsx&quot;, 
@@ -417,23 +417,29 @@ df_joined&lt;-left_join(df3,df_bookie, by=c(&quot;Team&quot;,&quot;Date&quot;))<
 ## 13 Swinburne                 3
 ## 14 Punters                   2</code></pre>
 <p>That tells me Footy Maths institute had the most winning underdog bets, but just how many times did they have to bet?</p>
-<pre class="r"><code>df_joined%&gt;%filter(WAP&gt;2  &amp; Team==tip)%&gt;%
-  group_by(source, correct)%&gt;%
-  summarise(count=n())%&gt;%
-  arrange(desc(count))</code></pre>
-<pre><code>## # A tibble: 27 x 3
+<pre class="r"><code>df_joined%&gt;%filter(WAP&gt;2 &amp; Team==tip)%&gt;%
+    group_by(source, correct)%&gt;%
+    summarise(count=n())%&gt;%
+    group_by(source)%&gt;%
+    mutate(total_bets=sum(count), pert=count/total_bets)%&gt;%
+    filter(correct==1)%&gt;%
+    arrange(desc(pert))</code></pre>
+<pre><code>## # A tibble: 14 x 5
 ## # Groups:   source [14]
-##    source                correct count
-##    &lt;chr&gt;                   &lt;int&gt; &lt;int&gt;
-##  1 The Arc                     0    15
-##  2 Matter of Stats             0    13
-##  3 Footy Maths Institute       1    12
-##  4 PlusSixOne                  0    12
-##  5 Footy Maths Institute       0    11
-##  6 Graft                       0    11
-##  7 Matter of Stats             1    11
-##  8 Figuring Footy              1     9
-##  9 PlusSixOne                  1     9
-## 10 Stattraction                0     9
-## # ... with 17 more rows</code></pre>
+##    source                correct count total_bets  pert
+##    &lt;chr&gt;                   &lt;int&gt; &lt;int&gt;      &lt;int&gt; &lt;dbl&gt;
+##  1 Punters                     1     2          2 1    
+##  2 Figuring Footy              1     9         17 0.529
+##  3 Footy Maths Institute       1    12         23 0.522
+##  4 HPN                         1     7         15 0.467
+##  5 Squiggle                    1     7         15 0.467
+##  6 Matter of Stats             1    11         24 0.458
+##  7 Massey Ratings              1     4          9 0.444
+##  8 PlusSixOne                  1     9         21 0.429
+##  9 Graft                       1     7         18 0.389
+## 10 Live Ladders                1     3          8 0.375
+## 11 Aggregate                   1     4         11 0.364
+## 12 Stattraction                1     5         14 0.357
+## 13 The Arc                     1     8         23 0.348
+## 14 Swinburne                   1     3         10 0.3</code></pre>
 </div>
