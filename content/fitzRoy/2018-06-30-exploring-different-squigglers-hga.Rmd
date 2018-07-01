@@ -68,5 +68,24 @@ abline(c(0,1),col="purple")
 lines(df$hconfidence[predSort$ix],predSort$x+2*preds$se.fit[predSort$ix])
 lines(df$hconfidence[predSort$ix],predSort$x-2*preds$se.fit[predSort$ix])
 
+# predicting winners
+ft=gam(I(actualhomemargin>0)~s(hconfidence),data=df,family="binomial",sp=0.05)
+# the 0.05 was to make it a bit wiggly but not too silly (the default was not monotonically increasing, which is silly)
+plot(ft,rug=FALSE,trans=binomial()$linkinv)
+abline(h=0.5,col="blue")
+abline(v=0.5,col="blue")
+abline(c(0,1),col="purple")
+
+# predicting margins
+ft=gam(actualhomemargin~s(hconfidence),data=df)
+plot(ft,rug=FALSE,residual=TRUE,pch=1,cex=0.4)
+abline(h=0.5,col="blue")
+abline(v=0.5,col="blue")
+
+# add squiggle margins to the plot
+confSort = sort(df$hconfidence,index.return=TRUE)
+lines(confSort$x,df$squigglehomemargin[confSort$ix],col="purple")
+
+
 
 ```
