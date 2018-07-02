@@ -11,12 +11,12 @@ tags : ["fitzRoy", "open science", "modelling"]
 
 <pre class="r"><code>library(fitzRoy)
 library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.5
 ## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts ------------------------------------------------------ tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(lubridate)</code></pre>
@@ -57,10 +57,10 @@ unique(afltables$Home.Team)</code></pre>
 ##  [9] &quot;Away.Goals&quot;   &quot;Away.Behinds&quot; &quot;Away.Points&quot;  &quot;Venue&quot;       
 ## [13] &quot;Margin&quot;       &quot;Season&quot;       &quot;Round.Type&quot;   &quot;Round.Number&quot;</code></pre>
 <pre class="r"><code>names(tips)</code></pre>
-<pre><code>##  [1] &quot;hteamid&quot;     &quot;gameid&quot;      &quot;bits&quot;        &quot;date&quot;        &quot;round&quot;      
-##  [6] &quot;hconfidence&quot; &quot;ateamid&quot;     &quot;venue&quot;       &quot;margin&quot;      &quot;tipteamid&quot;  
-## [11] &quot;year&quot;        &quot;updated&quot;     &quot;hteam&quot;       &quot;tip&quot;         &quot;sourceid&quot;   
-## [16] &quot;correct&quot;     &quot;err&quot;         &quot;confidence&quot;  &quot;source&quot;      &quot;ateam&quot;</code></pre>
+<pre><code>##  [1] &quot;venue&quot;       &quot;hteamid&quot;     &quot;tip&quot;         &quot;correct&quot;     &quot;date&quot;       
+##  [6] &quot;round&quot;       &quot;ateam&quot;       &quot;bits&quot;        &quot;year&quot;        &quot;confidence&quot; 
+## [11] &quot;updated&quot;     &quot;tipteamid&quot;   &quot;gameid&quot;      &quot;ateamid&quot;     &quot;err&quot;        
+## [16] &quot;sourceid&quot;    &quot;margin&quot;      &quot;source&quot;      &quot;hconfidence&quot; &quot;hteam&quot;</code></pre>
 <pre class="r"><code>tips$date&lt;-ymd_hms(tips$date)
 
 tips$date&lt;-as.Date(tips$date)
@@ -99,3 +99,21 @@ abline(c(0,1),col=&quot;purple&quot;)
 lines(df$hconfidence[predSort$ix],predSort$x+2*preds$se.fit[predSort$ix])
 lines(df$hconfidence[predSort$ix],predSort$x-2*preds$se.fit[predSort$ix])</code></pre>
 <p><img src="/fitzRoy/2018-06-30-exploring-different-squigglers-hga_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code># predicting winners
+ft=gam(I(actualhomemargin&gt;0)~s(hconfidence),data=df,family=&quot;binomial&quot;,sp=0.05)
+# the 0.05 was to make it a bit wiggly but not too silly (the default was not monotonically increasing, which is silly)
+plot(ft,rug=FALSE,trans=binomial()$linkinv)
+abline(h=0.5,col=&quot;blue&quot;)
+abline(v=0.5,col=&quot;blue&quot;)
+abline(c(0,1),col=&quot;purple&quot;)</code></pre>
+<p><img src="/fitzRoy/2018-06-30-exploring-different-squigglers-hga_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
+<pre class="r"><code># predicting margins
+ft=gam(actualhomemargin~s(hconfidence),data=df)
+plot(ft,rug=FALSE,residual=TRUE,pch=1,cex=0.4)
+abline(h=0.5,col=&quot;blue&quot;)
+abline(v=0.5,col=&quot;blue&quot;)
+
+# add squiggle margins to the plot
+confSort = sort(df$hconfidence,index.return=TRUE)
+lines(confSort$x,df$squigglehomemargin[confSort$ix],col=&quot;purple&quot;)</code></pre>
+<p><img src="/fitzRoy/2018-06-30-exploring-different-squigglers-hga_files/figure-html/unnamed-chunk-1-3.png" width="672" /></p>
