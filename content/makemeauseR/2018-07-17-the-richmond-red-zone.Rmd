@@ -1,0 +1,42 @@
+---
+title : "The Richmond Red Zone"
+description : "Saw a quote"
+author : "Robert Nguyen"
+date : 2018-07-17
+tags : ["fitzRoy", "graphics","R","open science"]
+
+---
+
+So watching [footyclassified](https://www.9now.com.au/footy-classified/2018/episode-18) and Matthew Lloyd made a comment that it would seem as though the key to beating Richmond is controlling the ball via having more kicks to handballs. 
+
+Got me thinking, wouldn't that be cool if a plot showed the same insight that an industry professional had?
+
+Well lets do that plot!
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+df<-fitzRoy::get_footywire_stats(9514:9657)
+ df%>%
+   select(Round, Team, Opposition, K, HB)%>%
+   filter(Opposition=="Richmond")%>%
+   group_by(Round, Team, Opposition)%>%
+   summarise(kicks=sum(K),
+             handballs=sum(HB))%>%
+     ggplot(aes(x=kicks, y=handballs, label=Round))+geom_point()+
+   geom_text(position=position_jitter(height=3))  +
+   geom_curve(aes(x = 220, y = 120, xend = 260, yend = 200, colour = "curve"), curvature = -.35)+
+   theme(legend.position="none") +
+   ggtitle("Richmond Oppositions Kicks and Handball Totals")+
+   ylab("Richmond Handballs Conceded") + xlab("Richmond Kicks conceded")
+ 
+
+```
+
+The interesting thing about this plot is that if you look at the red line, all games to the right of it Richmond have lost?
+
+Was Lloydy onto something?
+
+Hopefully now you have a template and hopefully you are a little bit keener on using it to derive your own non Lloydy insights. Give it a go, its suprisingly addictive....
+
+As always, got any questions, hit me up on twitter using the #makemeauseR or feel free to email.
