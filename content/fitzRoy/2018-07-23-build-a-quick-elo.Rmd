@@ -65,9 +65,9 @@ elo.data <- elo.run(
   data = results
 )
 
-as.data.frame(elo.data)
-as.matrix(elo.data)
-final.elos(elo.data)
+# as.data.frame(elo.data)
+# as.matrix(elo.data)
+# final.elos(elo.data)
 
 
 # Do predictions
@@ -86,3 +86,8 @@ left_join(fixture, results, by=c("Date"="Date","Home.Team"="Home.Team" ))%>%
   mutate(accuracy=sum(right_pick, na.rm = TRUE))%>%View()
 
 ```
+
+So if you run that script end to end you should have a working ELO model that you can play around with. 
+
+# Somethings to note. 
+
