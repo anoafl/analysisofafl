@@ -20,7 +20,13 @@ Having done a presentation at [useR](https://user2018.r-project.org), one of the
 
 Well I am here to say, that's not true. Anyone can give it a go. 
 
+I think there are many camps to the AFL stats fanbase. One of which I would like to try and include more. 
 
+That is those who feel as though they can't contribute or can't analyse simply because they don't know R/How to build out models. 
+
+So while you might be reading other blogs and sure they are "coding" it up from "scratch". I think a missing point to this thought is while that's true, it also doesn't have to be you. Lots of people develop packages and answer questions on sites like [stackoverflow](https://stackoverflow.com/questions/tagged/r).
+
+So if you have ever wanted to build your own ELO for AFL why not use this [ELO package](https://cran.r-project.org/web/packages/elo/index.html)
 
 
 ```{r}
@@ -90,4 +96,8 @@ left_join(fixture, results, by=c("Date"="Date","Home.Team"="Home.Team" ))%>%
 So if you run that script end to end you should have a working ELO model that you can play around with. 
 
 # Somethings to note. 
+
+* This model has no HGA, yes you read that right! `HGA <- 0` its set to 0 here!
+* No mean reversion between seasons! `carryOver <- 1` I think thats right?
+
 
