@@ -26,7 +26,9 @@ That is those who feel as though they can't contribute or can't analyse simply b
 
 So while you might be reading other blogs and sure they are "coding" it up from "scratch". I think a missing point to this thought is while that's true, it also doesn't have to be you. Lots of people develop packages and answer questions on sites like [stackoverflow](https://stackoverflow.com/questions/tagged/r).
 
-So if you have ever wanted to build your own ELO for AFL why not use this [ELO package](https://cran.r-project.org/web/packages/elo/index.html)
+So if you have ever wanted to build your own ELO for AFL why not use this [ELO package](https://cran.r-project.org/web/packages/elo/index.html). That's what it was designed for, for people to use it. 
+
+
 
 
 ```{r}
@@ -99,5 +101,6 @@ So if you run that script end to end you should have a working ELO model that yo
 
 * This model has no HGA, yes you read that right! `HGA <- 0` its set to 0 here!
 * No mean reversion between seasons! `carryOver <- 1` I think thats right?
+* I set k=20 for no reason other than I read this blog post here [538 ELO](https://fivethirtyeight.com/features/introducing-nfl-elo-ratings/), is that the best way to decide? What would you do differently?
 
 
