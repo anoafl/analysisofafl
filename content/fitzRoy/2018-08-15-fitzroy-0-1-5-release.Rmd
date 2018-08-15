@@ -3,7 +3,7 @@ title: "fitzRoy - 0.1.5 release"
 author: "James Day"
 date: 2018-08-15
 tags : ["fitzRoy", "graphics","R","open science"]
-subtitle: ''
+
 
 ---
 For those of you who've been following me on Twitter, you'll know that I've been working on an R package for AFL called [fitzRoy](jimmyday12.github.io/fitzRoy) with Rob from [Analysis of AFL](jimmyday12.github.io/fitzRoy). Today we released a new version which has a much requested feature, so I'd figured a blog post was in order. 
