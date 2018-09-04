@@ -37,7 +37,7 @@ library(tidyverse)
 
 ```{r}
 
-df<-fitzRoy::get_afltables_stats(start_date = "1897-01-01", end_date = Sys.Date())%>%
+df<-fitzRoy::get_afltables_stats(start_date = "1897-01-01", end_date = Sys.Date())
 
 df%>%filter(Season>1990)%>%
   group_by(ID) %>%

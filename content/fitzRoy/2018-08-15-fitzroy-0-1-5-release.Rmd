@@ -8,7 +8,7 @@ tags : ["fitzRoy", "graphics","R","open science"]
 ---
 For those of you who've been following me on Twitter, you'll know that I've been working on an R package for AFL called [fitzRoy](jimmyday12.github.io/fitzRoy) with Rob from [Analysis of AFL](jimmyday12.github.io/fitzRoy). Today we released a new version which has a much requested feature, so I'd figured a blog post was in order. 
 You'll have to reinstall fitzRoy to get the latest functions. We still aren't on CRAN but you can use devtools to get it. 
-```{r}
+```{r, eval=FALSE}
 # install.packages("devtools") # uncomment if you haven't installed devtools before
 library(tidyverse)
 devtools::install_github("jimmyday12/fitzRoy")
@@ -20,6 +20,7 @@ Both arguments are optional. `start_date` will default to the first AFL game `en
 As an example, we could just grab data from this year.
 ```{r}
 library(fitzRoy)
+library(tidyverse)
 dat <- get_afltables_stats("2018-01-01")
 tail(dat)
 ```
