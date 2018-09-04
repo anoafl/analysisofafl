@@ -18,12 +18,12 @@ tags : ["regression", "fitzRoy","modelling"]
 <p>Thankfully we can use <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> for the data we need pretty easily. Here we will take goals (G), behinds (B) and create a variable using <code>mutate</code> called <code>shots</code> which just represent total shots on goals (we don’t have access to kicks that were out on the full or dropped short) so this becomes the sum of goals and behinds.</p>
 <p>We are looking at regression to the mean for goal kicking accuracy on a year to year bases on a player level. Hence our <code>group_by(Player, Team, Season)</code></p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages -------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages ---------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
-## v tibble  1.4.2     v dplyr   0.7.5
+## v tibble  1.4.2     v dplyr   0.7.6
 ## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ----------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts ------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(fitzRoy)
@@ -59,7 +59,7 @@ names(good) = names(had_a_go) = paste(data$Player[subset], data$Season[subset], 
 
 league_wide_pert = sum(good)/sum(had_a_go)
 print(league_wide_pert)</code></pre>
-<pre><code>## [1] 0.6009457</code></pre>
+<pre><code>## [1] 0.6007096</code></pre>
 <pre class="r"><code>sigma2L = league_wide_pert*(1-league_wide_pert)/had_a_go
 
 sigma2T = 0
@@ -69,26 +69,32 @@ for (i in 1:100000) {
   sigma2T = sum(weight*((indl_player_shot_pert - league_wide_pert)^2 - sigma2L))/sum(weight)
 }
 print(sigma2T)</code></pre>
-<pre><code>## [1] 0.001543792</code></pre>
+<pre><code>## [1] 0.001483404</code></pre>
 <pre class="r"><code>sqrt(sigma2T)</code></pre>
-<pre><code>## [1] 0.03929112</code></pre>
+<pre><code>## [1] 0.03851498</code></pre>
 <pre class="r"><code>skill = (league_wide_pert/sigma2T + indl_player_shot_pert/sigma2L)/(1/sigma2T + 1/sigma2L)
 
 
 head(sort(skill, decreasing = TRUE))</code></pre>
 <pre><code>##          Luke Breust 2014 Hawthorn Tory Dickson 2015 Western Bulldogs 
-##                          0.6701927                          0.6595703 
+##                          0.6681194                          0.6577340 
 ##   Christopher Mayne 2012 Fremantle   Drew Petrie 2012 North Melbourne 
-##                          0.6573508                          0.6542362 
+##                          0.6554409                          0.6526506 
 ##   Barry Hall 2011 Western Bulldogs          Cyril Rioli 2016 Hawthorn 
-##                          0.6525512                          0.6517646</code></pre>
+##                          0.6509844                          0.6501355</code></pre>
 <pre class="r"><code>tail(sort(skill, decreasing = TRUE))</code></pre>
-<pre><code>##         Mitch Robinson 2011 Carlton         Dustin Martin 2013 Richmond 
-##                           0.5546358                           0.5531560 
-##        Daniel Jackson 2011 Richmond             Lewis Jetta 2010 Sydney 
-##                           0.5503500                           0.5473482 
-##         Jack Billings 2017 St Kilda Lindsay Thomas 2011 North Melbourne 
-##                           0.5428329                           0.5385269</code></pre>
+<pre><code>## Marcus Bontempelli 2017 Western Bulldogs 
+##                                0.5559301 
+##              Dustin Martin 2013 Richmond 
+##                                0.5543815 
+##             Daniel Jackson 2011 Richmond 
+##                                0.5518519 
+##                  Lewis Jetta 2010 Sydney 
+##                                0.5489428 
+##              Jack Billings 2017 St Kilda 
+##                                0.5443335 
+##      Lindsay Thomas 2011 North Melbourne 
+##                                0.5401664</code></pre>
 <pre class="r"><code>plot(indl_player_shot_pert, skill, xlim = c(.2, .5), col = &#39;orange&#39;)
 abline(0, 1, col = &#39;blue&#39;)</code></pre>
 <p><img src="/makemeauseR/2018-06-20-regression-to-the-mean_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
@@ -132,19 +138,26 @@ filter(Player==&quot;Luke Breust&quot; &amp;Season==2018)%&gt;%
   summarise(TG=sum(G),TB=sum(B)) %&gt;%
   mutate(accuracy=TG/(TG+TB))</code></pre>
 <pre><code>##   TG TB  accuracy
-## 1 25 11 0.6944444</code></pre>
+## 1 45 21 0.6818182</code></pre>
 <p>This shouldn’t surprise us, to put in perspective just how good Luke Breusts raw accuracy is lets create a table ranking players by accuracy over the years. Where not surprisingly he comes out as top of the list, while the mean accuracy of that group is 0.6369235. So it should be no surprise that Lukes accuracy was not sustainable</p>
-<pre class="r"><code>fitzRoy::afldata%&gt;%
+<pre class="r"><code>fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())%&gt;%
   select(First.name, Surname, Playing.for, Season, ID, Goals,Behinds)%&gt;%
   group_by(First.name, Surname, Playing.for, Season, ID)%&gt;%
   summarise(TG=sum(Goals),TB=sum(Behinds))%&gt;%
   mutate(accuracy=(TG/(TG+TB)))%&gt;%
   filter(TG&gt;49 &amp; Season&gt;1964)%&gt;%
   arrange(desc(accuracy)) </code></pre>
-<pre><code>## # A tibble: 491 x 8
-## # Groups:   First.name, Surname, Playing.for, Season [491]
+<pre><code>## Returning data from 1897-01-01 to 2018-09-04</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Warning: Unknown columns: `Substitute`</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
+<pre><code>## # A tibble: 504 x 8
+## # Groups:   First.name, Surname, Playing.for, Season [504]
 ##    First.name Surname    Playing.for     Season    ID    TG    TB accuracy
-##    &lt;fct&gt;      &lt;fct&gt;      &lt;fct&gt;            &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;
+##    &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;            &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
 ##  1 Luke       Breust     Hawthorn          2014 11954    57    12    0.826
 ##  2 Stephen    Milne      St Kilda          2002   978    50    11    0.820
 ##  3 Tony       Lockett    St Kilda          1993   990    53    12    0.815
@@ -155,5 +168,5 @@ filter(Player==&quot;Luke Breust&quot; &amp;Season==2018)%&gt;%
 ##  8 George     Young      St Kilda          1978  2299    70    21    0.769
 ##  9 Peter      Hudson     Hawthorn          1970  1822   146    44    0.768
 ## 10 Tony       Lockett    St Kilda          1989   990    78    24    0.765
-## # ... with 481 more rows</code></pre>
+## # ... with 494 more rows</code></pre>
 </div>

@@ -18,7 +18,7 @@ So what we did before, was we created 3 variables from afltables about Tony Lock
 
 These are summary statistics i.e. the year summaries (totals) of games played and goals kicked. 
 
-Something you might have noticed with `fitzRoy` is that the df is stored as game by game data and not season summaries. 
+Something you might have noticed with `fitzRoy` is that the `df` is stored as game by game data and not season summaries. 
 
 So how do we create these summary statistics? 
 
