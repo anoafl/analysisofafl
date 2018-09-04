@@ -77,19 +77,19 @@ So with that in mind, lets see if there is a relationship between `Contested.Mar
 devtools::install_github("jimmyday12/fitzRoy")
 library(fitzRoy)
 library(tidyverse)
-df<-fitzRoy::afldata
+df<-fitzRoy::get_afltables_stats(start_date = "1897-01-01", end_date = Sys.Date())
 ```
 
 Now that you have your dataframe `df` you can see that it collection of variables (columns) and observations of those variables (rows) `df` looking at some of these variables in `df` 
 
-* `Weight` 
+* `Marks` 
 * `Contested.Marks`
 
 # Bit more ploting explanation
 
 ```{r}
 df%>%
-ggplot(aes(x=Weight, y=Contested.Marks)) +
+ggplot(aes(x=Marks, y=Contested.Marks)) +
   geom_point() + facet_wrap(~Playing.for)
 ```
 
@@ -101,7 +101,7 @@ For the above example we first create a dataframe called `df` (how creative) the
 
 # `aes`
 
-`aes`-- Aesthetic mappings describe how variables in the data are mapped to visual properties (aesthetics)  of geoms. Aesthetics are things such as xy and colours `x=Weight, y=Contested.Marks` `colour=Playing.For`
+`aes`-- Aesthetic mappings describe how variables in the data are mapped to visual properties (aesthetics)  of geoms. Aesthetics are things such as xy and colours `x=Marks, y=Contested.Marks` `colour=Playing.For`
 
 # `geom`
 
