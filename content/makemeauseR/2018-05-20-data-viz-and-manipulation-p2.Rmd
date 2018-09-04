@@ -2,7 +2,7 @@
 title : "Data Viz and Manipulation P2"
 description : "A newbies guide to AFL visualisation with R P2"
 author : "Robert Nguyen"
-date : 2018-05-20
+date : 2018-05-21
 tags : ["fitzRoy", "graphics","R","open science" , "tidyverse"]
 
 ---
@@ -29,7 +29,7 @@ Data is stored in different places in fitzRoy, df contains the data we are after
 `head(df)` 
 
 ```{r}
-options(max.print=100)
+options(max.print=20)
 df<-fitzRoy::get_afltables_stats(start_date = "1897-01-01", end_date = Sys.Date())
 
 
