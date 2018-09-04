@@ -13,57 +13,52 @@ tags : ["fitzRoy", "graphics","R","open science" , "tidyverse"]
 <h1>Using fitzRoy and the tidyverse</h1>
 <pre class="r"><code>library(fitzRoy)
 library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
-## v tibble  1.4.2     v dplyr   0.7.4
-## v tidyr   0.8.0     v stringr 1.3.0
+<pre><code>## -- Attaching packages ---------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.6
+## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------------------------------ tidyverse_conflicts() --
+<pre><code>## -- Conflicts ------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <p>So what we did before, was we created 3 variables from afltables about Tony Lockett. They were Year (afl season), GM (totals games played in afl season) and GL (total goals kicked in season).</p>
 <p>These are summary statistics i.e. the year summaries (totals) of games played and goals kicked.</p>
-<p>Something you might have noticed with <code>fitzRoy</code> is that the afldata is stored as game by game data and not season summaries.</p>
+<p>Something you might have noticed with <code>fitzRoy</code> is that the df is stored as game by game data and not season summaries.</p>
 <p>So how do we create these summary statistics?</p>
 </div>
 <div id="step-one---get-the-dataframe-with-it-all" class="section level1">
 <h1>Step One - Get the dataframe with it all</h1>
-<p>Data is stored in different places in fitzRoy, afldata contains the data we are after at the moment</p>
+<p>Data is stored in different places in fitzRoy, df contains the data we are after at the moment</p>
 <p><code>head(df)</code></p>
 <pre class="r"><code>options(max.print=100)
-df&lt;-fitzRoy::afldata</code></pre>
+df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())</code></pre>
+<pre><code>## Returning data from 1897-01-01 to 2018-09-04</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Warning: Unknown columns: `Substitute`</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
 </div>
 <div id="step-two---select-the-columns-that-you-want-select" class="section level1">
 <h1>Step Two - Select the columns that you want <a href="https://dplyr.tidyverse.org/reference/select.html"><code>select</code></a></h1>
 <pre class="r"><code>df%&gt;%
   select(First.name, Surname, Season, Goals)</code></pre>
-<pre><code>##         First.name             Surname Season Goals
-## 1             Bill               Ahern   1897     0
-## 2            Jimmy              Aitken   1897     0
-## 3              Bob           Armstrong   1897     0
-## 4              Tom               Blake   1897     0
-## 5             Otto                Buck   1897     0
-## 6              Bob             Cameron   1897     0
-## 7             Bill               Casey   1897     0
-## 8           Arthur             Cummins   1897     0
-## 9            Henry               Dunne   1897     0
-## 10           Brook              Hannah   1897     0
-## 11             Ted           Heffernan   1897     0
-## 12          George            Johnston   1897     0
-## 13           Henry            McPetrie   1897     0
-## 14           Wally               OCock   1897     1
-## 15             Joe               Paton   1897     0
-## 16            Jack              Reekie   1897     0
-## 17             Tom            Sweetman   1897     0
-## 18           Ernie              Walton   1897     0
-## 19            Bill                Weir   1897     1
-## 20            Bill           Woodhouse   1897     0
-## 21           Jimmy              Aitken   1897     0
-## 22             Bob           Armstrong   1897     0
-## 23             Bob             Cameron   1897     1
-## 24            Bill               Casey   1897     0
-## 25             Sam             Chapman   1897     0
-##  [ reached getOption(&quot;max.print&quot;) -- omitted 603264 rows ]</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
+<pre><code>## # A tibble: 619,992 x 7
+## # Groups:   Season, Round, Home.team, Away.team [15,398]
+##    Round Home.team Away.team First.name Surname   Season Goals
+##    &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt;
+##  1 1     Fitzroy   Carlton   Bill       Ahern       1897     0
+##  2 1     Fitzroy   Carlton   Jimmy      Aitken      1897     0
+##  3 1     Fitzroy   Carlton   Bob        Armstrong   1897     0
+##  4 1     Fitzroy   Carlton   Tom        Blake       1897     0
+##  5 1     Fitzroy   Carlton   Otto       Buck        1897     0
+##  6 1     Fitzroy   Carlton   Bob        Cameron     1897     0
+##  7 1     Fitzroy   Carlton   Bill       Casey       1897     0
+##  8 1     Fitzroy   Carlton   Arthur     Cummins     1897     0
+##  9 1     Fitzroy   Carlton   Henry      Dunne       1897     0
+## 10 1     Fitzroy   Carlton   Brook      Hannah      1897     0
+## # ... with 619,982 more rows</code></pre>
 </div>
 <div id="step-three---create-the-grouped-data-group_by" class="section level1">
 <h1>Step Three - Create the grouped data <a href="https://dplyr.tidyverse.org/reference/group_by.html"><code>group_by</code></a></h1>
@@ -71,45 +66,47 @@ df&lt;-fitzRoy::afldata</code></pre>
 <pre class="r"><code>df%&gt;%
   select(First.name, Surname, Season, Goals)%&gt;%
   group_by(Season)</code></pre>
-<pre><code>## # A tibble: 603,289 x 4
-## # Groups:   Season [121]
-##    First.name Surname   Season Goals
-##    &lt;fct&gt;      &lt;fct&gt;      &lt;int&gt; &lt;int&gt;
-##  1 Bill       Ahern       1897     0
-##  2 Jimmy      Aitken      1897     0
-##  3 Bob        Armstrong   1897     0
-##  4 Tom        Blake       1897     0
-##  5 Otto       Buck        1897     0
-##  6 Bob        Cameron     1897     0
-##  7 Bill       Casey       1897     0
-##  8 Arthur     Cummins     1897     0
-##  9 Henry      Dunne       1897     0
-## 10 Brook      Hannah      1897     0
-## # ... with 603,279 more rows</code></pre>
-<p>It doesn’t look like our dataset has changed, but if we look closely we have a new <code>Groups:   Season [121]</code> and hopefully what you have noticed is that our dataset <code>afldata</code> has 121 unique values for <code>Season</code>. Which we can check below.</p>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
+<pre><code>## # A tibble: 619,992 x 7
+## # Groups:   Season [122]
+##    Round Home.team Away.team First.name Surname   Season Goals
+##    &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt;
+##  1 1     Fitzroy   Carlton   Bill       Ahern       1897     0
+##  2 1     Fitzroy   Carlton   Jimmy      Aitken      1897     0
+##  3 1     Fitzroy   Carlton   Bob        Armstrong   1897     0
+##  4 1     Fitzroy   Carlton   Tom        Blake       1897     0
+##  5 1     Fitzroy   Carlton   Otto       Buck        1897     0
+##  6 1     Fitzroy   Carlton   Bob        Cameron     1897     0
+##  7 1     Fitzroy   Carlton   Bill       Casey       1897     0
+##  8 1     Fitzroy   Carlton   Arthur     Cummins     1897     0
+##  9 1     Fitzroy   Carlton   Henry      Dunne       1897     0
+## 10 1     Fitzroy   Carlton   Brook      Hannah      1897     0
+## # ... with 619,982 more rows</code></pre>
+<p>It doesn’t look like our dataset has changed, but if we look closely we have a new <code>Groups:   Season [121]</code> and hopefully what you have noticed is that our dataset <code>df</code> has 121 unique values for <code>Season</code>. Which we can check below.</p>
 <pre class="r"><code>length(unique(df$Season))</code></pre>
-<pre><code>## [1] 121</code></pre>
+<pre><code>## [1] 122</code></pre>
 <p>What this does is adds a grouping structure to our data, which means instead of operations acting element wise like they did earlier now operations can happen by group.</p>
 <p>So why would you want to group data? Well lots of interesting things are done on a <code>group_by</code> basis. For example we might be interested in goal kicking trends by <a href="https://www.foxsports.com.au/afl/afl-goalkicking-continues-to-be-under-scrutiny-as-league-accuracy-falls-to-its-worst-since-1990/news-story/b01d958a5952a86e714e7ef0a41f75d5"><code>Season</code></a> Or * by <a href="https://twitter.com/MatterOfStats/status/997814414832095237"><code>round</code></a> * by <a href="https://twitter.com/MatterOfStats/status/997814414832095237"><code>Playing.For</code></a> * by <a href="https://twitter.com/MatterOfStats/status/998017464519675904">opponent</a> * by <a href="https://twitter.com/MatterOfStats/status/998018492426141696">wins and losses</a></p>
 <p>We can also <code>group_by</code> more than one thing. For example what if we wanted by <code>Season</code> and <code>Round</code></p>
 <pre class="r"><code>df%&gt;%
   select(Season,Round, Goals, Behinds)%&gt;%
   group_by(Season, Round)</code></pre>
-<pre><code>## # A tibble: 603,289 x 4
-## # Groups:   Season, Round [2,769]
-##    Season Round Goals Behinds
-##     &lt;int&gt; &lt;fct&gt; &lt;int&gt;   &lt;int&gt;
-##  1   1897 1         0       0
-##  2   1897 1         0       0
-##  3   1897 1         0       0
-##  4   1897 1         0       0
-##  5   1897 1         0       0
-##  6   1897 1         0       0
-##  7   1897 1         0       0
-##  8   1897 1         0       0
-##  9   1897 1         0       0
-## 10   1897 1         0       0
-## # ... with 603,279 more rows</code></pre>
+<pre><code>## Adding missing grouping variables: `Home.team`, `Away.team`</code></pre>
+<pre><code>## # A tibble: 619,992 x 6
+## # Groups:   Season, Round [2,817]
+##    Home.team Away.team Season Round Goals Behinds
+##    &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;   &lt;dbl&gt;
+##  1 Fitzroy   Carlton     1897 1         0       0
+##  2 Fitzroy   Carlton     1897 1         0       0
+##  3 Fitzroy   Carlton     1897 1         0       0
+##  4 Fitzroy   Carlton     1897 1         0       0
+##  5 Fitzroy   Carlton     1897 1         0       0
+##  6 Fitzroy   Carlton     1897 1         0       0
+##  7 Fitzroy   Carlton     1897 1         0       0
+##  8 Fitzroy   Carlton     1897 1         0       0
+##  9 Fitzroy   Carlton     1897 1         0       0
+## 10 Fitzroy   Carlton     1897 1         0       0
+## # ... with 619,982 more rows</code></pre>
 <p>What we can now see is that we have grouped by 2 variables (Season, Round) and have formed 769 groups. <code>Groups:   Season, Round [2,769]</code></p>
 </div>
 <div id="step-four---take-the-grouped-data-and-summarise-it" class="section level1">
@@ -119,9 +116,10 @@ df&lt;-fitzRoy::afldata</code></pre>
   select(First.name, Surname, Season, Goals)%&gt;%
   group_by(Season)%&gt;%
   summarise(total_goals=sum(Goals))</code></pre>
-<pre><code>## # A tibble: 121 x 2
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
+<pre><code>## # A tibble: 122 x 2
 ##    Season total_goals
-##     &lt;int&gt;       &lt;int&gt;
+##     &lt;dbl&gt;       &lt;dbl&gt;
 ##  1   1897         640
 ##  2   1898         721
 ##  3   1899         691
@@ -132,7 +130,7 @@ df&lt;-fitzRoy::afldata</code></pre>
 ##  8   1904         949
 ##  9   1905         984
 ## 10   1906        1088
-## # ... with 111 more rows</code></pre>
+## # ... with 112 more rows</code></pre>
 <p>Ok that doesn’t quite seem like what we were thinking we wanted the <code>total_goals</code> of Tony Lockett by season, but all we got was Season total goals.</p>
 <p>Well duh! We only did a <code>group_by</code> by <code>Season</code>, we should have done it by <code>Season, First.name, Surname</code> should we have?</p>
 <p>Lets check.</p>
@@ -140,10 +138,11 @@ df&lt;-fitzRoy::afldata</code></pre>
   select(Season, First.name, Surname, Goals)%&gt;%
   group_by(Season, First.name, Surname)%&gt;%
   summarise(total_goals=sum(Goals))</code></pre>
-<pre><code>## # A tibble: 52,466 x 4
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
+<pre><code>## # A tibble: 53,330 x 4
 ## # Groups:   Season, First.name [?]
 ##    Season First.name Surname   total_goals
-##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;           &lt;int&gt;
+##     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;           &lt;dbl&gt;
 ##  1   1897 Alb        Thomas              0
 ##  2   1897 Alby       Patterson           0
 ##  3   1897 Alby       Stamp               0
@@ -154,7 +153,7 @@ df&lt;-fitzRoy::afldata</code></pre>
 ##  8   1897 Alf        Bedford             0
 ##  9   1897 Alf        Healing             0
 ## 10   1897 Alf        Pontin              1
-## # ... with 52,456 more rows</code></pre>
+## # ... with 53,320 more rows</code></pre>
 <p>This looks a lot better, only issue is that we don’t see Tony Lockett but we see all these other blokes like Alb Thomas, he didn’t kick 1,360 snags.</p>
 </div>
 <div id="step-five---filter-the-data" class="section level1">
@@ -164,10 +163,11 @@ df&lt;-fitzRoy::afldata</code></pre>
   group_by(Season, First.name, Surname)%&gt;%
   summarise(total_goals=sum(Goals))%&gt;%
   filter(First.name==&quot;Tony&quot; , Surname==&quot;Lockett&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <pre><code>## # A tibble: 18 x 4
 ## # Groups:   Season, First.name [18]
 ##    Season First.name Surname total_goals
-##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;         &lt;int&gt;
+##     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;         &lt;dbl&gt;
 ##  1   1983 Tony       Lockett          19
 ##  2   1984 Tony       Lockett          77
 ##  3   1985 Tony       Lockett          79
@@ -193,10 +193,11 @@ df&lt;-fitzRoy::afldata</code></pre>
   group_by(Season, First.name, Surname)%&gt;%
   summarise(average_goals=mean(Goals))%&gt;%
   filter(First.name==&quot;Tony&quot; , Surname==&quot;Lockett&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <pre><code>## # A tibble: 18 x 4
 ## # Groups:   Season, First.name [18]
 ##    Season First.name Surname average_goals
-##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;           &lt;dbl&gt;
+##     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;           &lt;dbl&gt;
 ##  1   1983 Tony       Lockett          1.58
 ##  2   1984 Tony       Lockett          3.85
 ##  3   1985 Tony       Lockett          3.76
@@ -226,6 +227,7 @@ df&lt;-fitzRoy::afldata</code></pre>
   ggplot(aes(x=Season, y=average_goals)) +
   geom_line(color=&quot;red&quot;) +
   ggtitle(&quot;Tony Lockets Average Goals Per Game by Season&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 </div>
 <div id="step-7---thats-cool-but-i-want-to-compare-players" class="section level1">
@@ -239,6 +241,7 @@ df&lt;-fitzRoy::afldata</code></pre>
   ggplot(aes(x=Season, y=average_goals)) +
   geom_line() +
   ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <p>On first glance this doesn’t look like its done the right thing we wanted two lines one for Tony Lockett and one for Jason Dunstall.</p>
 <p>Lets look a bit deeper at what we are doing</p>
@@ -249,10 +252,11 @@ df&lt;-fitzRoy::afldata</code></pre>
   group_by(Season, First.name, Surname)%&gt;%
   summarise(average_goals=mean(Goals))%&gt;%
   filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <pre><code>## # A tibble: 32 x 4
 ## # Groups:   Season, First.name [32]
 ##    Season First.name Surname  average_goals
-##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;            &lt;dbl&gt;
+##     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;            &lt;dbl&gt;
 ##  1   1983 Tony       Lockett           1.58
 ##  2   1984 Tony       Lockett           3.85
 ##  3   1985 Jason      Dunstall          2.25
@@ -273,6 +277,7 @@ df&lt;-fitzRoy::afldata</code></pre>
     ggplot(aes(x=Season, y=average_goals)) +
     geom_point() +
     ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 </div>
 <div id="differentiating-the-data" class="section level2">
@@ -286,6 +291,7 @@ df&lt;-fitzRoy::afldata</code></pre>
     ggplot(aes(x=Season, y=average_goals)) +
     geom_point(aes(colour=Surname)) +
     ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>Then we do our line plot like earlier.</p>
 <pre class="r"><code>df%&gt;%
@@ -296,6 +302,7 @@ df&lt;-fitzRoy::afldata</code></pre>
     ggplot(aes(x=Season, y=average_goals)) +
     geom_line(aes(colour=Surname)) +
     ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
 <p>Another way we could plot them, is have the same graph but instead of both lines on one, we could have them side by side for comparison. This is handy in situations where you want to compare the same thing <code>average goals per game by season</code></p>
 <p>This is called <a href="https://en.wikipedia.org/wiki/Small_multiple">small multiples</a>, we do this by using <code>facet_wrap()</code></p>
@@ -307,6 +314,7 @@ df&lt;-fitzRoy::afldata</code></pre>
     ggplot(aes(x=Season, y=average_goals)) +
     geom_line() + facet_wrap(~Surname) + 
     ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 </div>
 </div>
@@ -319,10 +327,11 @@ df&lt;-fitzRoy::afldata</code></pre>
     group_by(Season, First.name, Surname)%&gt;%
     summarise(average_goals=mean(Goals))%&gt;%
     filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Smith&quot;))</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <pre><code>## # A tibble: 23 x 4
 ## # Groups:   Season, First.name [20]
 ##    Season First.name Surname average_goals
-##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;           &lt;dbl&gt;
+##     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;           &lt;dbl&gt;
 ##  1   1974 Tony       Smith            0   
 ##  2   1983 Tony       Lockett          1.58
 ##  3   1984 Tony       Lockett          3.85
@@ -334,16 +343,17 @@ df&lt;-fitzRoy::afldata</code></pre>
 ##  9   1988 Tony       Lockett          4.38
 ## 10   1988 Tony       Smith            0.1 
 ## # ... with 13 more rows</code></pre>
-<p>So the best way would be if we had some sort of ID variable. Which luckily in <code>afldata</code> we have an ID column.</p>
+<p>So the best way would be if we had some sort of ID variable. Which luckily in <code>df</code> we have an ID column.</p>
 <pre class="r"><code>df%&gt;%
     select(Season, First.name, Surname,ID, Goals)%&gt;%
     group_by(Season, First.name, Surname, ID)%&gt;%
     summarise(average_goals=mean(Goals))%&gt;%
     filter(First.name %in% c(&quot;Tony&quot;, &quot;Jason&quot;) , Surname %in% c(&quot;Lockett&quot;, &quot;Dunstall&quot;))</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <pre><code>## # A tibble: 32 x 5
 ## # Groups:   Season, First.name, Surname [32]
 ##    Season First.name Surname     ID average_goals
-##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;    &lt;int&gt;         &lt;dbl&gt;
+##     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt;         &lt;dbl&gt;
 ##  1   1983 Tony       Lockett    990          1.58
 ##  2   1984 Tony       Lockett    990          3.85
 ##  3   1985 Jason      Dunstall   632          2.25
@@ -362,10 +372,11 @@ df&lt;-fitzRoy::afldata</code></pre>
     group_by(Season, First.name, Surname, ID)%&gt;%
     summarise(average_goals=mean(Goals))%&gt;%
     filter(ID %in% c(990,632))</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <pre><code>## # A tibble: 32 x 5
 ## # Groups:   Season, First.name, Surname [32]
 ##    Season First.name Surname     ID average_goals
-##     &lt;int&gt; &lt;fct&gt;      &lt;fct&gt;    &lt;int&gt;         &lt;dbl&gt;
+##     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;    &lt;int&gt;         &lt;dbl&gt;
 ##  1   1983 Tony       Lockett    990          1.58
 ##  2   1984 Tony       Lockett    990          3.85
 ##  3   1985 Jason      Dunstall   632          2.25
@@ -386,6 +397,7 @@ df&lt;-fitzRoy::afldata</code></pre>
     ggplot(aes(x=Season, y=average_goals)) +
     geom_line() + facet_wrap(~Surname) + 
     ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 <pre class="r"><code>df%&gt;%
     select(Season, First.name, Surname,ID, Goals)%&gt;%
@@ -395,5 +407,6 @@ df&lt;-fitzRoy::afldata</code></pre>
     ggplot(aes(x=Season, y=average_goals)) +
     geom_line(aes(colour=Surname)) +
     ggtitle(&quot;Average Goals Per Game by Season&quot;)</code></pre>
+<pre><code>## Adding missing grouping variables: `Round`, `Home.team`, `Away.team`</code></pre>
 <p><img src="/makemeauseR/2018-05-20-data-viz-and-manipulation-p2_files/figure-html/unnamed-chunk-21-2.png" width="672" /></p>
 </div>
