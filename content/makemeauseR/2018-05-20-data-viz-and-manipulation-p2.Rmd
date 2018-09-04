@@ -18,19 +18,19 @@ So what we did before, was we created 3 variables from afltables about Tony Lock
 
 These are summary statistics i.e. the year summaries (totals) of games played and goals kicked. 
 
-Something you might have noticed with `fitzRoy` is that the afldata is stored as game by game data and not season summaries. 
+Something you might have noticed with `fitzRoy` is that the df is stored as game by game data and not season summaries. 
 
 So how do we create these summary statistics? 
 
 # Step One - Get the dataframe with it all
 
-Data is stored in different places in fitzRoy, afldata contains the data we are after at the moment
+Data is stored in different places in fitzRoy, df contains the data we are after at the moment
 
 `head(df)` 
 
 ```{r}
 options(max.print=100)
-df<-fitzRoy::afldata
+df<-fitzRoy::get_afltables_stats(start_date = "1897-01-01", end_date = Sys.Date())
 
 
 ```
@@ -54,7 +54,7 @@ df%>%
   group_by(Season)
 ```
 
-It doesn't look like our dataset has changed, but if we look closely we have a new `Groups:   Season [121]` and hopefully what you have noticed is that our dataset `afldata` has 121 unique values for `Season`. Which we can check below. 
+It doesn't look like our dataset has changed, but if we look closely we have a new `Groups:   Season [121]` and hopefully what you have noticed is that our dataset `df` has 121 unique values for `Season`. Which we can check below. 
 
 ```{r}
 length(unique(df$Season))
@@ -246,7 +246,7 @@ df%>%
     
 ```
 
-So the best way would be if we had some sort of ID variable. Which luckily in `afldata` we have an ID column. 
+So the best way would be if we had some sort of ID variable. Which luckily in `df` we have an ID column. 
 
 ```{r}
 

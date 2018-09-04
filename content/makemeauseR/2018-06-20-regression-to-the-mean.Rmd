@@ -164,7 +164,7 @@ filter(Player=="Luke Breust" &Season==2018)%>%
 This shouldn't surprise us, to put in perspective just how good Luke Breusts raw accuracy is lets create a table ranking players by accuracy over the years. Where not surprisingly he comes out as top of the list, while the mean accuracy of that group is 0.6369235. So it should be no surprise that Lukes accuracy was not sustainable
 
 ```{r}
-fitzRoy::afldata%>%
+fitzRoy::get_afltables_stats(start_date = "1897-01-01", end_date = Sys.Date())%>%
   select(First.name, Surname, Playing.for, Season, ID, Goals,Behinds)%>%
   group_by(First.name, Surname, Playing.for, Season, ID)%>%
   summarise(TG=sum(Goals),TB=sum(Behinds))%>%
