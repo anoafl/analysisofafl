@@ -1,0 +1,251 @@
+---
+title: "Maths in Sport Script"
+author: Robert Nguyen
+date: 2018-05-18
+slug: maths-in-sport-script
+categories:
+  - Brownlow
+tags : ["fitzRoy", "graphics","R","open science", "statistics"]
+description: ''
+---
+
+
+
+<pre class="r"><code>############################################################################
+#BROWNLOW PREDICTION WITH FREE DATA!!!!
+
+        ################
+        ### 
+
+##from fitzRoy figures
+# ptm &lt;- proc.time()
+library(tidyverse)
+df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())
+names(df)
+# df&lt;-afldata::afldata
+team_stats&lt;-df%&gt;%
+  dplyr::select(Date, First.name,Surname,Season, Round, Playing.for, Kicks:Goal.Assists)%&gt;%
+  group_by(Date, Season, Round, Playing.for)%&gt;%
+  summarise_if(is.numeric,funs(sum=c(sum(.))))
+
+player_stats&lt;-df%&gt;%
+  dplyr::select(Date, First.name,Surname,Season, Round, Playing.for, Kicks:Goal.Assists)
+
+complete_df&lt;-left_join(player_stats,team_stats, by=c(&quot;Date&quot;=&quot;Date&quot;, &quot;Season&quot;=&quot;Season&quot;,  &quot;Playing.for&quot;=&quot;Playing.for&quot;))
+
+#but we also need margins as per honours stuff
+
+dataset_scores&lt;-fitzRoy::match_results
+names(dataset_scores)
+dataset_scores1&lt;-dataset_scores%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2&lt;-dplyr::select(dataset_scores, Date, Round, Away.Team, Away.Points,Game)
+
+colnames(dataset_scores1)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores1)[4]&lt;-&quot;Points&quot;
+colnames(dataset_scores2)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores2)[4]&lt;-&quot;Points&quot;
+
+df5&lt;-rbind(dataset_scores1,dataset_scores2)
+dataset_margins&lt;-df5%&gt;%group_by(Game)%&gt;%
+  arrange(Game)%&gt;%
+  mutate(margin=c(-diff(Points),diff(Points)))
+# View(dataset_margins)
+dataset_margins$Date&lt;-as.Date(dataset_margins$Date)
+complete_df$Date&lt;-as.Date(complete_df$Date)
+
+complete_df&lt;-left_join(complete_df,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Playing.for&quot;=&quot;Team&quot;))
+
+
+complete_df_ratio&lt;-complete_df%&gt;%
+  mutate(kick.ratio=Kicks/Kicks_sum,
+         Marks.ratio=Marks/Marks_sum,
+         handball.ratio=Handballs/Handballs_sum,
+         Goals.ratio=Goals/Goals_sum,
+         behinds.ratio=Behinds/Behinds_sum,
+         hitouts.ratio=Hit.Outs/Hit.Outs_sum,
+         tackles.ratio=Tackles/Tackles_sum,
+         rebounds.ratio=Rebounds/Rebounds_sum,
+         inside50s.ratio=Inside.50s/Inside.50s_sum,
+         clearances.ratio=Clearances/Clearances_sum,
+         clangers.ratio=Clangers/Clangers_sum,
+         freefors.ratio=Frees.For/Frees.For_sum,
+         freesagainst.ratio=Frees.Against/Frees.Against_sum,
+         Contested.Possessions.ratio=Contested.Possessions/Contested.Possessions_sum,
+         Uncontested.Possessions.ratio=Uncontested.Possessions/Uncontested.Possessions_sum,
+         contested.marks.ratio=Contested.Marks/Contested.Marks_sum,
+         marksinside50.ratio=Marks.Inside.50/Marks.Inside.50_sum,
+         one.percenters.ratio=One.Percenters/One.Percenters_sum,
+         bounces.ratio=Bounces/Bounces_sum,
+         goal.assists.ratio=Goal.Assists/Goal.Assists_sum,
+         disposals.ratio=(Kicks+Handballs)/(Kicks_sum+Handballs_sum))
+df&lt;-complete_df_ratio%&gt;%dplyr::select(Date, First.name, Surname, Season, Round.x, Playing.for,-Brownlow.Votes, Brownlow.Votes_sum,everything())
+df&lt;-df%&gt;%dplyr::select(-Brownlow.Votes,everything())
+df[is.na(df)] &lt;- 0
+in.sample  &lt;- subset(df, Season %in% c(2013:2016))
+
+in.sample$Brownlow.Votes &lt;- factor(in.sample$Brownlow.Votes)
+
+in.sample&lt;-in.sample%&gt;%filter(Round.x %in% c(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,&quot;5&quot;,&quot;6&quot;,&quot;7&quot;,&quot;8&quot;,
+                                             &quot;9&quot;,&quot;10&quot;,&quot;11&quot;,&quot;12&quot;,&quot;13&quot;,&quot;14&quot;,&quot;15&quot;,&quot;16&quot;,&quot;17&quot;,&quot;18&quot;,&quot;19&quot;,&quot;20&quot;,&quot;21&quot;,&quot;22&quot;,&quot;23&quot;,&quot;24&quot;))
+
+
+names(in.sample)
+
+in.sample$Player&lt;-paste(in.sample$First.name,in.sample$Surname)
+
+in.sample&lt;-in.sample%&gt;%dplyr::select(Player, Date, Season, Round.x, Playing.for, margin:Brownlow.Votes)
+
+
+
+
+library(ordinal)
+
+fm1&lt;-clm(Brownlow.Votes~ kick.ratio +  handball.ratio +  Marks.ratio +  
+           disposals.ratio+  hitouts.ratio+
+           freefors.ratio +  freesagainst.ratio +  tackles.ratio +  Goals.ratio +   behinds.ratio + Contested.Possessions.ratio+
+           Uncontested.Possessions.ratio +  clangers.ratio +    contested.marks.ratio + marksinside50.ratio +
+           clearances.ratio +   rebounds.ratio +    inside50s.ratio +   one.percenters.ratio +  bounces.ratio+
+           goal.assists.ratio  +margin, 
+         data = in.sample)
+
+library(MASS)
+
+fm2&lt;- stepAIC(fm1, direction=&#39;backward&#39;,type=AIC)
+
+                      ####################
+                    ###Get the out.sample
+
+### Example using data from footywire to show that in fitzRoy 
+### fans have access to both popular websites
+
+names(fitzRoy::player_stats)
+df_2017&lt;-fitzRoy::player_stats%&gt;%
+  filter(Season==2017)
+
+team_stats_out&lt;-df_2017%&gt;%
+  dplyr::select(Date, Player,Season, Round, Team, CP:T5)%&gt;%
+  group_by(Date,Season, Round, Team)%&gt;%
+  summarise_if(is.numeric,funs(sum=c(sum(.))))
+
+player_stats_out&lt;-df_2017%&gt;%
+  dplyr::select(Date, Player,Season, Round, Team, CP:T5)
+
+
+complete_df_out&lt;-left_join(player_stats_out,team_stats_out, by=c(&quot;Date&quot;=&quot;Date&quot;, &quot;Season&quot;=&quot;Season&quot;,  &quot;Team&quot;=&quot;Team&quot;))
+
+
+
+dataset_scores&lt;-fitzRoy::match_results
+names(dataset_scores)
+dataset_scores1&lt;-dataset_scores%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2&lt;-dplyr::select(dataset_scores, Date, Round, Away.Team, Away.Points,Game)
+
+colnames(dataset_scores1)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores1)[4]&lt;-&quot;Points&quot;
+colnames(dataset_scores2)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores2)[4]&lt;-&quot;Points&quot;
+
+
+df5&lt;-rbind(dataset_scores1,dataset_scores2)
+dataset_margins&lt;-df5%&gt;%group_by(Game)%&gt;%
+  arrange(Game)%&gt;%
+  mutate(margin=c(-diff(Points),diff(Points)))
+dataset_margins$Date&lt;-as.Date(dataset_margins$Date)
+complete_df_out$Date&lt;-as.Date(complete_df_out$Date)
+
+dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Brisbane Lions&quot;, &quot;Brisbane&quot;))
+
+dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
+
+
+complete_df_out&lt;-left_join(complete_df_out,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Team&quot;=&quot;Team&quot;))
+
+names(complete_df_out)
+
+####create the new ratios
+complete_df_ratio_out&lt;-complete_df_out%&gt;%
+  mutate(kick.ratio=K/K_sum,
+         Marks.ratio=M/M_sum,
+         handball.ratio=HB/HB_sum,
+         Goals.ratio=G/G_sum,
+         behinds.ratio=B/B_sum,
+         hitouts.ratio=HO/HO_sum,
+         tackles.ratio=T/T_sum,
+         rebounds.ratio=R50/R50_sum,
+         inside50s.ratio=I50/I50_sum,
+         clearances.ratio=(CCL+SCL)/(CCL_sum+SCL_sum),
+         clangers.ratio=CL/CL_sum,
+         freefors.ratio=FF/FF_sum,
+         freesagainst.ratio=FA/FA_sum,
+         Contested.Possessions.ratio=CP/CP_sum,
+         Uncontested.Possessions.ratio=UP/UP_sum,
+         contested.marks.ratio=CM/CM_sum,
+         marksinside50.ratio=MI5/MI5_sum,
+         one.percenters.ratio=One.Percenters/One.Percenters_sum,
+         bounces.ratio=BO/BO_sum,
+         goal.assists.ratio=GA/GA_sum,
+         disposals.ratio=D/D_sum)
+
+
+
+
+conforming&lt;-complete_df_ratio_out%&gt;%
+  dplyr::select(Player, Date, Season, Round.x, Team, margin, 
+                kick.ratio:disposals.ratio)
+
+conforming$Brownlow.Votes&lt;-0
+out.sample=conforming
+
+newdata   &lt;- out.sample[ , -ncol(out.sample)]
+
+
+pre.dict    &lt;- predict(fm2,newdata=newdata, type=&#39;prob&#39;)
+pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) &lt;- c(&quot;vote.0&quot;, &quot;vote.1&quot;, &quot;vote.2&quot;, &quot;vote.3&quot;)
+
+newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
+
+
+#### Step 1: Get expected value on Votes
+newdata.pred$expected.votes &lt;- newdata.pred$vote.1 + 2*newdata.pred$vote.2 + 3*newdata.pred$vote.3
+
+####Join back on matchID whoops!
+
+
+get_match_ID&lt;-fitzRoy::player_stats
+
+xx&lt;-get_match_ID%&gt;%dplyr::select(Date, Player, Match_id)
+newdata.pred&lt;-left_join(newdata.pred, xx, by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Player&quot;=&quot;Player&quot;))
+
+
+
+newdata.pred&lt;-filter(newdata.pred, Date&lt;&quot;2017-09-01&quot;)
+
+
+sum1 &lt;- aggregate(vote.1~Match_id, data = newdata.pred, FUN = sum ); names(sum1) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.1&quot;);
+sum2 &lt;- aggregate(vote.2~Match_id, data = newdata.pred, FUN = sum ); names(sum2) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.2&quot;);
+sum3 &lt;- aggregate(vote.3~Match_id, data = newdata.pred, FUN = sum ); names(sum3) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.3&quot;);
+
+#### Step 3: Add sum of each vote by matchId to big table
+newdata.pred &lt;- merge(newdata.pred, sum1, by = &quot;Match_id&quot;)
+newdata.pred &lt;- merge(newdata.pred, sum2, by = &quot;Match_id&quot;)
+newdata.pred &lt;- merge(newdata.pred, sum3, by = &quot;Match_id&quot;)
+
+#### Step 4: Add std1/2/3
+newdata.pred$std.1  &lt;- (newdata.pred$sum.vote.1/newdata.pred$vote.1)^-1
+newdata.pred$std.2  &lt;- (newdata.pred$sum.vote.2/newdata.pred$vote.2)^-1
+newdata.pred$std.3  &lt;- (newdata.pred$sum.vote.3/newdata.pred$vote.3)^-1
+
+
+#### Step 5: Expected standard game vote
+newdata.pred$exp_std_game_vote &lt;- newdata.pred$std.1 + 2*newdata.pred$std.2 + 3*newdata.pred$std.3  
+
+
+#### Step 6: List of winners
+
+newdata.pred$PlayerName&lt;-paste(newdata.pred$Player,&quot; &quot;,newdata.pred$Team)
+winners.stdgame   &lt;- aggregate(exp_std_game_vote~PlayerName, data = newdata.pred, FUN = sum );
+winners.stdgame   &lt;- winners.stdgame[order(-winners.stdgame$exp_std_game_vote), ]
+winners.stdgame[1:10, ]
+
+# proc.time() - ptm</code></pre>
