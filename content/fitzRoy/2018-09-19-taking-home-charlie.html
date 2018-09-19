@@ -1,0 +1,1867 @@
+---
+title: "Taking Home Charlie"
+author: "Robert Nguyen"
+date: 2018-09-17
+slug: taking-home-charlie
+categories:
+  - Brownlow
+tags : ["fitzRoy", "graphics","R","open science", "Brownlow"]
+description: 'A fully reproducible Brownlow Model'
+output: html_document
+---
+
+
+
+<div id="build-your-own-brownlow-model" class="section level2">
+<h2>Build your own Brownlow Model</h2>
+<p>G’day all, your friendly neighbourhood PhD student here. I am here to help you all build your own models.</p>
+<p>That is very different from what you might be used to which could consist of any one of the following scenarios.</p>
+<ul>
+<li>Here is a model I have build that you are not smart enough too, follow my tips blindly</li>
+<li>Here is a model that I have build with data you don’t have access to, therefore it is better than what you can do follow my tips</li>
+<li>Here is a model that I don’t explain well apart from performance, follow my tips</li>
+</ul>
+<p>Hopefully you see my point and see the unfortunate pattern.</p>
+<p>This is <strong>NOT</strong> going to be one of those things, this is a guide to help you build a competitive Brownlow prediction model. It is fully reproducible and you can use the variables created if you want, you can create your own variables but by the end of this process the model is yours.</p>
+<p>So let me try to ease some possible thoughts.</p>
+<ol style="list-style-type: decimal">
+<li>Where can I get the data from?</li>
+</ol>
+<p><a href="https://twitter.com/jamesday87">James Day</a> and <a href="https://twitter.com/anoafl">myself</a> have worked together to produce an R package called <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> which means that you and anyone else can have easy access to all the good stuff you see on <a href="https://afltables.com/afl/afl_index.html">afltables</a> and <a href="https://www.footywire.com/">footywire</a>.</p>
+<ol start="2" style="list-style-type: decimal">
+<li>But what is the point other people do models why build my own when I can just use someone else’s?</li>
+</ol>
+<p>That is a good point, there are Brownlow Models floating around, and you could even go to a tipping service and pay for tips. But I assume you are interested in predicting the Brownlow Medallist because you are a football nuffie and as such have ideas about what <em>you</em> think have an effect on how umpires vote.</p>
+<ol start="3" style="list-style-type: decimal">
+<li>So if I have the data and I can build my own model, but I don’t want to because it won’t be any good.</li>
+</ol>
+<p>All models are wrong but some are useful – This model is by no means perfect, that isn’t the point. But it will provide you a predicted order that has less ranking error vs Champion Data’s official prediction using data that you don’t have access to without <span class="math inline">\($\)</span>$</p>
+<ol start="4" style="list-style-type: decimal">
+<li>So what?</li>
+</ol>
+<p>In a nutshell, below is a fully reproducible method you can edit and tinker with that without any tinkering with produced a better top 10 Brownlow Medal prediction vs the official data provider without any of the bells and whistles!</p>
+</div>
+<div id="what-packages-do-i-need" class="section level2">
+<h2>What Packages do I need?</h2>
+<pre class="r"><code>library(MASS)
+library(ordinal)
+library(fitzRoy)
+library(tidyverse)</code></pre>
+<p>So now you have the packages you need, first steps lets get the data ready</p>
+</div>
+<div id="getting-the-data" class="section level2">
+<h2>Getting the data</h2>
+<p>First we can use the <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> package to get all the data from <a href="https://afltables.com/afl/seas/2018.html">afltables</a></p>
+<p>This will consist of basically 3 steps</p>
+<ol style="list-style-type: decimal">
+<li><p>Get the data from afltables, we can do this using the <code>fitzRoy::get_afltables_stats</code></p></li>
+<li><p>Create the game by game summaries so we have the total kicks per game, total handballs per game by team for all the statistics available on <a href="https://afltables.com/afl/stats/games/2018/031420180322.html">afltables</a></p></li>
+<li><p>Join on scores - because people feel as though margin has an effect on the order of 3,2,1 (Hard to get the 3 votes in a flogging)</p></li>
+</ol>
+<p>We do this using the <code>fitzRoy::match_results</code> and then we join the datasets together creating a final data frame that has all player statistics at an individual level, joined with their team totals and game score.</p>
+<pre class="r"><code>df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())</code></pre>
+<pre><code>## Returning data from 1897-01-01 to 2018-09-20</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre class="r"><code>df&lt;-df%&gt;%filter(Season&gt;2010)
+
+names(df)</code></pre>
+<pre><code>##  [1] &quot;Season&quot;                  &quot;Round&quot;                  
+##  [3] &quot;Date&quot;                    &quot;Local.start.time&quot;       
+##  [5] &quot;Venue&quot;                   &quot;Attendance&quot;             
+##  [7] &quot;Home.team&quot;               &quot;HQ1G&quot;                   
+##  [9] &quot;HQ1B&quot;                    &quot;HQ2G&quot;                   
+## [11] &quot;HQ2B&quot;                    &quot;HQ3G&quot;                   
+## [13] &quot;HQ3B&quot;                    &quot;HQ4G&quot;                   
+## [15] &quot;HQ4B&quot;                    &quot;Home.score&quot;             
+## [17] &quot;Away.team&quot;               &quot;AQ1G&quot;                   
+## [19] &quot;AQ1B&quot;                    &quot;AQ2G&quot;                   
+## [21] &quot;AQ2B&quot;                    &quot;AQ3G&quot;                   
+## [23] &quot;AQ3B&quot;                    &quot;AQ4G&quot;                   
+## [25] &quot;AQ4B&quot;                    &quot;Away.score&quot;             
+## [27] &quot;First.name&quot;              &quot;Surname&quot;                
+## [29] &quot;ID&quot;                      &quot;Jumper.No.&quot;             
+## [31] &quot;Playing.for&quot;             &quot;Kicks&quot;                  
+## [33] &quot;Marks&quot;                   &quot;Handballs&quot;              
+## [35] &quot;Goals&quot;                   &quot;Behinds&quot;                
+## [37] &quot;Hit.Outs&quot;                &quot;Tackles&quot;                
+## [39] &quot;Rebounds&quot;                &quot;Inside.50s&quot;             
+## [41] &quot;Clearances&quot;              &quot;Clangers&quot;               
+## [43] &quot;Frees.For&quot;               &quot;Frees.Against&quot;          
+## [45] &quot;Brownlow.Votes&quot;          &quot;Contested.Possessions&quot;  
+## [47] &quot;Uncontested.Possessions&quot; &quot;Contested.Marks&quot;        
+## [49] &quot;Marks.Inside.50&quot;         &quot;One.Percenters&quot;         
+## [51] &quot;Bounces&quot;                 &quot;Goal.Assists&quot;           
+## [53] &quot;Time.on.Ground..&quot;        &quot;Substitute&quot;             
+## [55] &quot;Umpire.1&quot;                &quot;Umpire.2&quot;               
+## [57] &quot;Umpire.3&quot;                &quot;Umpire.4&quot;               
+## [59] &quot;group_id&quot;</code></pre>
+<pre class="r"><code>team_stats&lt;-df%&gt;%
+  dplyr::select(Date, First.name,Surname,Season, Round, Playing.for, Kicks:Goal.Assists)%&gt;%
+  group_by(Date, Season, Round, Playing.for)%&gt;%
+  summarise_if(is.numeric,funs(sum=c(sum(.))))</code></pre>
+<pre><code>## Adding missing grouping variables: `Home.team`, `Away.team`</code></pre>
+<pre class="r"><code>player_stats&lt;-df%&gt;%
+  dplyr::select(Date, First.name,Surname,Season, Round, Playing.for, Kicks:Goal.Assists)</code></pre>
+<pre><code>## Adding missing grouping variables: `Home.team`, `Away.team`</code></pre>
+<pre class="r"><code>complete_df&lt;-left_join(player_stats,team_stats, by=c(&quot;Date&quot;=&quot;Date&quot;, &quot;Season&quot;=&quot;Season&quot;,  &quot;Playing.for&quot;=&quot;Playing.for&quot;))
+
+dataset_scores&lt;-fitzRoy::match_results
+names(dataset_scores)</code></pre>
+<pre><code>##  [1] &quot;Game&quot;         &quot;Date&quot;         &quot;Round&quot;        &quot;Home.Team&quot;   
+##  [5] &quot;Home.Goals&quot;   &quot;Home.Behinds&quot; &quot;Home.Points&quot;  &quot;Away.Team&quot;   
+##  [9] &quot;Away.Goals&quot;   &quot;Away.Behinds&quot; &quot;Away.Points&quot;  &quot;Venue&quot;       
+## [13] &quot;Margin&quot;       &quot;Season&quot;       &quot;Round.Type&quot;   &quot;Round.Number&quot;</code></pre>
+<pre class="r"><code>dataset_scores1&lt;-dataset_scores%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2&lt;-dplyr::select(dataset_scores, Date, Round, Away.Team, Away.Points,Game)
+#Sometimes when joining datasets together it helps to rename things for consistency
+
+colnames(dataset_scores1)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores1)[4]&lt;-&quot;Points&quot;
+colnames(dataset_scores2)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores2)[4]&lt;-&quot;Points&quot;
+
+df5&lt;-rbind(dataset_scores1,dataset_scores2)
+dataset_margins&lt;-df5%&gt;%group_by(Game)%&gt;%
+  arrange(Game)%&gt;%
+  mutate(margin=c(-diff(Points),diff(Points)))
+# View(dataset_margins) # I have commented this out, but always good to view 
+dataset_margins$Date&lt;-as.Date(dataset_margins$Date)
+complete_df$Date&lt;-as.Date(complete_df$Date)
+
+complete_df&lt;-left_join(complete_df,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Playing.for&quot;=&quot;Team&quot;))</code></pre>
+</div>
+<div id="create-the-ratios" class="section level2">
+<h2>Create the Ratios</h2>
+<p>Create ratios is important for the model, remember we are interested in their relative performance to their peers. Is it impressive kicking 3 goals if 25 have been kicked? Or is it more impressive getting 3 if only 5 goals have been kicked?</p>
+<p>Intuition like this for kicks, handballs, clearances etc would lead us to believe that ratios are better predictors of polling votes over raw statistics.</p>
+<pre class="r"><code>complete_df_ratio&lt;-complete_df%&gt;%
+  mutate(kick.ratio=Kicks/Kicks_sum,
+         Marks.ratio=Marks/Marks_sum,
+         handball.ratio=Handballs/Handballs_sum,
+         Goals.ratio=Goals/Goals_sum,
+         behinds.ratio=Behinds/Behinds_sum,
+         hitouts.ratio=Hit.Outs/Hit.Outs_sum,
+         tackles.ratio=Tackles/Tackles_sum,
+         rebounds.ratio=Rebounds/Rebounds_sum,
+         inside50s.ratio=Inside.50s/Inside.50s_sum,
+         clearances.ratio=Clearances/Clearances_sum,
+         clangers.ratio=Clangers/Clangers_sum,
+         freefors.ratio=Frees.For/Frees.For_sum,
+         freesagainst.ratio=Frees.Against/Frees.Against_sum,
+         Contested.Possessions.ratio=Contested.Possessions/Contested.Possessions_sum,
+         Uncontested.Possessions.ratio=Uncontested.Possessions/Uncontested.Possessions_sum,
+         contested.marks.ratio=Contested.Marks/Contested.Marks_sum,
+         marksinside50.ratio=Marks.Inside.50/Marks.Inside.50_sum,
+         one.percenters.ratio=One.Percenters/One.Percenters_sum,
+         bounces.ratio=Bounces/Bounces_sum,
+         goal.assists.ratio=Goal.Assists/Goal.Assists_sum,
+         disposals.ratio=(Kicks+Handballs)/(Kicks_sum+Handballs_sum))
+df&lt;-complete_df_ratio%&gt;%dplyr::select(Date, First.name, Surname, Season, Round.x, Playing.for,-Brownlow.Votes, Brownlow.Votes_sum,everything())
+df&lt;-df%&gt;%dplyr::select(-Brownlow.Votes,everything())
+df[is.na(df)] &lt;- 0 # we have to replace NA with 0</code></pre>
+<p>Now we have all that we need for the dataset now lets do some modelling!</p>
+</div>
+<div id="fit-a-proportional-odds-model" class="section level2">
+<h2>Fit a proportional odds model</h2>
+<p>Basically all we are doing is using the dataset we have and fitting a proportional odds model. What this means is that we will end up with a probability that each player will poll 3 votes, 2 votes, 1 vote and 0 votes for each and every single game.</p>
+<p>This will involve a few steps</p>
+<ol style="list-style-type: decimal">
+<li>use <code>subset</code> to get our training data</li>
+<li>use <code>filter</code> to make sure we only have home and away games –this is a data knowledge step, we know that you can not get votes in finals, but the column instead of being left empty is filled with 0s so an easy way to make sure we only have home and away games is using Round as a filter.</li>
+</ol>
+<pre class="r"><code>in.sample  &lt;- subset(df, Season %in% c(2013:2016)) # our training data
+
+in.sample$Brownlow.Votes &lt;- factor(in.sample$Brownlow.Votes)
+
+in.sample&lt;-in.sample%&gt;%filter(Round.x %in% c(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,&quot;5&quot;,&quot;6&quot;,&quot;7&quot;,&quot;8&quot;,
+                                             &quot;9&quot;,&quot;10&quot;,&quot;11&quot;,&quot;12&quot;,&quot;13&quot;,&quot;14&quot;,&quot;15&quot;,&quot;16&quot;,&quot;17&quot;,&quot;18&quot;,&quot;19&quot;,&quot;20&quot;,&quot;21&quot;,&quot;22&quot;,&quot;23&quot;,&quot;24&quot;))
+
+
+names(in.sample) </code></pre>
+<pre><code>##  [1] &quot;Date&quot;                          &quot;First.name&quot;                   
+##  [3] &quot;Surname&quot;                       &quot;Season&quot;                       
+##  [5] &quot;Round.x&quot;                       &quot;Playing.for&quot;                  
+##  [7] &quot;Brownlow.Votes_sum&quot;            &quot;Home.team&quot;                    
+##  [9] &quot;Away.team&quot;                     &quot;Kicks&quot;                        
+## [11] &quot;Marks&quot;                         &quot;Handballs&quot;                    
+## [13] &quot;Goals&quot;                         &quot;Behinds&quot;                      
+## [15] &quot;Hit.Outs&quot;                      &quot;Tackles&quot;                      
+## [17] &quot;Rebounds&quot;                      &quot;Inside.50s&quot;                   
+## [19] &quot;Clearances&quot;                    &quot;Clangers&quot;                     
+## [21] &quot;Frees.For&quot;                     &quot;Frees.Against&quot;                
+## [23] &quot;Contested.Possessions&quot;         &quot;Uncontested.Possessions&quot;      
+## [25] &quot;Contested.Marks&quot;               &quot;Marks.Inside.50&quot;              
+## [27] &quot;One.Percenters&quot;                &quot;Bounces&quot;                      
+## [29] &quot;Goal.Assists&quot;                  &quot;Round.y&quot;                      
+## [31] &quot;Kicks_sum&quot;                     &quot;Marks_sum&quot;                    
+## [33] &quot;Handballs_sum&quot;                 &quot;Goals_sum&quot;                    
+## [35] &quot;Behinds_sum&quot;                   &quot;Hit.Outs_sum&quot;                 
+## [37] &quot;Tackles_sum&quot;                   &quot;Rebounds_sum&quot;                 
+## [39] &quot;Inside.50s_sum&quot;                &quot;Clearances_sum&quot;               
+## [41] &quot;Clangers_sum&quot;                  &quot;Frees.For_sum&quot;                
+## [43] &quot;Frees.Against_sum&quot;             &quot;Contested.Possessions_sum&quot;    
+## [45] &quot;Uncontested.Possessions_sum&quot;   &quot;Contested.Marks_sum&quot;          
+## [47] &quot;Marks.Inside.50_sum&quot;           &quot;One.Percenters_sum&quot;           
+## [49] &quot;Bounces_sum&quot;                   &quot;Goal.Assists_sum&quot;             
+## [51] &quot;Round&quot;                         &quot;Points&quot;                       
+## [53] &quot;Game&quot;                          &quot;margin&quot;                       
+## [55] &quot;kick.ratio&quot;                    &quot;Marks.ratio&quot;                  
+## [57] &quot;handball.ratio&quot;                &quot;Goals.ratio&quot;                  
+## [59] &quot;behinds.ratio&quot;                 &quot;hitouts.ratio&quot;                
+## [61] &quot;tackles.ratio&quot;                 &quot;rebounds.ratio&quot;               
+## [63] &quot;inside50s.ratio&quot;               &quot;clearances.ratio&quot;             
+## [65] &quot;clangers.ratio&quot;                &quot;freefors.ratio&quot;               
+## [67] &quot;freesagainst.ratio&quot;            &quot;Contested.Possessions.ratio&quot;  
+## [69] &quot;Uncontested.Possessions.ratio&quot; &quot;contested.marks.ratio&quot;        
+## [71] &quot;marksinside50.ratio&quot;           &quot;one.percenters.ratio&quot;         
+## [73] &quot;bounces.ratio&quot;                 &quot;goal.assists.ratio&quot;           
+## [75] &quot;disposals.ratio&quot;               &quot;Brownlow.Votes&quot;</code></pre>
+<pre class="r"><code>in.sample$Player&lt;-paste(in.sample$First.name,in.sample$Surname)
+
+in.sample&lt;-in.sample%&gt;%dplyr::select(Player, Date, Season, Round.x, Playing.for, margin:Brownlow.Votes)</code></pre>
+<pre><code>## Adding missing grouping variables: `Home.team`, `Away.team`</code></pre>
+<pre class="r"><code>in.sample&lt;-in.sample[-c(1,2)] #removed for &#39;cleaner look&#39;
+
+
+
+fm1&lt;-clm(Brownlow.Votes~ handball.ratio +  Marks.ratio +  
+           disposals.ratio+  hitouts.ratio+
+           freefors.ratio +  freesagainst.ratio +  tackles.ratio +  Goals.ratio +   behinds.ratio + Contested.Possessions.ratio+
+           Uncontested.Possessions.ratio +  clangers.ratio +    contested.marks.ratio + marksinside50.ratio +
+           clearances.ratio +   rebounds.ratio +    inside50s.ratio +   one.percenters.ratio +  bounces.ratio+
+           goal.assists.ratio  +margin, 
+         data = in.sample)</code></pre>
+<pre><code>## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met</code></pre>
+</div>
+<div id="variable-selection" class="section level2">
+<h2>Variable selection</h2>
+<p>Nothing fancy here, remember the point is that you can pick and choose what variables you want as your predictors, here I am just going to use stepwise selection and go backwards.</p>
+<p>But by all means, I am not saying this is the best way, I’m just getting to a result as quickly as I can with little thinking about the variables.</p>
+<p>Ideally you might think about the variables and test them out for fit but moving on.</p>
+<pre class="r"><code>fm2&lt;- stepAIC(fm1, direction=&#39;backward&#39;,type=AIC)</code></pre>
+<pre><code>## Start:  AIC=13631.84
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + behinds.ratio + Contested.Possessions.ratio + 
+##     Uncontested.Possessions.ratio + clangers.ratio + contested.marks.ratio + 
+##     marksinside50.ratio + clearances.ratio + rebounds.ratio + 
+##     inside50s.ratio + one.percenters.ratio + bounces.ratio + 
+##     goal.assists.ratio + margin</code></pre>
+<pre><code>## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met
+
+## Warning: (3) Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables? 
+## In addition: Absolute and relative convergence criteria were met</code></pre>
+<pre><code>##                                 Df   AIC
+## - Uncontested.Possessions.ratio  1 13630
+## - rebounds.ratio                 1 13630
+## - behinds.ratio                  1 13631
+## - goal.assists.ratio             1 13631
+## - inside50s.ratio                1 13631
+## &lt;none&gt;                             13632
+## - freesagainst.ratio             1 13638
+## - Contested.Possessions.ratio    1 13639
+## - clearances.ratio               1 13639
+## - freefors.ratio                 1 13641
+## - bounces.ratio                  1 13647
+## - clangers.ratio                 1 13650
+## - marksinside50.ratio            1 13650
+## - Marks.ratio                    1 13650
+## - handball.ratio                 1 13653
+## - contested.marks.ratio          1 13656
+## - one.percenters.ratio           1 13669
+## - tackles.ratio                  1 13690
+## - hitouts.ratio                  1 13790
+## - disposals.ratio                1 13863
+## - Goals.ratio                    1 14583
+## - margin                         1 15649
+## 
+## Step:  AIC=13630.1
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + behinds.ratio + Contested.Possessions.ratio + 
+##     clangers.ratio + contested.marks.ratio + marksinside50.ratio + 
+##     clearances.ratio + rebounds.ratio + inside50s.ratio + one.percenters.ratio + 
+##     bounces.ratio + goal.assists.ratio + margin
+## 
+##                               Df   AIC
+## - rebounds.ratio               1 13628
+## - behinds.ratio                1 13629
+## - goal.assists.ratio           1 13629
+## - inside50s.ratio              1 13629
+## &lt;none&gt;                           13630
+## - freesagainst.ratio           1 13636
+## - clearances.ratio             1 13638
+## - freefors.ratio               1 13639
+## - bounces.ratio                1 13645
+## - clangers.ratio               1 13648
+## - Marks.ratio                  1 13648
+## - marksinside50.ratio          1 13648
+## - handball.ratio               1 13652
+## - contested.marks.ratio        1 13655
+## - Contested.Possessions.ratio  1 13661
+## - one.percenters.ratio         1 13667
+## - tackles.ratio                1 13688
+## - hitouts.ratio                1 13789
+## - Goals.ratio                  1 14581
+## - disposals.ratio              1 14601
+## - margin                       1 15647
+## 
+## Step:  AIC=13628.54
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + behinds.ratio + Contested.Possessions.ratio + 
+##     clangers.ratio + contested.marks.ratio + marksinside50.ratio + 
+##     clearances.ratio + inside50s.ratio + one.percenters.ratio + 
+##     bounces.ratio + goal.assists.ratio + margin
+## 
+##                               Df   AIC
+## - behinds.ratio                1 13627
+## - goal.assists.ratio           1 13627
+## - inside50s.ratio              1 13628
+## &lt;none&gt;                           13628
+## - freesagainst.ratio           1 13635
+## - clearances.ratio             1 13636
+## - freefors.ratio               1 13638
+## - bounces.ratio                1 13644
+## - marksinside50.ratio          1 13646
+## - clangers.ratio               1 13646
+## - Marks.ratio                  1 13647
+## - contested.marks.ratio        1 13654
+## - handball.ratio               1 13655
+## - Contested.Possessions.ratio  1 13660
+## - one.percenters.ratio         1 13668
+## - tackles.ratio                1 13686
+## - hitouts.ratio                1 13787
+## - Goals.ratio                  1 14591
+## - disposals.ratio              1 14799
+## - margin                       1 15645
+## 
+## Step:  AIC=13627.36
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + Contested.Possessions.ratio + clangers.ratio + 
+##     contested.marks.ratio + marksinside50.ratio + clearances.ratio + 
+##     inside50s.ratio + one.percenters.ratio + bounces.ratio + 
+##     goal.assists.ratio + margin
+## 
+##                               Df   AIC
+## - goal.assists.ratio           1 13626
+## - inside50s.ratio              1 13627
+## &lt;none&gt;                           13627
+## - freesagainst.ratio           1 13634
+## - clearances.ratio             1 13634
+## - freefors.ratio               1 13637
+## - bounces.ratio                1 13643
+## - Marks.ratio                  1 13646
+## - clangers.ratio               1 13646
+## - marksinside50.ratio          1 13651
+## - contested.marks.ratio        1 13652
+## - handball.ratio               1 13656
+## - Contested.Possessions.ratio  1 13660
+## - one.percenters.ratio         1 13666
+## - tackles.ratio                1 13685
+## - hitouts.ratio                1 13786
+## - Goals.ratio                  1 14591
+## - disposals.ratio              1 14806
+## - margin                       1 15646
+## 
+## Step:  AIC=13626.24
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + Contested.Possessions.ratio + clangers.ratio + 
+##     contested.marks.ratio + marksinside50.ratio + clearances.ratio + 
+##     inside50s.ratio + one.percenters.ratio + bounces.ratio + 
+##     margin
+## 
+##                               Df   AIC
+## - inside50s.ratio              1 13626
+## &lt;none&gt;                           13626
+## - clearances.ratio             1 13633
+## - freesagainst.ratio           1 13633
+## - freefors.ratio               1 13636
+## - bounces.ratio                1 13642
+## - Marks.ratio                  1 13644
+## - clangers.ratio               1 13645
+## - marksinside50.ratio          1 13651
+## - contested.marks.ratio        1 13651
+## - handball.ratio               1 13654
+## - Contested.Possessions.ratio  1 13659
+## - one.percenters.ratio         1 13664
+## - tackles.ratio                1 13684
+## - hitouts.ratio                1 13784
+## - Goals.ratio                  1 14590
+## - disposals.ratio              1 14804
+## - margin                       1 15645
+## 
+## Step:  AIC=13625.93
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + Contested.Possessions.ratio + clangers.ratio + 
+##     contested.marks.ratio + marksinside50.ratio + clearances.ratio + 
+##     one.percenters.ratio + bounces.ratio + margin
+## 
+##                               Df   AIC
+## &lt;none&gt;                           13626
+## - freesagainst.ratio           1 13633
+## - clearances.ratio             1 13634
+## - freefors.ratio               1 13635
+## - bounces.ratio                1 13642
+## - Marks.ratio                  1 13643
+## - clangers.ratio               1 13644
+## - marksinside50.ratio          1 13650
+## - contested.marks.ratio        1 13650
+## - Contested.Possessions.ratio  1 13658
+## - handball.ratio               1 13662
+## - one.percenters.ratio         1 13663
+## - tackles.ratio                1 13683
+## - hitouts.ratio                1 13784
+## - Goals.ratio                  1 14600
+## - disposals.ratio              1 15042
+## - margin                       1 15645</code></pre>
+</div>
+<div id="lets-do-the-prediction" class="section level2">
+<h2>Lets do the prediction</h2>
+<p>Instead of just taking the data from <a href="https://afltables.com/afl/seas/2018.html">afltables</a> in 2017, lets do something just a little bit different. Lets use <a href="https://www.footywire.com/">footywire</a> as our out.sample</p>
+<p>This might seem like a bit of a weird step, but it is really valuable. Footywire has more data than afltables for games, it contains stats like tackles inside 50 as an example. Also as an example within fitzRoy we essentially have 2 data sources for you to use. Either afltables or footywire. There are benefits to both for example afltables data goes further back, but doesn’t have extra columns that footywire has that you might want to use for example supercoach scores.</p>
+<pre class="r"><code>names(fitzRoy::player_stats)</code></pre>
+<pre><code>##  [1] &quot;Date&quot;           &quot;Season&quot;         &quot;Round&quot;          &quot;Venue&quot;         
+##  [5] &quot;Player&quot;         &quot;Team&quot;           &quot;Opposition&quot;     &quot;Status&quot;        
+##  [9] &quot;Match_id&quot;       &quot;CP&quot;             &quot;UP&quot;             &quot;ED&quot;            
+## [13] &quot;DE&quot;             &quot;CM&quot;             &quot;GA&quot;             &quot;MI5&quot;           
+## [17] &quot;One.Percenters&quot; &quot;BO&quot;             &quot;TOG&quot;            &quot;K&quot;             
+## [21] &quot;HB&quot;             &quot;D&quot;              &quot;M&quot;              &quot;G&quot;             
+## [25] &quot;B&quot;              &quot;T&quot;              &quot;HO&quot;             &quot;GA1&quot;           
+## [29] &quot;I50&quot;            &quot;CL&quot;             &quot;CG&quot;             &quot;R50&quot;           
+## [33] &quot;FF&quot;             &quot;FA&quot;             &quot;AF&quot;             &quot;SC&quot;            
+## [37] &quot;CCL&quot;            &quot;SCL&quot;            &quot;SI&quot;             &quot;MG&quot;            
+## [41] &quot;TO&quot;             &quot;ITC&quot;            &quot;T5&quot;</code></pre>
+<pre class="r"><code>df_2017&lt;-fitzRoy::player_stats%&gt;%
+  filter(Season==2017)
+
+team_stats_out&lt;-df_2017%&gt;%
+  dplyr::select(Date, Player,Season, Round, Team, CP:T5)%&gt;%
+  group_by(Date,Season, Round, Team)%&gt;%
+  summarise_if(is.numeric,funs(sum=c(sum(.))))
+
+player_stats_out&lt;-df_2017%&gt;%
+  dplyr::select(Date, Player,Season, Round, Team, CP:T5)
+
+
+complete_df_out&lt;-left_join(player_stats_out,team_stats_out, by=c(&quot;Date&quot;=&quot;Date&quot;, &quot;Season&quot;=&quot;Season&quot;,  &quot;Team&quot;=&quot;Team&quot;))
+
+
+
+dataset_scores&lt;-fitzRoy::match_results
+names(dataset_scores)</code></pre>
+<pre><code>##  [1] &quot;Game&quot;         &quot;Date&quot;         &quot;Round&quot;        &quot;Home.Team&quot;   
+##  [5] &quot;Home.Goals&quot;   &quot;Home.Behinds&quot; &quot;Home.Points&quot;  &quot;Away.Team&quot;   
+##  [9] &quot;Away.Goals&quot;   &quot;Away.Behinds&quot; &quot;Away.Points&quot;  &quot;Venue&quot;       
+## [13] &quot;Margin&quot;       &quot;Season&quot;       &quot;Round.Type&quot;   &quot;Round.Number&quot;</code></pre>
+<pre class="r"><code>dataset_scores1&lt;-dataset_scores%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2&lt;-dplyr::select(dataset_scores, Date, Round, Away.Team, Away.Points,Game)
+
+colnames(dataset_scores1)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores1)[4]&lt;-&quot;Points&quot;
+colnames(dataset_scores2)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores2)[4]&lt;-&quot;Points&quot;
+
+
+df5&lt;-rbind(dataset_scores1,dataset_scores2)
+dataset_margins&lt;-df5%&gt;%group_by(Game)%&gt;%
+  arrange(Game)%&gt;%
+  mutate(margin=c(-diff(Points),diff(Points)))
+dataset_margins$Date&lt;-as.Date(dataset_margins$Date)
+complete_df_out$Date&lt;-as.Date(complete_df_out$Date)
+
+dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Brisbane Lions&quot;, &quot;Brisbane&quot;))
+
+dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
+
+
+complete_df_out&lt;-left_join(complete_df_out,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Team&quot;=&quot;Team&quot;))
+
+names(complete_df_out)</code></pre>
+<pre><code>##  [1] &quot;Date&quot;               &quot;Player&quot;             &quot;Season&quot;            
+##  [4] &quot;Round.x&quot;            &quot;Team&quot;               &quot;CP&quot;                
+##  [7] &quot;UP&quot;                 &quot;ED&quot;                 &quot;DE&quot;                
+## [10] &quot;CM&quot;                 &quot;GA&quot;                 &quot;MI5&quot;               
+## [13] &quot;One.Percenters&quot;     &quot;BO&quot;                 &quot;TOG&quot;               
+## [16] &quot;K&quot;                  &quot;HB&quot;                 &quot;D&quot;                 
+## [19] &quot;M&quot;                  &quot;G&quot;                  &quot;B&quot;                 
+## [22] &quot;T&quot;                  &quot;HO&quot;                 &quot;GA1&quot;               
+## [25] &quot;I50&quot;                &quot;CL&quot;                 &quot;CG&quot;                
+## [28] &quot;R50&quot;                &quot;FF&quot;                 &quot;FA&quot;                
+## [31] &quot;AF&quot;                 &quot;SC&quot;                 &quot;CCL&quot;               
+## [34] &quot;SCL&quot;                &quot;SI&quot;                 &quot;MG&quot;                
+## [37] &quot;TO&quot;                 &quot;ITC&quot;                &quot;T5&quot;                
+## [40] &quot;Round.y&quot;            &quot;CP_sum&quot;             &quot;UP_sum&quot;            
+## [43] &quot;ED_sum&quot;             &quot;DE_sum&quot;             &quot;CM_sum&quot;            
+## [46] &quot;GA_sum&quot;             &quot;MI5_sum&quot;            &quot;One.Percenters_sum&quot;
+## [49] &quot;BO_sum&quot;             &quot;TOG_sum&quot;            &quot;K_sum&quot;             
+## [52] &quot;HB_sum&quot;             &quot;D_sum&quot;              &quot;M_sum&quot;             
+## [55] &quot;G_sum&quot;              &quot;B_sum&quot;              &quot;T_sum&quot;             
+## [58] &quot;HO_sum&quot;             &quot;GA1_sum&quot;            &quot;I50_sum&quot;           
+## [61] &quot;CL_sum&quot;             &quot;CG_sum&quot;             &quot;R50_sum&quot;           
+## [64] &quot;FF_sum&quot;             &quot;FA_sum&quot;             &quot;AF_sum&quot;            
+## [67] &quot;SC_sum&quot;             &quot;CCL_sum&quot;            &quot;SCL_sum&quot;           
+## [70] &quot;SI_sum&quot;             &quot;MG_sum&quot;             &quot;TO_sum&quot;            
+## [73] &quot;ITC_sum&quot;            &quot;T5_sum&quot;             &quot;Round&quot;             
+## [76] &quot;Points&quot;             &quot;Game&quot;               &quot;margin&quot;</code></pre>
+<pre class="r"><code>####create the new ratios
+complete_df_ratio_out&lt;-complete_df_out%&gt;%
+  mutate(kick.ratio=K/K_sum,
+         Marks.ratio=M/M_sum,
+         handball.ratio=HB/HB_sum,
+         Goals.ratio=G/G_sum,
+         behinds.ratio=B/B_sum,
+         hitouts.ratio=HO/HO_sum,
+         tackles.ratio=T/T_sum,
+         rebounds.ratio=R50/R50_sum,
+         inside50s.ratio=I50/I50_sum,
+         clearances.ratio=(CCL+SCL)/(CCL_sum+SCL_sum),
+         clangers.ratio=CL/CL_sum,
+         freefors.ratio=FF/FF_sum,
+         freesagainst.ratio=FA/FA_sum,
+         Contested.Possessions.ratio=CP/CP_sum,
+         Uncontested.Possessions.ratio=UP/UP_sum,
+         contested.marks.ratio=CM/CM_sum,
+         marksinside50.ratio=MI5/MI5_sum,
+         one.percenters.ratio=One.Percenters/One.Percenters_sum,
+         bounces.ratio=BO/BO_sum,
+         goal.assists.ratio=GA/GA_sum,
+         disposals.ratio=D/D_sum)
+
+
+
+
+conforming&lt;-complete_df_ratio_out%&gt;%
+  dplyr::select(Player, Date, Season, Round.x, Team, margin, 
+                kick.ratio:disposals.ratio)
+
+conforming$Brownlow.Votes&lt;-0
+out.sample=conforming
+
+newdata   &lt;- out.sample[ , -ncol(out.sample)]
+
+pre.dict    &lt;- predict(fm2,newdata=newdata, type=&#39;prob&#39;)
+pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) &lt;- c(&quot;vote.0&quot;, &quot;vote.1&quot;, &quot;vote.2&quot;, &quot;vote.3&quot;)
+
+newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)</code></pre>
+</div>
+<div id="expected-votes" class="section level2">
+<h2>Expected Votes</h2>
+<p>A proportional odds model makes the players total probabilities for each voting category sum to 1 for every player that the player plays in.</p>
+<p>That is for Dustin Martin in round 1 2017, <span class="math inline">\(1= \sum_{k=0}^3 p_{k}\)</span> which makes sense.</p>
+<p>But we know that there is another harder restriction. That is only one player can get 3 votes, only one player can get 2 votes and only one player can get the 1 vote.</p>
+<p>Now lets add in our much tougher restriction. This will mean the probability of polling 3 votes will sum to 1 across all players. We will call this the std (standardised) votes.</p>
+<pre class="r"><code>#### Step 1: Get expected value on Votes
+newdata.pred$expected.votes &lt;- newdata.pred$vote.1 + 2*newdata.pred$vote.2 + 3*newdata.pred$vote.3
+
+####Join back on matchID whoops! 
+
+get_match_ID&lt;-fitzRoy::player_stats
+
+xx&lt;-get_match_ID%&gt;%dplyr::select(Date, Player, Match_id)
+newdata.pred&lt;-left_join(newdata.pred, xx, by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Player&quot;=&quot;Player&quot;))
+
+
+
+newdata.pred&lt;-filter(newdata.pred, Date&lt;&quot;2017-09-01&quot;)
+
+
+sum1 &lt;- aggregate(vote.1~Match_id, data = newdata.pred, FUN = sum ); names(sum1) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.1&quot;);
+sum2 &lt;- aggregate(vote.2~Match_id, data = newdata.pred, FUN = sum ); names(sum2) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.2&quot;);
+sum3 &lt;- aggregate(vote.3~Match_id, data = newdata.pred, FUN = sum ); names(sum3) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.3&quot;);
+
+#### Step 3: Add sum of each vote by matchId to big table
+newdata.pred &lt;- merge(newdata.pred, sum1, by = &quot;Match_id&quot;)
+newdata.pred &lt;- merge(newdata.pred, sum2, by = &quot;Match_id&quot;)
+newdata.pred &lt;- merge(newdata.pred, sum3, by = &quot;Match_id&quot;)
+
+#### Step 4: Add std1/2/3
+newdata.pred$std.1  &lt;- (newdata.pred$sum.vote.1/newdata.pred$vote.1)^-1
+newdata.pred$std.2  &lt;- (newdata.pred$sum.vote.2/newdata.pred$vote.2)^-1
+newdata.pred$std.3  &lt;- (newdata.pred$sum.vote.3/newdata.pred$vote.3)^-1
+
+
+#### Step 5: Expected standard game vote
+newdata.pred$exp_std_game_vote &lt;- newdata.pred$std.1 + 2*newdata.pred$std.2 + 3*newdata.pred$std.3  
+
+
+#### Step 6: List of winners
+
+newdata.pred$PlayerName&lt;-paste(newdata.pred$Player,&quot; &quot;,newdata.pred$Team)
+winners.stdgame   &lt;- aggregate(exp_std_game_vote~PlayerName, data = newdata.pred, FUN = sum );
+winners.stdgame   &lt;- winners.stdgame[order(-winners.stdgame$exp_std_game_vote), ]
+winners.stdgame[1:10, ]</code></pre>
+<pre><code>##                        PlayerName exp_std_game_vote
+## 168      Dustin Martin   Richmond          34.26070
+## 487 Patrick Dangerfield   Geelong          31.19050
+## 618       Tom Mitchell   Hawthorn          27.40018
+## 157        Dayne Zorko   Brisbane          17.68230
+## 344            Joshua Kelly   GWS          16.82974
+## 510         Rory Laird   Adelaide          15.98579
+## 652    Zachary Merrett   Essendon          14.80721
+## 512        Rory Sloane   Adelaide          14.53580
+## 375       Lance Franklin   Sydney          14.02063
+## 464       Nathan Fyfe   Fremantle          13.81357</code></pre>
+</div>
+<div id="but-how-good-is-this-prediction" class="section level2">
+<h2>But how good is this prediction?</h2>
+<p>We want our predicted order to be as close to correct as possible, especially for the top 10.</p>
+<p>So lets use as a measure of accuracy ranking error which I will define as difference between actual place vs predicted place. For example, we have predicted Dustin Martin to finish first and he did so error is 0, if we predicted Dustin Martin to be runner up (like Champion Data did) then we would have a ranking error of 1.</p>
+<pre class="r"><code>library(tidyverse)
+data.frame(stringsAsFactors=FALSE,
+           Predictor = c(&quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;,
+                         &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;anoafl&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;,
+                         &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;CD&quot;),
+           Player = c(&quot;Dustin Martin&quot;, &quot;Patrick DangerField&quot;, &quot;Tom Mitchell&quot;,
+                      &quot;Dayne Zorko&quot;, &quot;Josh Kelly&quot;, &quot;Rory Laird&quot;, &quot;Zach Merrett&quot;, &quot;Rory Sloan&quot;,
+                      &quot;Lance Franklin&quot;, &quot;Nat Fyfe&quot;, &quot;Trent Cotchin&quot;, &quot;Clayton Oliver&quot;,
+                      &quot;Callan Ward&quot;, &quot;Marcus Bontempelli&quot;, &quot;Patrick DangerField&quot;, &quot;Dustin Martin&quot;,
+                      &quot;Clayton Oliver&quot;, &quot;Tom Mitchell&quot;, &quot;Rory Sloan&quot;, &quot;Callan Ward&quot;, &quot;Zach Merrett&quot;,
+                      &quot;Marcus Bontempelli&quot;, &quot;Josh Kelly&quot;, &quot;Trent Cotchin&quot;, &quot;Rory Laird&quot;, &quot;Lance Franklin&quot;,
+                      &quot;Nat Fyfe&quot;, &quot;Dayne Zorko&quot;),
+           Ranking.Error = c(0L, 0L, 0L, 12L, 1L, 38L, 5L, 1L, 4L, 2L, 11L, 28L, 8L,
+                             5L, 1L, 1L, 23L, 1L, 2L, 22L, 5L, 0L, 3L, 41L, 30L, 6L, 4L, 10L)
+)%&gt;%ggplot(aes(x=Ranking.Error, y=Player))+geom_point(aes(colour=Predictor), size=5)+ theme(axis.text.y=element_text(size=12)) +ylab(&quot;&quot;) </code></pre>
+<p><img src="/fitzRoy/2018-09-19-taking-home-charlie_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>So what we can see here is that by taking just the basic data and making them into game ratios and thinking a bit more about probability and with little thought into variable selection (backwards) we can come up with a prediction that does just as well (if not a little better) as champion data (although obviously biased).</p>
+<p>So hopefully now you get the idea, this isn’t meant to be the very best method, but hopefully it does encourage you to instead of using just backwards aic to select your variables you can do something else instead.</p>
+</div>
+<div id="what-changes-to-make" class="section level2">
+<h2>What changes to make?</h2>
+<p>Probably the most obvious one is the variable selection step.</p>
+<p>Now you could simply enter in the variables you thought might have an impact on polling brownlow votes and to be honest this is a good way to do things. As a football fan you would hope that your domain knowledge does improve things.</p>
+<p>So how to do that?</p>
+<p>Lets say you think that only contested possessions, inside 50s and clearances matter after all it is a midfielders award.</p>
+<pre class="r"><code>fm2&lt;-clm(Brownlow.Votes~    Contested.Possessions.ratio+
+           
+           clearances.ratio +   inside50s.ratio,
+         data = in.sample)</code></pre>
+<p>Then you can run everything through as normal and see how your model goes at predicting.</p>
+</div>
+<div id="why-use-aic-why-not-bic" class="section level2">
+<h2>Why use AIC, why not BIC?</h2>
+<p>That’s a good point and exactly the point I would like to make lots of these choices can be changed and depends on use. The whole point if this exercise was to show that relatively quickly and with only freely available data you can do well in comparison to say CD neural net.</p>
+<p>But if you favour interpretable models, you might want to use BIC, it penalises model complexity more so you will end up with models that have less variables.</p>
+<p>That step is also quick to change</p>
+<pre class="r"><code>fm2&lt;- stepAIC(fm1, direction=&#39;backward&#39;,type=BIC)</code></pre>
+</div>
+<div id="lets-do-2018" class="section level1">
+<h1>Lets do 2018</h1>
+<pre class="r"><code>library(MASS)
+library(ordinal)
+library(fitzRoy)
+library(tidyverse)
+
+df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())</code></pre>
+<pre><code>## Returning data from 1897-01-01 to 2018-09-20</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre class="r"><code>df&lt;-df%&gt;%filter(Season&gt;2010)
+
+names(df)</code></pre>
+<pre><code>##  [1] &quot;Season&quot;                  &quot;Round&quot;                  
+##  [3] &quot;Date&quot;                    &quot;Local.start.time&quot;       
+##  [5] &quot;Venue&quot;                   &quot;Attendance&quot;             
+##  [7] &quot;Home.team&quot;               &quot;HQ1G&quot;                   
+##  [9] &quot;HQ1B&quot;                    &quot;HQ2G&quot;                   
+## [11] &quot;HQ2B&quot;                    &quot;HQ3G&quot;                   
+## [13] &quot;HQ3B&quot;                    &quot;HQ4G&quot;                   
+## [15] &quot;HQ4B&quot;                    &quot;Home.score&quot;             
+## [17] &quot;Away.team&quot;               &quot;AQ1G&quot;                   
+## [19] &quot;AQ1B&quot;                    &quot;AQ2G&quot;                   
+## [21] &quot;AQ2B&quot;                    &quot;AQ3G&quot;                   
+## [23] &quot;AQ3B&quot;                    &quot;AQ4G&quot;                   
+## [25] &quot;AQ4B&quot;                    &quot;Away.score&quot;             
+## [27] &quot;First.name&quot;              &quot;Surname&quot;                
+## [29] &quot;ID&quot;                      &quot;Jumper.No.&quot;             
+## [31] &quot;Playing.for&quot;             &quot;Kicks&quot;                  
+## [33] &quot;Marks&quot;                   &quot;Handballs&quot;              
+## [35] &quot;Goals&quot;                   &quot;Behinds&quot;                
+## [37] &quot;Hit.Outs&quot;                &quot;Tackles&quot;                
+## [39] &quot;Rebounds&quot;                &quot;Inside.50s&quot;             
+## [41] &quot;Clearances&quot;              &quot;Clangers&quot;               
+## [43] &quot;Frees.For&quot;               &quot;Frees.Against&quot;          
+## [45] &quot;Brownlow.Votes&quot;          &quot;Contested.Possessions&quot;  
+## [47] &quot;Uncontested.Possessions&quot; &quot;Contested.Marks&quot;        
+## [49] &quot;Marks.Inside.50&quot;         &quot;One.Percenters&quot;         
+## [51] &quot;Bounces&quot;                 &quot;Goal.Assists&quot;           
+## [53] &quot;Time.on.Ground..&quot;        &quot;Substitute&quot;             
+## [55] &quot;Umpire.1&quot;                &quot;Umpire.2&quot;               
+## [57] &quot;Umpire.3&quot;                &quot;Umpire.4&quot;               
+## [59] &quot;group_id&quot;</code></pre>
+<pre class="r"><code>team_stats&lt;-df%&gt;%
+  dplyr::select(Date, First.name,Surname,Season, Round, Playing.for, Kicks:Goal.Assists)%&gt;%
+  group_by(Date, Season, Round, Playing.for)%&gt;%
+  summarise_if(is.numeric,funs(sum=c(sum(.))))</code></pre>
+<pre><code>## Adding missing grouping variables: `Home.team`, `Away.team`</code></pre>
+<pre class="r"><code>player_stats&lt;-df%&gt;%
+  dplyr::select(Date, First.name,Surname,Season, Round, Playing.for, Kicks:Goal.Assists)</code></pre>
+<pre><code>## Adding missing grouping variables: `Home.team`, `Away.team`</code></pre>
+<pre class="r"><code>complete_df&lt;-left_join(player_stats,team_stats, by=c(&quot;Date&quot;=&quot;Date&quot;, &quot;Season&quot;=&quot;Season&quot;,  &quot;Playing.for&quot;=&quot;Playing.for&quot;))
+
+dataset_scores&lt;-fitzRoy::match_results
+names(dataset_scores)</code></pre>
+<pre><code>##  [1] &quot;Game&quot;         &quot;Date&quot;         &quot;Round&quot;        &quot;Home.Team&quot;   
+##  [5] &quot;Home.Goals&quot;   &quot;Home.Behinds&quot; &quot;Home.Points&quot;  &quot;Away.Team&quot;   
+##  [9] &quot;Away.Goals&quot;   &quot;Away.Behinds&quot; &quot;Away.Points&quot;  &quot;Venue&quot;       
+## [13] &quot;Margin&quot;       &quot;Season&quot;       &quot;Round.Type&quot;   &quot;Round.Number&quot;</code></pre>
+<pre class="r"><code>dataset_scores1&lt;-dataset_scores%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2&lt;-dplyr::select(dataset_scores, Date, Round, Away.Team, Away.Points,Game)
+
+colnames(dataset_scores1)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores1)[4]&lt;-&quot;Points&quot;
+colnames(dataset_scores2)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores2)[4]&lt;-&quot;Points&quot;
+
+df5&lt;-rbind(dataset_scores1,dataset_scores2)
+dataset_margins&lt;-df5%&gt;%group_by(Game)%&gt;%
+  arrange(Game)%&gt;%
+  mutate(margin=c(-diff(Points),diff(Points)))
+# View(dataset_margins)
+dataset_margins$Date&lt;-as.Date(dataset_margins$Date)
+complete_df$Date&lt;-as.Date(complete_df$Date)
+
+complete_df&lt;-left_join(complete_df,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Playing.for&quot;=&quot;Team&quot;))
+
+
+complete_df_ratio&lt;-complete_df%&gt;%
+  mutate(kick.ratio=Kicks/Kicks_sum,
+         Marks.ratio=Marks/Marks_sum,
+         handball.ratio=Handballs/Handballs_sum,
+         Goals.ratio=Goals/Goals_sum,
+         behinds.ratio=Behinds/Behinds_sum,
+         hitouts.ratio=Hit.Outs/Hit.Outs_sum,
+         tackles.ratio=Tackles/Tackles_sum,
+         rebounds.ratio=Rebounds/Rebounds_sum,
+         inside50s.ratio=Inside.50s/Inside.50s_sum,
+         clearances.ratio=Clearances/Clearances_sum,
+         clangers.ratio=Clangers/Clangers_sum,
+         freefors.ratio=Frees.For/Frees.For_sum,
+         freesagainst.ratio=Frees.Against/Frees.Against_sum,
+         Contested.Possessions.ratio=Contested.Possessions/Contested.Possessions_sum,
+         Uncontested.Possessions.ratio=Uncontested.Possessions/Uncontested.Possessions_sum,
+         contested.marks.ratio=Contested.Marks/Contested.Marks_sum,
+         marksinside50.ratio=Marks.Inside.50/Marks.Inside.50_sum,
+         one.percenters.ratio=One.Percenters/One.Percenters_sum,
+         bounces.ratio=Bounces/Bounces_sum,
+         goal.assists.ratio=Goal.Assists/Goal.Assists_sum,
+         disposals.ratio=(Kicks+Handballs)/(Kicks_sum+Handballs_sum))
+df&lt;-complete_df_ratio%&gt;%dplyr::select(Date,Game, First.name, Surname, Season, Round.x, Playing.for,-Brownlow.Votes, Brownlow.Votes_sum,everything())
+df&lt;-df%&gt;%dplyr::select(-Brownlow.Votes,everything())
+df[is.na(df)] &lt;- 0
+
+
+in.sample  &lt;- subset(df, Season %in% c(2014:2017))
+# out.sample &lt;- subset(df, Season == 2014)
+in.sample$Brownlow.Votes &lt;- factor(in.sample$Brownlow.Votes)
+
+in.sample&lt;-in.sample%&gt;%filter(Round.x %in% c(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,&quot;5&quot;,&quot;6&quot;,&quot;7&quot;,&quot;8&quot;,
+                                             &quot;9&quot;,&quot;10&quot;,&quot;11&quot;,&quot;12&quot;,&quot;13&quot;,&quot;14&quot;,&quot;15&quot;,&quot;16&quot;,&quot;17&quot;,&quot;18&quot;,&quot;19&quot;,&quot;20&quot;,&quot;21&quot;,&quot;22&quot;,&quot;23&quot;,&quot;24&quot;))
+
+
+names(in.sample)</code></pre>
+<pre><code>##  [1] &quot;Date&quot;                          &quot;Game&quot;                         
+##  [3] &quot;First.name&quot;                    &quot;Surname&quot;                      
+##  [5] &quot;Season&quot;                        &quot;Round.x&quot;                      
+##  [7] &quot;Playing.for&quot;                   &quot;Brownlow.Votes_sum&quot;           
+##  [9] &quot;Home.team&quot;                     &quot;Away.team&quot;                    
+## [11] &quot;Kicks&quot;                         &quot;Marks&quot;                        
+## [13] &quot;Handballs&quot;                     &quot;Goals&quot;                        
+## [15] &quot;Behinds&quot;                       &quot;Hit.Outs&quot;                     
+## [17] &quot;Tackles&quot;                       &quot;Rebounds&quot;                     
+## [19] &quot;Inside.50s&quot;                    &quot;Clearances&quot;                   
+## [21] &quot;Clangers&quot;                      &quot;Frees.For&quot;                    
+## [23] &quot;Frees.Against&quot;                 &quot;Contested.Possessions&quot;        
+## [25] &quot;Uncontested.Possessions&quot;       &quot;Contested.Marks&quot;              
+## [27] &quot;Marks.Inside.50&quot;               &quot;One.Percenters&quot;               
+## [29] &quot;Bounces&quot;                       &quot;Goal.Assists&quot;                 
+## [31] &quot;Round.y&quot;                       &quot;Kicks_sum&quot;                    
+## [33] &quot;Marks_sum&quot;                     &quot;Handballs_sum&quot;                
+## [35] &quot;Goals_sum&quot;                     &quot;Behinds_sum&quot;                  
+## [37] &quot;Hit.Outs_sum&quot;                  &quot;Tackles_sum&quot;                  
+## [39] &quot;Rebounds_sum&quot;                  &quot;Inside.50s_sum&quot;               
+## [41] &quot;Clearances_sum&quot;                &quot;Clangers_sum&quot;                 
+## [43] &quot;Frees.For_sum&quot;                 &quot;Frees.Against_sum&quot;            
+## [45] &quot;Contested.Possessions_sum&quot;     &quot;Uncontested.Possessions_sum&quot;  
+## [47] &quot;Contested.Marks_sum&quot;           &quot;Marks.Inside.50_sum&quot;          
+## [49] &quot;One.Percenters_sum&quot;            &quot;Bounces_sum&quot;                  
+## [51] &quot;Goal.Assists_sum&quot;              &quot;Round&quot;                        
+## [53] &quot;Points&quot;                        &quot;margin&quot;                       
+## [55] &quot;kick.ratio&quot;                    &quot;Marks.ratio&quot;                  
+## [57] &quot;handball.ratio&quot;                &quot;Goals.ratio&quot;                  
+## [59] &quot;behinds.ratio&quot;                 &quot;hitouts.ratio&quot;                
+## [61] &quot;tackles.ratio&quot;                 &quot;rebounds.ratio&quot;               
+## [63] &quot;inside50s.ratio&quot;               &quot;clearances.ratio&quot;             
+## [65] &quot;clangers.ratio&quot;                &quot;freefors.ratio&quot;               
+## [67] &quot;freesagainst.ratio&quot;            &quot;Contested.Possessions.ratio&quot;  
+## [69] &quot;Uncontested.Possessions.ratio&quot; &quot;contested.marks.ratio&quot;        
+## [71] &quot;marksinside50.ratio&quot;           &quot;one.percenters.ratio&quot;         
+## [73] &quot;bounces.ratio&quot;                 &quot;goal.assists.ratio&quot;           
+## [75] &quot;disposals.ratio&quot;               &quot;Brownlow.Votes&quot;</code></pre>
+<pre class="r"><code>in.sample$Player&lt;-paste(in.sample$First.name,in.sample$Surname)
+
+in.sample&lt;-in.sample%&gt;%dplyr::select(Player, Date, Season, Round.x, Playing.for, margin:Brownlow.Votes)</code></pre>
+<pre><code>## Adding missing grouping variables: `Home.team`, `Away.team`</code></pre>
+<pre class="r"><code># in.sample&lt;-in.sample[-c(1,2)]
+
+
+
+
+
+
+
+summary(in.sample)</code></pre>
+<pre><code>##   Home.team          Away.team            Player         
+##  Length:34804       Length:34804       Length:34804      
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##                                                          
+##                                                          
+##                                                          
+##       Date                Season       Round.x          Playing.for       
+##  Min.   :2014-03-14   Min.   :2014   Length:34804       Length:34804      
+##  1st Qu.:2014-08-31   1st Qu.:2014   Class :character   Class :character  
+##  Median :2016-03-24   Median :2016   Mode  :character   Mode  :character  
+##  Mean   :2015-12-12   Mean   :2016                                        
+##  3rd Qu.:2017-03-23   3rd Qu.:2017                                        
+##  Max.   :2017-08-27   Max.   :2017                                        
+##      margin            kick.ratio       Marks.ratio      handball.ratio   
+##  Min.   :-145.0000   Min.   :0.00000   Min.   :0.00000   Min.   :0.00000  
+##  1st Qu.: -26.0000   1st Qu.:0.02985   1st Qu.:0.02597   1st Qu.:0.02646  
+##  Median :   0.0000   Median :0.04367   Median :0.04274   Median :0.04132  
+##  Mean   :  -0.3173   Mean   :0.04545   Mean   :0.04545   Mean   :0.04545  
+##  3rd Qu.:  26.0000   3rd Qu.:0.05914   3rd Qu.:0.06173   3rd Qu.:0.06015  
+##  Max.   : 145.0000   Max.   :0.15976   Max.   :0.19444   Max.   :0.19820  
+##   Goals.ratio      behinds.ratio     hitouts.ratio     tackles.ratio    
+##  Min.   :0.00000   Min.   :0.00000   Min.   :0.00000   Min.   :0.00000  
+##  1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.01923  
+##  Median :0.00000   Median :0.00000   Median :0.00000   Median :0.03947  
+##  Mean   :0.04545   Mean   :0.04545   Mean   :0.04545   Mean   :0.04545  
+##  3rd Qu.:0.07692   3rd Qu.:0.08333   3rd Qu.:0.00000   3rd Qu.:0.06383  
+##  Max.   :0.71429   Max.   :1.00000   Max.   :1.00000   Max.   :0.27273  
+##  rebounds.ratio    inside50s.ratio   clearances.ratio  clangers.ratio   
+##  Min.   :0.00000   Min.   :0.00000   Min.   :0.00000   Min.   :0.00000  
+##  1st Qu.:0.00000   1st Qu.:0.01887   1st Qu.:0.00000   1st Qu.:0.02128  
+##  Median :0.03226   Median :0.04000   Median :0.02632   Median :0.04167  
+##  Mean   :0.04545   Mean   :0.04545   Mean   :0.04545   Mean   :0.04545  
+##  3rd Qu.:0.07143   3rd Qu.:0.06667   3rd Qu.:0.06818   3rd Qu.:0.06522  
+##  Max.   :0.40909   Max.   :0.29412   Max.   :0.46154   Max.   :0.25000  
+##  freefors.ratio    freesagainst.ratio Contested.Possessions.ratio
+##  Min.   :0.00000   Min.   :0.00000    Min.   :0.00000            
+##  1st Qu.:0.00000   1st Qu.:0.00000    1st Qu.:0.02703            
+##  Median :0.04167   Median :0.04167    Median :0.04110            
+##  Mean   :0.04545   Mean   :0.04545    Mean   :0.04545            
+##  3rd Qu.:0.07143   3rd Qu.:0.07143    3rd Qu.:0.05932            
+##  Max.   :0.50000   Max.   :0.50000    Max.   :0.20800            
+##  Uncontested.Possessions.ratio contested.marks.ratio marksinside50.ratio
+##  Min.   :0.00000               Min.   :0.00000       Min.   :0.00000    
+##  1st Qu.:0.02899               1st Qu.:0.00000       1st Qu.:0.00000    
+##  Median :0.04348               Median :0.00000       Median :0.00000    
+##  Mean   :0.04545               Mean   :0.04543       Mean   :0.04545    
+##  3rd Qu.:0.06000               3rd Qu.:0.08333       3rd Qu.:0.07143    
+##  Max.   :0.15287               Max.   :1.00000       Max.   :1.00000    
+##  one.percenters.ratio bounces.ratio     goal.assists.ratio
+##  Min.   :0.00000      Min.   :0.00000   Min.   :0.00000   
+##  1st Qu.:0.01471      1st Qu.:0.00000   1st Qu.:0.00000   
+##  Median :0.03125      Median :0.00000   Median :0.00000   
+##  Mean   :0.04545      Mean   :0.04454   Mean   :0.04545   
+##  3rd Qu.:0.06452      3rd Qu.:0.00000   3rd Qu.:0.08333   
+##  Max.   :0.40541      Max.   :1.00000   Max.   :1.00000   
+##  disposals.ratio   Brownlow.Votes
+##  Min.   :0.00000   0:32431       
+##  1st Qu.:0.03161   1:  791       
+##  Median :0.04323   2:  791       
+##  Mean   :0.04545   3:  791       
+##  3rd Qu.:0.05788                 
+##  Max.   :0.14196</code></pre>
+<pre class="r"><code>fm1&lt;-clm(Brownlow.Votes~ handball.ratio +  Marks.ratio +  
+           disposals.ratio+  hitouts.ratio+
+           freefors.ratio +  freesagainst.ratio +  tackles.ratio +  Goals.ratio +   behinds.ratio + Contested.Possessions.ratio+
+           Uncontested.Possessions.ratio +  clangers.ratio +    contested.marks.ratio + marksinside50.ratio +
+           clearances.ratio +   rebounds.ratio +    inside50s.ratio +   one.percenters.ratio +  bounces.ratio+
+           goal.assists.ratio  +margin, 
+         data = in.sample)
+
+fm2&lt;- stepAIC(fm1, direction=&#39;backward&#39;,type=AIC)</code></pre>
+<pre><code>## Start:  AIC=13509.69
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + behinds.ratio + Contested.Possessions.ratio + 
+##     Uncontested.Possessions.ratio + clangers.ratio + contested.marks.ratio + 
+##     marksinside50.ratio + clearances.ratio + rebounds.ratio + 
+##     inside50s.ratio + one.percenters.ratio + bounces.ratio + 
+##     goal.assists.ratio + margin
+## 
+##                                 Df   AIC
+## - Uncontested.Possessions.ratio  1 13508
+## &lt;none&gt;                             13510
+## - goal.assists.ratio             1 13510
+## - inside50s.ratio                1 13510
+## - behinds.ratio                  1 13510
+## - rebounds.ratio                 1 13511
+## - freesagainst.ratio             1 13514
+## - Contested.Possessions.ratio    1 13514
+## - clangers.ratio                 1 13518
+## - clearances.ratio               1 13520
+## - bounces.ratio                  1 13522
+## - marksinside50.ratio            1 13525
+## - freefors.ratio                 1 13525
+## - handball.ratio                 1 13529
+## - contested.marks.ratio          1 13538
+## - Marks.ratio                    1 13538
+## - one.percenters.ratio           1 13548
+## - tackles.ratio                  1 13585
+## - hitouts.ratio                  1 13687
+## - disposals.ratio                1 13738
+## - Goals.ratio                    1 14490
+## - margin                         1 15524
+## 
+## Step:  AIC=13508.46
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + behinds.ratio + Contested.Possessions.ratio + 
+##     clangers.ratio + contested.marks.ratio + marksinside50.ratio + 
+##     clearances.ratio + rebounds.ratio + inside50s.ratio + one.percenters.ratio + 
+##     bounces.ratio + goal.assists.ratio + margin
+## 
+##                               Df   AIC
+## &lt;none&gt;                           13508
+## - inside50s.ratio              1 13509
+## - goal.assists.ratio           1 13509
+## - behinds.ratio                1 13509
+## - rebounds.ratio               1 13510
+## - freesagainst.ratio           1 13512
+## - clangers.ratio               1 13517
+## - clearances.ratio             1 13520
+## - bounces.ratio                1 13520
+## - freefors.ratio               1 13524
+## - marksinside50.ratio          1 13524
+## - handball.ratio               1 13529
+## - Contested.Possessions.ratio  1 13535
+## - Marks.ratio                  1 13536
+## - contested.marks.ratio        1 13538
+## - one.percenters.ratio         1 13546
+## - tackles.ratio                1 13584
+## - hitouts.ratio                1 13687
+## - disposals.ratio              1 14403
+## - Goals.ratio                  1 14489
+## - margin                       1 15523</code></pre>
+<pre class="r"><code>names(fitzRoy::player_stats)</code></pre>
+<pre><code>##  [1] &quot;Date&quot;           &quot;Season&quot;         &quot;Round&quot;          &quot;Venue&quot;         
+##  [5] &quot;Player&quot;         &quot;Team&quot;           &quot;Opposition&quot;     &quot;Status&quot;        
+##  [9] &quot;Match_id&quot;       &quot;CP&quot;             &quot;UP&quot;             &quot;ED&quot;            
+## [13] &quot;DE&quot;             &quot;CM&quot;             &quot;GA&quot;             &quot;MI5&quot;           
+## [17] &quot;One.Percenters&quot; &quot;BO&quot;             &quot;TOG&quot;            &quot;K&quot;             
+## [21] &quot;HB&quot;             &quot;D&quot;              &quot;M&quot;              &quot;G&quot;             
+## [25] &quot;B&quot;              &quot;T&quot;              &quot;HO&quot;             &quot;GA1&quot;           
+## [29] &quot;I50&quot;            &quot;CL&quot;             &quot;CG&quot;             &quot;R50&quot;           
+## [33] &quot;FF&quot;             &quot;FA&quot;             &quot;AF&quot;             &quot;SC&quot;            
+## [37] &quot;CCL&quot;            &quot;SCL&quot;            &quot;SI&quot;             &quot;MG&quot;            
+## [41] &quot;TO&quot;             &quot;ITC&quot;            &quot;T5&quot;</code></pre>
+<pre class="r"><code>df_2017&lt;-fitzRoy::get_footywire_stats(9514:9709)</code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre class="r"><code>team_stats_out&lt;-df_2017%&gt;%
+  dplyr::select(Date, Player,Season, Round, Team, CP:SC)%&gt;%
+  group_by(Date,Season, Round, Team)%&gt;%
+  summarise_if(is.numeric,funs(sum=c(sum(.))))
+
+player_stats_out&lt;-df_2017%&gt;%
+  dplyr::select(Date, Player,Season, Round, Team, CP:SC)
+
+
+complete_df_out&lt;-left_join(player_stats_out,team_stats_out, by=c(&quot;Date&quot;=&quot;Date&quot;, &quot;Season&quot;=&quot;Season&quot;,  &quot;Team&quot;=&quot;Team&quot;))
+
+
+
+dataset_scores&lt;-fitzRoy::match_results
+names(dataset_scores)</code></pre>
+<pre><code>##  [1] &quot;Game&quot;         &quot;Date&quot;         &quot;Round&quot;        &quot;Home.Team&quot;   
+##  [5] &quot;Home.Goals&quot;   &quot;Home.Behinds&quot; &quot;Home.Points&quot;  &quot;Away.Team&quot;   
+##  [9] &quot;Away.Goals&quot;   &quot;Away.Behinds&quot; &quot;Away.Points&quot;  &quot;Venue&quot;       
+## [13] &quot;Margin&quot;       &quot;Season&quot;       &quot;Round.Type&quot;   &quot;Round.Number&quot;</code></pre>
+<pre class="r"><code>dataset_scores1&lt;-dataset_scores%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2&lt;-dplyr::select(dataset_scores, Date, Round, Away.Team, Away.Points,Game)
+
+colnames(dataset_scores1)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores1)[4]&lt;-&quot;Points&quot;
+colnames(dataset_scores2)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores2)[4]&lt;-&quot;Points&quot;
+
+
+df5&lt;-rbind(dataset_scores1,dataset_scores2)
+dataset_margins&lt;-df5%&gt;%group_by(Game)%&gt;%
+  arrange(Game)%&gt;%
+  mutate(margin=c(-diff(Points),diff(Points)))
+dataset_margins$Date&lt;-as.Date(dataset_margins$Date)
+complete_df_out$Date&lt;-as.Date(complete_df_out$Date)
+
+dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Brisbane Lions&quot;, &quot;Brisbane&quot;))
+
+dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
+
+
+complete_df_out&lt;-left_join(complete_df_out,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Team&quot;=&quot;Team&quot;))
+
+names(complete_df_out)</code></pre>
+<pre><code>##  [1] &quot;Date&quot;               &quot;Player&quot;             &quot;Season&quot;            
+##  [4] &quot;Round.x&quot;            &quot;Team&quot;               &quot;CP&quot;                
+##  [7] &quot;UP&quot;                 &quot;ED&quot;                 &quot;DE&quot;                
+## [10] &quot;CM&quot;                 &quot;GA&quot;                 &quot;MI5&quot;               
+## [13] &quot;One.Percenters&quot;     &quot;BO&quot;                 &quot;CCL&quot;               
+## [16] &quot;SCL&quot;                &quot;SI&quot;                 &quot;MG&quot;                
+## [19] &quot;TO&quot;                 &quot;ITC&quot;                &quot;T5&quot;                
+## [22] &quot;TOG&quot;                &quot;K&quot;                  &quot;HB&quot;                
+## [25] &quot;D&quot;                  &quot;M&quot;                  &quot;G&quot;                 
+## [28] &quot;B&quot;                  &quot;T&quot;                  &quot;HO&quot;                
+## [31] &quot;GA1&quot;                &quot;I50&quot;                &quot;CL&quot;                
+## [34] &quot;CG&quot;                 &quot;R50&quot;                &quot;FF&quot;                
+## [37] &quot;FA&quot;                 &quot;AF&quot;                 &quot;SC&quot;                
+## [40] &quot;Round.y&quot;            &quot;CP_sum&quot;             &quot;UP_sum&quot;            
+## [43] &quot;ED_sum&quot;             &quot;DE_sum&quot;             &quot;CM_sum&quot;            
+## [46] &quot;GA_sum&quot;             &quot;MI5_sum&quot;            &quot;One.Percenters_sum&quot;
+## [49] &quot;BO_sum&quot;             &quot;CCL_sum&quot;            &quot;SCL_sum&quot;           
+## [52] &quot;SI_sum&quot;             &quot;MG_sum&quot;             &quot;TO_sum&quot;            
+## [55] &quot;ITC_sum&quot;            &quot;T5_sum&quot;             &quot;TOG_sum&quot;           
+## [58] &quot;K_sum&quot;              &quot;HB_sum&quot;             &quot;D_sum&quot;             
+## [61] &quot;M_sum&quot;              &quot;G_sum&quot;              &quot;B_sum&quot;             
+## [64] &quot;T_sum&quot;              &quot;HO_sum&quot;             &quot;GA1_sum&quot;           
+## [67] &quot;I50_sum&quot;            &quot;CL_sum&quot;             &quot;CG_sum&quot;            
+## [70] &quot;R50_sum&quot;            &quot;FF_sum&quot;             &quot;FA_sum&quot;            
+## [73] &quot;AF_sum&quot;             &quot;SC_sum&quot;             &quot;Round&quot;             
+## [76] &quot;Points&quot;             &quot;Game&quot;               &quot;margin&quot;</code></pre>
+<pre class="r"><code>####create the new ratios
+complete_df_ratio_out&lt;-complete_df_out%&gt;%
+  mutate(kick.ratio=K/K_sum,
+         Marks.ratio=M/M_sum,
+         handball.ratio=HB/HB_sum,
+         Goals.ratio=G/G_sum,
+         behinds.ratio=B/B_sum,
+         hitouts.ratio=HO/HO_sum,
+         tackles.ratio=T/T_sum,
+         rebounds.ratio=R50/R50_sum,
+         inside50s.ratio=I50/I50_sum,
+         clearances.ratio=(CCL+SCL)/(CCL_sum+SCL_sum),
+         clangers.ratio=CL/CL_sum,
+         freefors.ratio=FF/FF_sum,
+         freesagainst.ratio=FA/FA_sum,
+         Contested.Possessions.ratio=CP/CP_sum,
+         Uncontested.Possessions.ratio=UP/UP_sum,
+         contested.marks.ratio=CM/CM_sum,
+         marksinside50.ratio=MI5/MI5_sum,
+         one.percenters.ratio=One.Percenters/One.Percenters_sum,
+         bounces.ratio=BO/BO_sum,
+         goal.assists.ratio=GA/GA_sum,
+         disposals.ratio=D/D_sum)
+
+
+
+
+conforming&lt;-complete_df_ratio_out%&gt;%
+  dplyr::select(Player, Date, Season, Round.x, Team, margin, 
+                kick.ratio:disposals.ratio)
+
+conforming$Brownlow.Votes&lt;-0
+out.sample=conforming
+out.sample[is.na(out.sample)] &lt;- 0
+
+newdata   &lt;- out.sample[ , -ncol(out.sample)]
+
+
+
+pre.dict    &lt;- predict(fm2,newdata=newdata, type=&#39;prob&#39;)
+pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) &lt;- c(&quot;vote.0&quot;, &quot;vote.1&quot;, &quot;vote.2&quot;, &quot;vote.3&quot;)
+
+newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
+
+
+
+#### Step 1: Get expected value on Votes
+newdata.pred$expected.votes &lt;- newdata.pred$vote.1 + 2*newdata.pred$vote.2 + 3*newdata.pred$vote.3
+
+####Join back on matchID whoops!
+
+get_match_ID&lt;-fitzRoy::player_stats
+
+xx&lt;-get_match_ID%&gt;%dplyr::select(Date, Player, Match_id)
+newdata.pred&lt;-left_join(newdata.pred, xx, by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Player&quot;=&quot;Player&quot;))
+
+
+
+# newdata.pred&lt;-filter(newdata.pred, Date&lt;&quot;2018-09-01&quot;)
+
+
+sum1 &lt;- aggregate(vote.1~Match_id, data = newdata.pred, FUN = sum ); names(sum1) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.1&quot;);
+sum2 &lt;- aggregate(vote.2~Match_id, data = newdata.pred, FUN = sum ); names(sum2) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.2&quot;);
+sum3 &lt;- aggregate(vote.3~Match_id, data = newdata.pred, FUN = sum ); names(sum3) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.3&quot;);
+
+#### Step 3: Add sum of each vote by matchId to big table
+newdata.pred &lt;- merge(newdata.pred, sum1, by = &quot;Match_id&quot;)
+newdata.pred &lt;- merge(newdata.pred, sum2, by = &quot;Match_id&quot;)
+newdata.pred &lt;- merge(newdata.pred, sum3, by = &quot;Match_id&quot;)
+
+#### Step 4: Add std1/2/3
+newdata.pred$std.1  &lt;- (newdata.pred$sum.vote.1/newdata.pred$vote.1)^-1
+newdata.pred$std.2  &lt;- (newdata.pred$sum.vote.2/newdata.pred$vote.2)^-1
+newdata.pred$std.3  &lt;- (newdata.pred$sum.vote.3/newdata.pred$vote.3)^-1
+
+
+#### Step 5: Expected standard game vote
+newdata.pred$exp_std_game_vote &lt;- newdata.pred$std.1 + 2*newdata.pred$std.2 + 3*newdata.pred$std.3  
+
+
+#### Step 6: List of winners
+
+newdata.pred$PlayerName&lt;-paste(newdata.pred$Player,&quot; &quot;,newdata.pred$Team)
+winners.stdgame   &lt;- aggregate(exp_std_game_vote~PlayerName, data = newdata.pred, FUN = sum );
+winners.stdgame   &lt;- winners.stdgame[order(-winners.stdgame$exp_std_game_vote), ]
+winners.stdgame[1:10, ]</code></pre>
+<pre><code>##                            PlayerName exp_std_game_vote
+## 623           Tom Mitchell   Hawthorn          30.71782
+## 179          Dustin Martin   Richmond          19.29637
+## 495     Patrick Dangerfield   Geelong          18.33302
+## 30           Andrew Gaff   West Coast          16.92758
+## 169            Dayne Beams   Brisbane          16.86057
+## 119        Clayton Oliver   Melbourne          15.68180
+## 193           Elliot Yeo   West Coast          15.65408
+## 467           Nathan Fyfe   Fremantle          15.36249
+## 254 Jackson Macrae   Western Bulldogs          15.15357
+## 382           Lance Franklin   Sydney          14.14637</code></pre>
+<p>There you go, using the same method that gave a better predicted order vs Champion Data last year is now yours free and fully reproducible. (Find me another blog that does that for you!)</p>
+<div id="betting-tips" class="section level2">
+<h2>Betting tips</h2>
+<p>To evaluate the model or a model first lets build a quick one using the above code for 2017 and evaluate it according to the rough metrics that the <a href="https://www.betfair.com.au/hub/brownlow-medal-predictor-2018/">Brownlow Professor</a> uses.</p>
+<pre class="r"><code>library(fitzRoy)
+library(tidyverse)
+df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())</code></pre>
+<pre><code>## Returning data from 1897-01-01 to 2018-09-20</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre class="r"><code>df&lt;-df%&gt;%filter(Season&gt;2010)
+names(df)</code></pre>
+<pre><code>##  [1] &quot;Season&quot;                  &quot;Round&quot;                  
+##  [3] &quot;Date&quot;                    &quot;Local.start.time&quot;       
+##  [5] &quot;Venue&quot;                   &quot;Attendance&quot;             
+##  [7] &quot;Home.team&quot;               &quot;HQ1G&quot;                   
+##  [9] &quot;HQ1B&quot;                    &quot;HQ2G&quot;                   
+## [11] &quot;HQ2B&quot;                    &quot;HQ3G&quot;                   
+## [13] &quot;HQ3B&quot;                    &quot;HQ4G&quot;                   
+## [15] &quot;HQ4B&quot;                    &quot;Home.score&quot;             
+## [17] &quot;Away.team&quot;               &quot;AQ1G&quot;                   
+## [19] &quot;AQ1B&quot;                    &quot;AQ2G&quot;                   
+## [21] &quot;AQ2B&quot;                    &quot;AQ3G&quot;                   
+## [23] &quot;AQ3B&quot;                    &quot;AQ4G&quot;                   
+## [25] &quot;AQ4B&quot;                    &quot;Away.score&quot;             
+## [27] &quot;First.name&quot;              &quot;Surname&quot;                
+## [29] &quot;ID&quot;                      &quot;Jumper.No.&quot;             
+## [31] &quot;Playing.for&quot;             &quot;Kicks&quot;                  
+## [33] &quot;Marks&quot;                   &quot;Handballs&quot;              
+## [35] &quot;Goals&quot;                   &quot;Behinds&quot;                
+## [37] &quot;Hit.Outs&quot;                &quot;Tackles&quot;                
+## [39] &quot;Rebounds&quot;                &quot;Inside.50s&quot;             
+## [41] &quot;Clearances&quot;              &quot;Clangers&quot;               
+## [43] &quot;Frees.For&quot;               &quot;Frees.Against&quot;          
+## [45] &quot;Brownlow.Votes&quot;          &quot;Contested.Possessions&quot;  
+## [47] &quot;Uncontested.Possessions&quot; &quot;Contested.Marks&quot;        
+## [49] &quot;Marks.Inside.50&quot;         &quot;One.Percenters&quot;         
+## [51] &quot;Bounces&quot;                 &quot;Goal.Assists&quot;           
+## [53] &quot;Time.on.Ground..&quot;        &quot;Substitute&quot;             
+## [55] &quot;Umpire.1&quot;                &quot;Umpire.2&quot;               
+## [57] &quot;Umpire.3&quot;                &quot;Umpire.4&quot;               
+## [59] &quot;group_id&quot;</code></pre>
+<pre class="r"><code>team_stats&lt;-df%&gt;%
+  dplyr::select(Date,Home.team, Away.team, First.name,Surname,Season, Round, Playing.for, Kicks:Goal.Assists)%&gt;%
+  group_by(Date, Season, Round, Playing.for)%&gt;%
+  summarise_if(is.numeric,funs(sum=c(sum(.))))
+
+player_stats&lt;-df%&gt;%
+  dplyr::select(Date, First.name,Surname,Season, Round, Playing.for, Kicks:Goal.Assists)</code></pre>
+<pre><code>## Adding missing grouping variables: `Home.team`, `Away.team`</code></pre>
+<pre class="r"><code>complete_df&lt;-left_join(player_stats,team_stats, by=c(&quot;Date&quot;=&quot;Date&quot;, &quot;Season&quot;=&quot;Season&quot;,  &quot;Playing.for&quot;=&quot;Playing.for&quot;))
+
+#but we also need margins as per honours stuff
+
+dataset_scores&lt;-fitzRoy::match_results
+names(dataset_scores)</code></pre>
+<pre><code>##  [1] &quot;Game&quot;         &quot;Date&quot;         &quot;Round&quot;        &quot;Home.Team&quot;   
+##  [5] &quot;Home.Goals&quot;   &quot;Home.Behinds&quot; &quot;Home.Points&quot;  &quot;Away.Team&quot;   
+##  [9] &quot;Away.Goals&quot;   &quot;Away.Behinds&quot; &quot;Away.Points&quot;  &quot;Venue&quot;       
+## [13] &quot;Margin&quot;       &quot;Season&quot;       &quot;Round.Type&quot;   &quot;Round.Number&quot;</code></pre>
+<pre class="r"><code>dataset_scores1&lt;-dataset_scores%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2&lt;-dplyr::select(dataset_scores, Date, Round, Away.Team, Away.Points,Game)
+
+colnames(dataset_scores1)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores1)[4]&lt;-&quot;Points&quot;
+colnames(dataset_scores2)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores2)[4]&lt;-&quot;Points&quot;
+
+df5&lt;-rbind(dataset_scores1,dataset_scores2)
+dataset_margins&lt;-df5%&gt;%group_by(Game)%&gt;%
+  arrange(Game)%&gt;%
+  mutate(margin=c(-diff(Points),diff(Points)))
+# View(dataset_margins)
+dataset_margins$Date&lt;-as.Date(dataset_margins$Date)
+complete_df$Date&lt;-as.Date(complete_df$Date)
+
+complete_df&lt;-left_join(complete_df,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Playing.for&quot;=&quot;Team&quot;))
+
+
+complete_df_ratio&lt;-complete_df%&gt;%
+  mutate(kick.ratio=Kicks/Kicks_sum,
+         Marks.ratio=Marks/Marks_sum,
+         handball.ratio=Handballs/Handballs_sum,
+         Goals.ratio=Goals/Goals_sum,
+         behinds.ratio=Behinds/Behinds_sum,
+         hitouts.ratio=Hit.Outs/Hit.Outs_sum,
+         tackles.ratio=Tackles/Tackles_sum,
+         rebounds.ratio=Rebounds/Rebounds_sum,
+         inside50s.ratio=Inside.50s/Inside.50s_sum,
+         clearances.ratio=Clearances/Clearances_sum,
+         clangers.ratio=Clangers/Clangers_sum,
+         freefors.ratio=Frees.For/Frees.For_sum,
+         freesagainst.ratio=Frees.Against/Frees.Against_sum,
+         Contested.Possessions.ratio=Contested.Possessions/Contested.Possessions_sum,
+         Uncontested.Possessions.ratio=Uncontested.Possessions/Uncontested.Possessions_sum,
+         contested.marks.ratio=Contested.Marks/Contested.Marks_sum,
+         marksinside50.ratio=Marks.Inside.50/Marks.Inside.50_sum,
+         one.percenters.ratio=One.Percenters/One.Percenters_sum,
+         bounces.ratio=Bounces/Bounces_sum,
+         goal.assists.ratio=Goal.Assists/Goal.Assists_sum,
+         disposals.ratio=(Kicks+Handballs)/(Kicks_sum+Handballs_sum))
+df&lt;-complete_df_ratio%&gt;%dplyr::select(Date, First.name, Surname, Season, Round.x, Playing.for,-Brownlow.Votes, Brownlow.Votes_sum,everything())
+df&lt;-df%&gt;%dplyr::select(-Brownlow.Votes,everything())
+df[is.na(df)] &lt;- 0
+in.sample  &lt;- subset(df, Season %in% c(2013:2016))
+# out.sample &lt;- subset(df, Season == 2014)
+in.sample$Brownlow.Votes &lt;- factor(in.sample$Brownlow.Votes)
+
+in.sample&lt;-in.sample%&gt;%filter(Round.x %in% c(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,&quot;5&quot;,&quot;6&quot;,&quot;7&quot;,&quot;8&quot;,
+                                             &quot;9&quot;,&quot;10&quot;,&quot;11&quot;,&quot;12&quot;,&quot;13&quot;,&quot;14&quot;,&quot;15&quot;,&quot;16&quot;,&quot;17&quot;,&quot;18&quot;,&quot;19&quot;,&quot;20&quot;,&quot;21&quot;,&quot;22&quot;,&quot;23&quot;,&quot;24&quot;))
+
+
+
+in.sample$Player&lt;-paste(in.sample$First.name,in.sample$Surname)
+
+in.sample&lt;-in.sample%&gt;%dplyr::select(Player, Date, Season, Round.x, Playing.for, Home.team, Away.team, margin:Brownlow.Votes)
+
+
+temp1&lt;-scale(in.sample[,8:29])
+in.sample[,8:29]&lt;-temp1
+#attributes(temp1)
+temp1.center&lt;-attr(temp1,&quot;scaled:center&quot;)
+temp1.scale&lt;-attr(temp1,&quot;scaled:scale&quot;)
+
+
+
+
+
+library(ordinal)
+
+fm1&lt;-clm(Brownlow.Votes~ handball.ratio +  Marks.ratio +  
+           disposals.ratio+  hitouts.ratio+
+           freefors.ratio +  freesagainst.ratio +  tackles.ratio +  Goals.ratio +   behinds.ratio + Contested.Possessions.ratio+
+           Uncontested.Possessions.ratio +  clangers.ratio +    contested.marks.ratio + marksinside50.ratio +
+           clearances.ratio +   rebounds.ratio +    inside50s.ratio +   one.percenters.ratio +  bounces.ratio+
+           goal.assists.ratio  +margin, 
+         data = in.sample)
+
+library(MASS)
+
+fm2&lt;- stepAIC(fm1, direction=&#39;backward&#39;,type=AIC)</code></pre>
+<pre><code>## Start:  AIC=13631.84
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + behinds.ratio + Contested.Possessions.ratio + 
+##     Uncontested.Possessions.ratio + clangers.ratio + contested.marks.ratio + 
+##     marksinside50.ratio + clearances.ratio + rebounds.ratio + 
+##     inside50s.ratio + one.percenters.ratio + bounces.ratio + 
+##     goal.assists.ratio + margin
+## 
+##                                 Df   AIC
+## - Uncontested.Possessions.ratio  1 13630
+## - rebounds.ratio                 1 13630
+## - behinds.ratio                  1 13631
+## - goal.assists.ratio             1 13631
+## - inside50s.ratio                1 13631
+## &lt;none&gt;                             13632
+## - freesagainst.ratio             1 13638
+## - Contested.Possessions.ratio    1 13639
+## - clearances.ratio               1 13639
+## - freefors.ratio                 1 13641
+## - bounces.ratio                  1 13647
+## - clangers.ratio                 1 13650
+## - marksinside50.ratio            1 13650
+## - Marks.ratio                    1 13650
+## - handball.ratio                 1 13653
+## - contested.marks.ratio          1 13656
+## - one.percenters.ratio           1 13669
+## - tackles.ratio                  1 13690
+## - hitouts.ratio                  1 13790
+## - disposals.ratio                1 13863
+## - Goals.ratio                    1 14583
+## - margin                         1 15649
+## 
+## Step:  AIC=13630.1
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + behinds.ratio + Contested.Possessions.ratio + 
+##     clangers.ratio + contested.marks.ratio + marksinside50.ratio + 
+##     clearances.ratio + rebounds.ratio + inside50s.ratio + one.percenters.ratio + 
+##     bounces.ratio + goal.assists.ratio + margin
+## 
+##                               Df   AIC
+## - rebounds.ratio               1 13628
+## - behinds.ratio                1 13629
+## - goal.assists.ratio           1 13629
+## - inside50s.ratio              1 13629
+## &lt;none&gt;                           13630
+## - freesagainst.ratio           1 13636
+## - clearances.ratio             1 13638
+## - freefors.ratio               1 13639
+## - bounces.ratio                1 13645
+## - clangers.ratio               1 13648
+## - Marks.ratio                  1 13648
+## - marksinside50.ratio          1 13648
+## - handball.ratio               1 13652
+## - contested.marks.ratio        1 13655
+## - Contested.Possessions.ratio  1 13661
+## - one.percenters.ratio         1 13667
+## - tackles.ratio                1 13688
+## - hitouts.ratio                1 13789
+## - Goals.ratio                  1 14581
+## - disposals.ratio              1 14601
+## - margin                       1 15647
+## 
+## Step:  AIC=13628.54
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + behinds.ratio + Contested.Possessions.ratio + 
+##     clangers.ratio + contested.marks.ratio + marksinside50.ratio + 
+##     clearances.ratio + inside50s.ratio + one.percenters.ratio + 
+##     bounces.ratio + goal.assists.ratio + margin
+## 
+##                               Df   AIC
+## - behinds.ratio                1 13627
+## - goal.assists.ratio           1 13627
+## - inside50s.ratio              1 13628
+## &lt;none&gt;                           13628
+## - freesagainst.ratio           1 13635
+## - clearances.ratio             1 13636
+## - freefors.ratio               1 13638
+## - bounces.ratio                1 13644
+## - marksinside50.ratio          1 13646
+## - clangers.ratio               1 13646
+## - Marks.ratio                  1 13647
+## - contested.marks.ratio        1 13654
+## - handball.ratio               1 13655
+## - Contested.Possessions.ratio  1 13660
+## - one.percenters.ratio         1 13668
+## - tackles.ratio                1 13686
+## - hitouts.ratio                1 13787
+## - Goals.ratio                  1 14591
+## - disposals.ratio              1 14799
+## - margin                       1 15645
+## 
+## Step:  AIC=13627.36
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + Contested.Possessions.ratio + clangers.ratio + 
+##     contested.marks.ratio + marksinside50.ratio + clearances.ratio + 
+##     inside50s.ratio + one.percenters.ratio + bounces.ratio + 
+##     goal.assists.ratio + margin
+## 
+##                               Df   AIC
+## - goal.assists.ratio           1 13626
+## - inside50s.ratio              1 13627
+## &lt;none&gt;                           13627
+## - freesagainst.ratio           1 13634
+## - clearances.ratio             1 13634
+## - freefors.ratio               1 13637
+## - bounces.ratio                1 13643
+## - Marks.ratio                  1 13646
+## - clangers.ratio               1 13646
+## - marksinside50.ratio          1 13651
+## - contested.marks.ratio        1 13652
+## - handball.ratio               1 13656
+## - Contested.Possessions.ratio  1 13660
+## - one.percenters.ratio         1 13666
+## - tackles.ratio                1 13685
+## - hitouts.ratio                1 13786
+## - Goals.ratio                  1 14591
+## - disposals.ratio              1 14806
+## - margin                       1 15646
+## 
+## Step:  AIC=13626.24
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + Contested.Possessions.ratio + clangers.ratio + 
+##     contested.marks.ratio + marksinside50.ratio + clearances.ratio + 
+##     inside50s.ratio + one.percenters.ratio + bounces.ratio + 
+##     margin
+## 
+##                               Df   AIC
+## - inside50s.ratio              1 13626
+## &lt;none&gt;                           13626
+## - clearances.ratio             1 13633
+## - freesagainst.ratio           1 13633
+## - freefors.ratio               1 13636
+## - bounces.ratio                1 13642
+## - Marks.ratio                  1 13644
+## - clangers.ratio               1 13645
+## - marksinside50.ratio          1 13651
+## - contested.marks.ratio        1 13651
+## - handball.ratio               1 13654
+## - Contested.Possessions.ratio  1 13659
+## - one.percenters.ratio         1 13664
+## - tackles.ratio                1 13684
+## - hitouts.ratio                1 13784
+## - Goals.ratio                  1 14590
+## - disposals.ratio              1 14804
+## - margin                       1 15645
+## 
+## Step:  AIC=13625.93
+## Brownlow.Votes ~ handball.ratio + Marks.ratio + disposals.ratio + 
+##     hitouts.ratio + freefors.ratio + freesagainst.ratio + tackles.ratio + 
+##     Goals.ratio + Contested.Possessions.ratio + clangers.ratio + 
+##     contested.marks.ratio + marksinside50.ratio + clearances.ratio + 
+##     one.percenters.ratio + bounces.ratio + margin
+## 
+##                               Df   AIC
+## &lt;none&gt;                           13626
+## - freesagainst.ratio           1 13633
+## - clearances.ratio             1 13634
+## - freefors.ratio               1 13635
+## - bounces.ratio                1 13642
+## - Marks.ratio                  1 13643
+## - clangers.ratio               1 13644
+## - marksinside50.ratio          1 13650
+## - contested.marks.ratio        1 13650
+## - Contested.Possessions.ratio  1 13658
+## - handball.ratio               1 13662
+## - one.percenters.ratio         1 13663
+## - tackles.ratio                1 13683
+## - hitouts.ratio                1 13784
+## - Goals.ratio                  1 14600
+## - disposals.ratio              1 15042
+## - margin                       1 15645</code></pre>
+<pre class="r"><code>out.sample  &lt;- subset(df, Season %in% c(2017))
+out.sample$Brownlow.Votes &lt;- factor(out.sample$Brownlow.Votes)
+
+out.sample&lt;-out.sample%&gt;%filter(Round.x %in% c(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,&quot;5&quot;,&quot;6&quot;,&quot;7&quot;,&quot;8&quot;,
+                                             &quot;9&quot;,&quot;10&quot;,&quot;11&quot;,&quot;12&quot;,&quot;13&quot;,&quot;14&quot;,&quot;15&quot;,&quot;16&quot;,&quot;17&quot;,&quot;18&quot;,&quot;19&quot;,&quot;20&quot;,&quot;21&quot;,&quot;22&quot;,&quot;23&quot;,&quot;24&quot;))
+
+
+names(out.sample)</code></pre>
+<pre><code>##  [1] &quot;Date&quot;                          &quot;First.name&quot;                   
+##  [3] &quot;Surname&quot;                       &quot;Season&quot;                       
+##  [5] &quot;Round.x&quot;                       &quot;Playing.for&quot;                  
+##  [7] &quot;Brownlow.Votes_sum&quot;            &quot;Home.team&quot;                    
+##  [9] &quot;Away.team&quot;                     &quot;Kicks&quot;                        
+## [11] &quot;Marks&quot;                         &quot;Handballs&quot;                    
+## [13] &quot;Goals&quot;                         &quot;Behinds&quot;                      
+## [15] &quot;Hit.Outs&quot;                      &quot;Tackles&quot;                      
+## [17] &quot;Rebounds&quot;                      &quot;Inside.50s&quot;                   
+## [19] &quot;Clearances&quot;                    &quot;Clangers&quot;                     
+## [21] &quot;Frees.For&quot;                     &quot;Frees.Against&quot;                
+## [23] &quot;Contested.Possessions&quot;         &quot;Uncontested.Possessions&quot;      
+## [25] &quot;Contested.Marks&quot;               &quot;Marks.Inside.50&quot;              
+## [27] &quot;One.Percenters&quot;                &quot;Bounces&quot;                      
+## [29] &quot;Goal.Assists&quot;                  &quot;Round.y&quot;                      
+## [31] &quot;Kicks_sum&quot;                     &quot;Marks_sum&quot;                    
+## [33] &quot;Handballs_sum&quot;                 &quot;Goals_sum&quot;                    
+## [35] &quot;Behinds_sum&quot;                   &quot;Hit.Outs_sum&quot;                 
+## [37] &quot;Tackles_sum&quot;                   &quot;Rebounds_sum&quot;                 
+## [39] &quot;Inside.50s_sum&quot;                &quot;Clearances_sum&quot;               
+## [41] &quot;Clangers_sum&quot;                  &quot;Frees.For_sum&quot;                
+## [43] &quot;Frees.Against_sum&quot;             &quot;Contested.Possessions_sum&quot;    
+## [45] &quot;Uncontested.Possessions_sum&quot;   &quot;Contested.Marks_sum&quot;          
+## [47] &quot;Marks.Inside.50_sum&quot;           &quot;One.Percenters_sum&quot;           
+## [49] &quot;Bounces_sum&quot;                   &quot;Goal.Assists_sum&quot;             
+## [51] &quot;Round&quot;                         &quot;Points&quot;                       
+## [53] &quot;Game&quot;                          &quot;margin&quot;                       
+## [55] &quot;kick.ratio&quot;                    &quot;Marks.ratio&quot;                  
+## [57] &quot;handball.ratio&quot;                &quot;Goals.ratio&quot;                  
+## [59] &quot;behinds.ratio&quot;                 &quot;hitouts.ratio&quot;                
+## [61] &quot;tackles.ratio&quot;                 &quot;rebounds.ratio&quot;               
+## [63] &quot;inside50s.ratio&quot;               &quot;clearances.ratio&quot;             
+## [65] &quot;clangers.ratio&quot;                &quot;freefors.ratio&quot;               
+## [67] &quot;freesagainst.ratio&quot;            &quot;Contested.Possessions.ratio&quot;  
+## [69] &quot;Uncontested.Possessions.ratio&quot; &quot;contested.marks.ratio&quot;        
+## [71] &quot;marksinside50.ratio&quot;           &quot;one.percenters.ratio&quot;         
+## [73] &quot;bounces.ratio&quot;                 &quot;goal.assists.ratio&quot;           
+## [75] &quot;disposals.ratio&quot;               &quot;Brownlow.Votes&quot;</code></pre>
+<pre class="r"><code>out.sample$Player&lt;-paste(out.sample$First.name,out.sample$Surname)
+
+out.sample&lt;-out.sample%&gt;%dplyr::select(Player, Date, Season, Round.x, Playing.for, Home.team, Away.team, margin:Brownlow.Votes)
+
+
+out.sample[is.na(out.sample)] &lt;- 0
+
+newdata   &lt;- out.sample[ , -ncol(out.sample)]
+
+newdata[,8:29]&lt;-scale(newdata[,8:29],center=temp1.center,scale=temp1.scale) 
+
+pre.dict    &lt;- predict(fm2,newdata=newdata, type=&#39;prob&#39;)
+pre.dict.m  &lt;- data.frame(matrix(unlist(pre.dict), nrow= nrow(newdata)))
+colnames(pre.dict.m) &lt;- c(&quot;vote.0&quot;, &quot;vote.1&quot;, &quot;vote.2&quot;, &quot;vote.3&quot;)
+
+newdata.pred  &lt;- cbind.data.frame(newdata, pre.dict.m)
+newdata.pred$expected.votes &lt;- newdata.pred$vote.1 + 2*newdata.pred$vote.2 + 3*newdata.pred$vote.3
+newdata.pred$Match_id&lt;-paste(newdata.pred$Season, newdata.pred$Round.x, newdata.pred$Home.team)
+sum1 &lt;- aggregate(vote.1~Match_id, data = newdata.pred, FUN = sum ); names(sum1) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.1&quot;);
+sum2 &lt;- aggregate(vote.2~Match_id, data = newdata.pred, FUN = sum ); names(sum2) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.2&quot;);
+sum3 &lt;- aggregate(vote.3~Match_id, data = newdata.pred, FUN = sum ); names(sum3) &lt;- c(&quot;Match_id&quot;, &quot;sum.vote.3&quot;);
+
+#### Step 3: Add sum of each vote by matchId to big table
+newdata.pred &lt;- merge(newdata.pred, sum1, by = &quot;Match_id&quot;)
+newdata.pred &lt;- merge(newdata.pred, sum2, by = &quot;Match_id&quot;)
+newdata.pred &lt;- merge(newdata.pred, sum3, by = &quot;Match_id&quot;)
+
+#### Step 4: Add std1/2/3
+newdata.pred$std.1  &lt;- (newdata.pred$sum.vote.1/newdata.pred$vote.1)^-1
+newdata.pred$std.2  &lt;- (newdata.pred$sum.vote.2/newdata.pred$vote.2)^-1
+newdata.pred$std.3  &lt;- (newdata.pred$sum.vote.3/newdata.pred$vote.3)^-1
+
+
+#### Step 5: Expected standard game vote
+newdata.pred$exp_std_game_vote &lt;- newdata.pred$std.1 + 2*newdata.pred$std.2 + 3*newdata.pred$std.3  
+
+
+#### Step 6: List of winners
+
+newdata.pred$PlayerName&lt;-paste(newdata.pred$Player,&quot; &quot;,newdata.pred$Playing.for)
+winners.stdgame   &lt;- aggregate(exp_std_game_vote~PlayerName, data = newdata.pred, FUN = sum );
+winners.stdgame   &lt;- winners.stdgame[order(-winners.stdgame$exp_std_game_vote), ]
+winners.stdgame[1:10, ]</code></pre>
+<pre><code>##                              PlayerName exp_std_game_vote
+## 168            Dustin Martin   Richmond          33.78545
+## 490       Patrick Dangerfield   Geelong          31.31288
+## 617             Tom Mitchell   Hawthorn          28.73881
+## 157        Dayne Zorko   Brisbane Lions          18.52044
+## 513              Rory Sloane   Adelaide          16.85977
+## 340 Josh Kelly   Greater Western Sydney          16.70946
+## 653             Zach Merrett   Essendon          16.42835
+## 424              Matt Crouch   Adelaide          16.00151
+## 341               Josh Kennedy   Sydney          15.23837
+## 483         Ollie Wines   Port Adelaide          15.08383</code></pre>
+<p>What you might notice about this is that the order is slightly different to what is presented earlier. But what is the different? The out.sample uses the afltables data only no footywire data is used at all. In other words the above script just showed that there are differences between the data on AFLtables and footywire!!!!!</p>
+<p>Recall earlier, one of the ways that <a href="https://www.betfair.com.au/hub/brownlow-medal-predictor-2018/">Brownlow Professor</a> makes an assessment of his model is he looks at home many times that the player ranked within the top 5 get the 3 votes 95% of the time, 84% of the time for the 2 votes and 74% of the time for the one vote.</p>
+<p>Well using the above method, we could check it for the 2017 AFL season.</p>
+<p>To do this we need to join on the actual votes that happened in 2018 to the predicted probabilities based on our model</p>
+<pre class="r"><code>out.sample  &lt;- subset(df, Season %in% c(2017))
+out.sample$Brownlow.Votes &lt;- factor(out.sample$Brownlow.Votes)
+
+out.sample&lt;-out.sample%&gt;%filter(Round.x %in% c(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,&quot;5&quot;,&quot;6&quot;,&quot;7&quot;,&quot;8&quot;,
+                                             &quot;9&quot;,&quot;10&quot;,&quot;11&quot;,&quot;12&quot;,&quot;13&quot;,&quot;14&quot;,&quot;15&quot;,&quot;16&quot;,&quot;17&quot;,&quot;18&quot;,&quot;19&quot;,&quot;20&quot;,&quot;21&quot;,&quot;22&quot;,&quot;23&quot;,&quot;24&quot;))
+
+
+names(out.sample)</code></pre>
+<pre><code>##  [1] &quot;Date&quot;                          &quot;First.name&quot;                   
+##  [3] &quot;Surname&quot;                       &quot;Season&quot;                       
+##  [5] &quot;Round.x&quot;                       &quot;Playing.for&quot;                  
+##  [7] &quot;Brownlow.Votes_sum&quot;            &quot;Home.team&quot;                    
+##  [9] &quot;Away.team&quot;                     &quot;Kicks&quot;                        
+## [11] &quot;Marks&quot;                         &quot;Handballs&quot;                    
+## [13] &quot;Goals&quot;                         &quot;Behinds&quot;                      
+## [15] &quot;Hit.Outs&quot;                      &quot;Tackles&quot;                      
+## [17] &quot;Rebounds&quot;                      &quot;Inside.50s&quot;                   
+## [19] &quot;Clearances&quot;                    &quot;Clangers&quot;                     
+## [21] &quot;Frees.For&quot;                     &quot;Frees.Against&quot;                
+## [23] &quot;Contested.Possessions&quot;         &quot;Uncontested.Possessions&quot;      
+## [25] &quot;Contested.Marks&quot;               &quot;Marks.Inside.50&quot;              
+## [27] &quot;One.Percenters&quot;                &quot;Bounces&quot;                      
+## [29] &quot;Goal.Assists&quot;                  &quot;Round.y&quot;                      
+## [31] &quot;Kicks_sum&quot;                     &quot;Marks_sum&quot;                    
+## [33] &quot;Handballs_sum&quot;                 &quot;Goals_sum&quot;                    
+## [35] &quot;Behinds_sum&quot;                   &quot;Hit.Outs_sum&quot;                 
+## [37] &quot;Tackles_sum&quot;                   &quot;Rebounds_sum&quot;                 
+## [39] &quot;Inside.50s_sum&quot;                &quot;Clearances_sum&quot;               
+## [41] &quot;Clangers_sum&quot;                  &quot;Frees.For_sum&quot;                
+## [43] &quot;Frees.Against_sum&quot;             &quot;Contested.Possessions_sum&quot;    
+## [45] &quot;Uncontested.Possessions_sum&quot;   &quot;Contested.Marks_sum&quot;          
+## [47] &quot;Marks.Inside.50_sum&quot;           &quot;One.Percenters_sum&quot;           
+## [49] &quot;Bounces_sum&quot;                   &quot;Goal.Assists_sum&quot;             
+## [51] &quot;Round&quot;                         &quot;Points&quot;                       
+## [53] &quot;Game&quot;                          &quot;margin&quot;                       
+## [55] &quot;kick.ratio&quot;                    &quot;Marks.ratio&quot;                  
+## [57] &quot;handball.ratio&quot;                &quot;Goals.ratio&quot;                  
+## [59] &quot;behinds.ratio&quot;                 &quot;hitouts.ratio&quot;                
+## [61] &quot;tackles.ratio&quot;                 &quot;rebounds.ratio&quot;               
+## [63] &quot;inside50s.ratio&quot;               &quot;clearances.ratio&quot;             
+## [65] &quot;clangers.ratio&quot;                &quot;freefors.ratio&quot;               
+## [67] &quot;freesagainst.ratio&quot;            &quot;Contested.Possessions.ratio&quot;  
+## [69] &quot;Uncontested.Possessions.ratio&quot; &quot;contested.marks.ratio&quot;        
+## [71] &quot;marksinside50.ratio&quot;           &quot;one.percenters.ratio&quot;         
+## [73] &quot;bounces.ratio&quot;                 &quot;goal.assists.ratio&quot;           
+## [75] &quot;disposals.ratio&quot;               &quot;Brownlow.Votes&quot;</code></pre>
+<pre class="r"><code>out.sample$Player&lt;-paste(out.sample$First.name,out.sample$Surname)
+
+out.sample&lt;-out.sample%&gt;%dplyr::select(Player, Date, Season, Round.x, Playing.for, Home.team, Away.team, margin:Brownlow.Votes)
+
+fulldataframe&lt;-left_join(newdata.pred,out.sample,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Playing.for&quot;=&quot;Playing.for&quot;, &quot;Player&quot;=&quot;Player&quot;))</code></pre>
+<p>From there we might want to create a pivot table where we can see how often the highest ranked person by say expected standardised votes gets the 3 votes and so on.</p>
+<p>To do that we can use this bit of script below, it requires a handy package called <a href="https://cran.r-project.org/web/packages/janitor/index.html">janitor</a></p>
+<pre class="r"><code>xx&lt;-fulldataframe  %&gt;%
+  group_by(Match_id) %&gt;%
+  mutate(my_ranks = order(order(exp_std_game_vote, decreasing=TRUE)))
+table(xx$my_ranks, xx$Brownlow.Votes)</code></pre>
+<pre><code>##     
+##        0   1   2   3
+##   1   32  22  35 109
+##   2   63  33  59  43
+##   3  112  31  33  22
+##   4  133  36  24   5
+##   5  170  17   8   3
+##   6  171  11   9   7
+##   7  183   5   6   4
+##   8  181  11   5   1
+##   9  185   8   4   1
+##   10 190   6   2   0
+##   11 193   2   2   1
+##   12 195   2   1   0
+##   13 194   3   1   0
+##   14 193   2   2   1
+##   15 196   0   2   0
+##   16 196   1   1   0
+##   17 196   1   1   0
+##   18 197   0   1   0
+##   19 196   1   0   1
+##   20 196   1   1   0
+##   21 195   2   1   0
+##   22 198   0   0   0
+##   23 198   0   0   0
+##   24 197   1   0   0
+##   25 197   1   0   0
+##   26 197   1   0   0
+##   27 198   0   0   0
+##   28 198   0   0   0
+##   29 198   0   0   0
+##   30 198   0   0   0
+##   31 198   0   0   0
+##   32 198   0   0   0
+##   33 198   0   0   0
+##   34 198   0   0   0
+##   35 198   0   0   0
+##   36 198   0   0   0
+##   37 198   0   0   0
+##   38 198   0   0   0
+##   39 198   0   0   0
+##   40 198   0   0   0
+##   41 198   0   0   0
+##   42 198   0   0   0
+##   43 198   0   0   0
+##   44 198   0   0   0</code></pre>
+<pre class="r"><code>xx %&gt;% janitor::tabyl(my_ranks, Brownlow.Votes)%&gt;%
+  adorn_totals(c(&quot;row&quot;, &quot;col&quot;)) %&gt;%
+  adorn_percentages(&quot;col&quot;) %&gt;% 
+  adorn_pct_formatting(rounding = &quot;half up&quot;, digits = 2) </code></pre>
+<pre><code>##  my_ranks       0       1       2       3   Total
+##         1   0.39%  11.11%  17.68%  55.05%   2.27%
+##         2   0.78%  16.67%  29.80%  21.72%   2.27%
+##         3   1.38%  15.66%  16.67%  11.11%   2.27%
+##         4   1.64%  18.18%  12.12%   2.53%   2.27%
+##         5   2.09%   8.59%   4.04%   1.52%   2.27%
+##         6   2.11%   5.56%   4.55%   3.54%   2.27%
+##         7   2.25%   2.53%   3.03%   2.02%   2.27%
+##         8   2.23%   5.56%   2.53%   0.51%   2.27%
+##         9   2.28%   4.04%   2.02%   0.51%   2.27%
+##        10   2.34%   3.03%   1.01%   0.00%   2.27%
+##        11   2.38%   1.01%   1.01%   0.51%   2.27%
+##        12   2.40%   1.01%   0.51%   0.00%   2.27%
+##        13   2.39%   1.52%   0.51%   0.00%   2.27%
+##        14   2.38%   1.01%   1.01%   0.51%   2.27%
+##        15   2.41%   0.00%   1.01%   0.00%   2.27%
+##        16   2.41%   0.51%   0.51%   0.00%   2.27%
+##        17   2.41%   0.51%   0.51%   0.00%   2.27%
+##        18   2.43%   0.00%   0.51%   0.00%   2.27%
+##        19   2.41%   0.51%   0.00%   0.51%   2.27%
+##        20   2.41%   0.51%   0.51%   0.00%   2.27%
+##        21   2.40%   1.01%   0.51%   0.00%   2.27%
+##        22   2.44%   0.00%   0.00%   0.00%   2.27%
+##        23   2.44%   0.00%   0.00%   0.00%   2.27%
+##        24   2.43%   0.51%   0.00%   0.00%   2.27%
+##        25   2.43%   0.51%   0.00%   0.00%   2.27%
+##        26   2.43%   0.51%   0.00%   0.00%   2.27%
+##        27   2.44%   0.00%   0.00%   0.00%   2.27%
+##        28   2.44%   0.00%   0.00%   0.00%   2.27%
+##        29   2.44%   0.00%   0.00%   0.00%   2.27%
+##        30   2.44%   0.00%   0.00%   0.00%   2.27%
+##        31   2.44%   0.00%   0.00%   0.00%   2.27%
+##        32   2.44%   0.00%   0.00%   0.00%   2.27%
+##        33   2.44%   0.00%   0.00%   0.00%   2.27%
+##        34   2.44%   0.00%   0.00%   0.00%   2.27%
+##        35   2.44%   0.00%   0.00%   0.00%   2.27%
+##        36   2.44%   0.00%   0.00%   0.00%   2.27%
+##        37   2.44%   0.00%   0.00%   0.00%   2.27%
+##        38   2.44%   0.00%   0.00%   0.00%   2.27%
+##        39   2.44%   0.00%   0.00%   0.00%   2.27%
+##        40   2.44%   0.00%   0.00%   0.00%   2.27%
+##        41   2.44%   0.00%   0.00%   0.00%   2.27%
+##        42   2.44%   0.00%   0.00%   0.00%   2.27%
+##        43   2.44%   0.00%   0.00%   0.00%   2.27%
+##        44   2.44%   0.00%   0.00%   0.00%   2.27%
+##     Total 100.00% 100.00% 100.00% 100.00% 100.00%</code></pre>
+<p>So what we can tell from this is over half the time the player we rank first based on our model presented (which I hope you have improved by now) gets the 3 votes. only 32 times out of the 198 games did they fail to poll a single vote. That is not too bad but hopefully your one is better!</p>
+</div>
+<div id="that-seems-ok-but-what-if-i-want-to-see-how-often-a-player-ranks-in-x" class="section level2">
+<h2>That seems OK but what if I want to see how often a player ranks in x?</h2>
+<p>That’s not too bad from here now that we have gotten most things, we can do that using a filter</p>
+<pre class="r"><code>xx%&gt;%
+  dplyr::select(Player, exp_std_game_vote, my_ranks, Brownlow.Votes)%&gt;%
+  dplyr::filter(Player==&quot;Dustin Martin&quot;)%&gt;%
+  janitor::tabyl(my_ranks, Brownlow.Votes)</code></pre>
+<pre><code>## Adding missing grouping variables: `Match_id`</code></pre>
+<pre><code>##  my_ranks 0 1 2  3
+##         1 1 2 0 10
+##         2 2 1 0  1
+##         3 1 0 0  0
+##         5 1 0 0  0
+##         9 1 0 0  0
+##        15 1 0 0  0
+##        21 1 0 0  0</code></pre>
+<p>What we can see is that out of the 13 times we thought Dustin Martin should poll the most votes he did 10 times, 2 times he polled 1 vote and 1 time he didn’t poll.</p>
+<p>These are the kinds of things you might want to look at with your model. For instance, this year everyone is talking up Max Gawn chances. A nice check to do, might be how often do rucks get the 3 votes etc.</p>
+<p>Lets show a quick example with Maxy.</p>
+<pre class="r"><code>df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())</code></pre>
+<pre><code>## Returning data from 1897-01-01 to 2018-09-20</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Warning in rbind(names(probs), probs_f): number of columns of result is not
+## a multiple of vector length (arg 1)</code></pre>
+<pre><code>## Warning: 264 parsing failures.
+## row # A tibble: 5 x 5 col     row col   expected   actual file                                       expected   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;  &lt;chr&gt;                                      actual 1  8713 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~ file 2  8714 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~ row 3  8715 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~ col 4  8716 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~ expected 5  8717 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~
+## ... ................. ... .......................................................................... ........ .......................................................................... ...... .......................................................................... .... .......................................................................... ... .......................................................................... ... .......................................................................... ........ ..........................................................................
+## See problems(...) for more details.</code></pre>
+<pre><code>## Warning: Unknown columns: `Substitute`</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre class="r"><code>df%&gt;%filter(Season&gt;2010)%&gt;%filter(First.name==&quot;Max&quot;, Surname==&quot;Gawn&quot;)%&gt;%janitor::tabyl(Brownlow.Votes, Season)</code></pre>
+<pre><code>##  Brownlow.Votes 2011 2013 2014 2015 2016 2017 2018
+##               0    4   13    9   11   16   11   18
+##               1    0    0    0    1    0    1    0
+##               2    0    0    0    0    2    1    0
+##               3    0    0    0    1    4    0    0
+##              NA    0    0    0    0    0    0    6</code></pre>
+<p>Interestingly what we can see is that in Max Gawns other All Aus year (if you believe its a good thing) he polled the 3 votes 4 times. Was this year his better and if so should he poll more?</p>
+<p>Lets compare his season in 2016 to his season in 2018</p>
+<pre class="r"><code>library(tidyverse)
+library(fitzRoy)
+df&lt;-fitzRoy::player_stats
+df&lt;-df%&gt;%
+  filter(Season != 2018) #filters out the 2018 data (incomeplete that was downloaded when installing fitzRoy for first time) 
+df1&lt;-fitzRoy::get_footywire_stats(9514:9709) </code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre class="r"><code>df2&lt;-rbind(df, df1)
+df3&lt;-df2%&gt;%
+  filter(Season %in% c(2016,2018))%&gt;%
+  filter(Player ==&quot;Max Gawn&quot;) 
+
+df3&lt;-df2%&gt;%
+  filter(Season %in% c(2016,2018))%&gt;%
+  filter(Player ==&quot;Max Gawn&quot;) %&gt;%
+  group_by(Season)%&gt;%
+  summarise(ave.ho=mean(HO),
+            ave.CM=mean(CM),
+            ave.SC=mean(SC),
+            ave.MG=mean(MG),
+            ave.ITC=mean(ITC), 
+            ave.AF=mean(AF),
+            ave.SC=mean(SC),
+            ave.Mi5=mean(MI5))
+
+df4&lt;-gather(df3,variables, values, -Season)   
+df4%&gt;%   
+  ggplot(aes(x=values, y=variables)) +geom_point(aes(colour=as.factor(df4$Season)))+ geom_line(aes(group = variables))</code></pre>
+<p><img src="/fitzRoy/2018-09-19-taking-home-charlie_files/figure-html/unnamed-chunk-17-1.png" width="672" /> This doesn’t look very clear because of the different ranges of values, i.e. supercoach scores vs Marks inside 50.</p>
+<p>We should facet this to make it look clearer.</p>
+<pre class="r"><code>df4%&gt;%   
+    ggplot(aes(x=as.factor(df4$Season), y=values)) +
+  geom_point()+
+  facet_wrap(~variables,scales = &quot;free&quot;)</code></pre>
+<p><img src="/fitzRoy/2018-09-19-taking-home-charlie_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>So what we can see is that for this group of statistics apart from Marks inside 50, Gawn has done better, does this make him a Brownlow smokey?</p>
+<p><strong>YOU</strong> be the judge.</p>
+</div>
+</div>
