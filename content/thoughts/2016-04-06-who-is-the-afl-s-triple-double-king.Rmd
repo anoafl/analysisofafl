@@ -38,7 +38,7 @@ But across the 198 games in the 2015 AFL season, we we saw 141 of them from 93 d
 
 Interestingly, last year triple-doubles went to their highest level since 2010.
 
-![Caption for the picture.](/img/tripledouble.png)
+![Triple Doubles by Year](/img/tripledouble.png)
 
 All up that doesn't seem that special. Certainly not akin to the rarity of a triple-double in NBA.
  
@@ -49,7 +49,7 @@ For our offence categories let's use goals plus goal assists (i.e. double-figure
 
 How rare would this triple double be? It happened 190 times in the years 2003 to 2015.
 
-![Caption for the picture.](/img/tripledouble1.png)
+![A rare triple double](/img/tripledouble1.png)
 
 Retired Hawthorn premiership star Brad Sewell had the most of these triple-doubles in a single season with four in 2009. Lenny Hayes (St Kilda) and Shane Tuck (Hawthorn) both had three in 2010, as did Tom Liberatore in 2013.
 
@@ -70,3 +70,17 @@ It's the only triple-double of its type since 2003.
 *chosen 2003 because it's the first year we see Goal assists listed.
 
 **these counts of triple doubles include quad doubles.
+
+# Update
+
+Now that we have [#fitzRoy](https://github.com/jimmyday12/fitzRoy), we can update this post with current data!
+
+```{r}
+library(fitzRoy)
+data<-fitzRoy::get_afltables_stats()
+
+data%>%
+    select(Season,Date,First.name,Surname, Goals, Goal.Assists,   Inside.50s, Rebounds, Tackles, Contested.Possessions, Clearances)%>%
+    mutate(goal.contribution=Goals+Goal.Assists)%>%
+  filter(Season>2003)
+```
