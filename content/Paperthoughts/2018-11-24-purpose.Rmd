@@ -7,13 +7,15 @@ tags: ["open science", "R", "regression"]
 ---
 
 This part of the blog, I will try and recreate papers using freely available data. 
-The reason I am doing this is because I love AFL and enjoy doing modelling, seeing graphs and reading peoples takes on the numbers behind the game. Numbers add yet another layer to the game and I find it terribly disappointing that more people are not able to give it ago.  I think personally some of the best content on sites like [fansided]( https://fansided.com/2018/11/12/nylon-calculus-nba-approximate-value-big-3s/), where people are able to write analytical pieces. There are two key parts for this, the first being data access which I hope [fitzRoy]( https://github.com/jimmyday12/fitzRoy) has gone some way to helping out. The second is that people are able to grow and extend other peoples concepts. Hopefully most people have heard the great quote “all models are wrong” and that is true. Models aren’t perfect nor are they meant to be. What I love reading is seeing how people integrate their own domain knowledge or ideas into a model. But to be able to grow on and in some cases have a difference in opinion on one needs to be able to know what is going on in the first place. 
+The reason I am doing this is because I love AFL and enjoy doing modelling, seeing graphs and reading peoples takes on the numbers behind the game. Numbers add yet another layer to the game and I find it terribly disappointing that more people are not able to give it ago.  I think personally some of the best content on sites like [fansided]( https://fansided.com/2018/11/12/nylon-calculus-nba-approximate-value-big-3s/), where people are able to freely write analytical pieces. There are two key parts for this, the first being data access which I hope [fitzRoy]( https://github.com/jimmyday12/fitzRoy) has gone some way to helping out. The second is that people are able to grow and extend other peoples concepts. Hopefully most people have heard the great quote “all models are wrong” and that is true. Models aren’t perfect nor are they meant to be. What I love reading is seeing how people integrate their own domain knowledge in either AFL or statistics into a model. But to be able to grow on and in some cases have a difference in opinion on one needs to be able to know what is going on in the first place. 
 
 So this part of the blog aims to:
 
 * Use only data that anyone can access with an internet connection to recreate papers
 
 * Recreate papers where possible
+
+* Where not possible to recreate, write about some of the modelling techniques so that those who aren't enrolled in a university with paper access can get a feel for what is going on within the AFL community. 
 
 With the hopes of
 
