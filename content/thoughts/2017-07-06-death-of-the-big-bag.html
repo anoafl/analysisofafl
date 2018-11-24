@@ -2,6 +2,7 @@
 title: "Death of the Big Bag"
 author : " Robert Nguyen"
 date: '2017-07-06'
+description: "Wheres all the bags gone"
 
 tags: ["graphics","goalkicking","bags"]
 ---
@@ -159,17 +160,17 @@ table.bags.by.year</code></pre>
 <p>To do simple plots using ggplot, I would highly reccomend following this guide <a href="http://r4ds.had.co.nz/data-visualisation.html">here</a></p>
 <pre class="r"><code>  ggplot(data=table.bags.by.year)+ 
   geom_line(mapping=aes(x=year, y=count_bags))</code></pre>
-<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="/thoughts/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>This graph is a bit misleading because of the sudden dip in 2017 as we don’t have a complete year, so lets pull that year out.</p>
 <pre class="r"><code>table.bags.by.year%&gt;% 
   filter(year&lt;2017) %&gt;%
   ggplot(aes(x=year,y=count_bags)) + geom_line()</code></pre>
-<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-9-1.png" width="672" /> Another good idea is to add labels to certain points of interest, below I am labelling the year 1993 as it was the year the number of bags peaked.</p>
+<p><img src="/thoughts/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-9-1.png" width="672" /> Another good idea is to add labels to certain points of interest, below I am labelling the year 1993 as it was the year the number of bags peaked.</p>
 <pre class="r"><code>table.bags.by.year%&gt;% 
   filter(year&lt;2017) %&gt;%
   ggplot(aes(x=year,y=count_bags)) + geom_line() +
   geom_text(data=subset(table.bags.by.year, year %in% c(1993)),aes(label=count_bags))</code></pre>
-<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="/thoughts/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p>So graphically it clearly looks as though the amount of bags being kicked in todays game is going down. But is the game lower scoring?</p>
 <p>Well we can check that, we can look at the same graph but instead of looking at the count of bags we can look at the average totals of games.</p>
 <p>So again thanks to the great people at <a href="http://afltables.com/afl/stats/biglists/bg3.txt">afltables</a> for providing the data</p>
@@ -178,14 +179,14 @@ table.bags.by.year</code></pre>
 <pre class="r"><code>##remember always view the data
 head(gamescores)</code></pre>
 <pre><code>## # A tibble: 6 x 12
-##   Date    year round home  home.g home.b home.t away  away.g away.b away.t
-##   &lt;chr&gt;  &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
-## 1 8-May~  1897 R1    Fitz~      6     13     49 Carl~      2      4     16
-## 2 8-May~  1897 R1    Coll~      5     11     41 St K~      2      4     16
-## 3 8-May~  1897 R1    Geel~      3      6     24 Esse~      7      5     47
-## 4 8-May~  1897 R1    Sout~      3      9     27 Melb~      6      8     44
-## 5 15-Ma~  1897 R2    Sout~      6      4     40 Carl~      5      6     36
-## 6 15-Ma~  1897 R2    Esse~      4      6     30 Coll~      8      2     50
+##   Date   year round home  home.g home.b home.t away  away.g away.b away.t
+##   &lt;chr&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
+## 1 8-Ma~  1897 R1    Fitz~      6     13     49 Carl~      2      4     16
+## 2 8-Ma~  1897 R1    Coll~      5     11     41 St K~      2      4     16
+## 3 8-Ma~  1897 R1    Geel~      3      6     24 Esse~      7      5     47
+## 4 8-Ma~  1897 R1    Sout~      3      9     27 Melb~      6      8     44
+## 5 15-M~  1897 R2    Sout~      6      4     40 Carl~      5      6     36
+## 6 15-M~  1897 R2    Esse~      4      6     30 Coll~      8      2     50
 ## # ... with 1 more variable: venue &lt;chr&gt;</code></pre>
 <pre class="r"><code>glimpse(gamescores)</code></pre>
 <pre><code>## Observations: 15,119
@@ -209,14 +210,14 @@ head(gamescores)</code></pre>
 
 head(afl.games)</code></pre>
 <pre><code>## # A tibble: 6 x 13
-##   Date    year round home  home.g home.b home.t away  away.g away.b away.t
-##   &lt;chr&gt;  &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
-## 1 8-May~  1897 R1    Fitz~      6     13     49 Carl~      2      4     16
-## 2 8-May~  1897 R1    Coll~      5     11     41 St K~      2      4     16
-## 3 8-May~  1897 R1    Geel~      3      6     24 Esse~      7      5     47
-## 4 8-May~  1897 R1    Sout~      3      9     27 Melb~      6      8     44
-## 5 15-Ma~  1897 R2    Sout~      6      4     40 Carl~      5      6     36
-## 6 15-Ma~  1897 R2    Esse~      4      6     30 Coll~      8      2     50
+##   Date   year round home  home.g home.b home.t away  away.g away.b away.t
+##   &lt;chr&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
+## 1 8-Ma~  1897 R1    Fitz~      6     13     49 Carl~      2      4     16
+## 2 8-Ma~  1897 R1    Coll~      5     11     41 St K~      2      4     16
+## 3 8-Ma~  1897 R1    Geel~      3      6     24 Esse~      7      5     47
+## 4 8-Ma~  1897 R1    Sout~      3      9     27 Melb~      6      8     44
+## 5 15-M~  1897 R2    Sout~      6      4     40 Carl~      5      6     36
+## 6 15-M~  1897 R2    Esse~      4      6     30 Coll~      8      2     50
 ## # ... with 2 more variables: venue &lt;chr&gt;, total.game &lt;int&gt;</code></pre>
 <pre class="r"><code>glimpse(afl.games)</code></pre>
 <pre><code>## Observations: 15,119
@@ -241,7 +242,7 @@ head(afl.games)</code></pre>
   group_by(year)%&gt;%
   summarise(average.total = mean(total.game)) %&gt;% 
   ggplot(aes(x=year,y=average.total))+geom_line()</code></pre>
-<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p><img src="/thoughts/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 <p>That is a bit annoying right for comparisions sake.</p>
 <p>Lets stack the graphs on top of each other saving you the hastle of scrolling up and down. To make things a bit more clear visually lets add some vertical lines to help our eyes out.</p>
 <pre class="r"><code>##make plot 1
@@ -260,7 +261,7 @@ p2&lt;-afl.games %&gt;% group_by(year)%&gt;%
   geom_vline(xintercept =c(1993,2016))
 
 grid.arrange(p1, p2, nrow = 2)</code></pre>
-<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><img src="/thoughts/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>Visually what do you see?</p>
 <p>I see since 1993 it looks as though totals have remained relatively stable while the amount of bags being kicked as been on the steady decline.</p>
 <p>What about how many people in goals are kicking games. In other words what is the spread of goalkickers?</p>
@@ -311,14 +312,14 @@ goal.spread.2%&gt;%
    group_by(year)%&gt;% 
    summarise(average.spread=mean(count_spread)) %&gt;% 
    ggplot(aes(x=year,y=average.spread))+geom_line()</code></pre>
-<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-17-1.png" width="672" /> Looking at this, it would seem as though there was an uptake in spread of goalkickers since the mid 90s that has been maintained roughly through till today.</p>
+<p><img src="/thoughts/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-17-1.png" width="672" /> Looking at this, it would seem as though there was an uptake in spread of goalkickers since the mid 90s that has been maintained roughly through till today.</p>
 <pre class="r"><code>p3&lt;- goal.spread.2%&gt;%
    group_by(year)%&gt;% 
    summarise(average.spread=mean(count_spread)) %&gt;% 
    ggplot(aes(x=year,y=average.spread))+geom_line() +
   geom_vline(xintercept =c(1993,2016))
 grid.arrange(p1, p2,p3 ,nrow = 3)</code></pre>
-<p><img src="/post/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p><img src="/thoughts/2017-07-06-death-of-the-big-bag_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
 <p>From this pretty quick and dirty run, we can see that roughly the amount of bags being kicked has gone down while totals and spread of goal kickers has remained relatively stable.</p>
 <p>What does that mean for todays game and what are some possible next steps?</p>
 <ul>
