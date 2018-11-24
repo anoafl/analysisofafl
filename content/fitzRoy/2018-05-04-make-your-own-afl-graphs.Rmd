@@ -2,6 +2,7 @@
 title : "Make Your Own AFL Graph"
 author : "Robert Nguyen"
 date : 2018-05-04
+description: "A few AFL ggplot examples"
 tags : ["fitzRoy", "graphics","R","open science"]
 
 ---
