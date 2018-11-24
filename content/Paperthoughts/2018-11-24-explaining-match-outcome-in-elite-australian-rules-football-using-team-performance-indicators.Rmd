@@ -17,7 +17,7 @@ Put another way, if I were to show you the AFL stats on say footywire at the end
 
 
 
-The good thing about this paper, is that it only uses data that is already available in [#fitzRoy](https://github.com/jimmyday12/fitzRoy)
+The good thing about this paper, is that it only uses data that is already available in [#fitzRoy](https://github.com/jimmyday12/fitzRoy). Of course fitzRoy wasn't around when the paper was written, but it just so happens that the data used is also available within fitzRoy.
 
 # Variables used
 
