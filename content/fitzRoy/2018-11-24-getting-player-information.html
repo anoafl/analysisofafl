@@ -74,5 +74,933 @@ page</code></pre>
           html_text()
 player</code></pre>
 <pre><code>## [1] &quot;Dominic Sheed&quot;</code></pre>
+<p>We take the html of the page and we find the information we want to extact into our table using html_nodes.</p>
+<p>While it looks a little weird the <code>html_nodes(&quot;.ldrow .hltitle&quot;)</code> its fairly simple to do using <a href="https://selectorgadget.com/">selector gadget</a></p>
 </div>
+<div id="step-3c-get-the-rest-of-the-information" class="section level2">
+<h2>Step 3c Get the rest of the information</h2>
+<pre class="r"><code>url&lt;-&quot;https://www.footywire.com/afl/footy/ft_players&quot;
+
+
+link&lt;-read_html(url)%&gt;%
+html_nodes(&quot;br+ a , .lnormtop a:nth-child(1)&quot;)%&gt;%
+  html_attr(&quot;href&quot;)
+
+url_players&lt;-str_c(&quot;https://www.footywire.com/afl/footy/&quot;,link)
+
+playing.for&lt;-  page%&gt;%
+    html_nodes(&quot;.ldrow a b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  number&lt;-     page%&gt;%
+    html_nodes(&quot;.ldrow &gt; b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  
+  weight&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
+  
+  height&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
+  
+  draft_position &lt;- page%&gt;%
+    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+  
+  club_drafted &lt;- page%&gt;%
+    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+  position &lt;-     page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Position: &quot;)%&gt;%
+    str_squish() %&gt;% as.tibble()</code></pre>
+</div>
+</div>
+<div id="last-step-make-it-into-a-function" class="section level1">
+<h1>Last step make it into a function</h1>
+<pre class="r"><code>cbind.fill &lt;- function(...){
+    nm &lt;- list(...) 
+    nm &lt;- lapply(nm, as.matrix)
+    n &lt;- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+player_info &lt;- function(x){
+  # page &lt;- read_html(x)
+  page&lt;-read_html(x)  
+  player&lt;-       page%&gt;%
+    html_nodes(&quot;.ldrow .hltitle&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  playing.for&lt;-  page%&gt;%
+    html_nodes(&quot;.ldrow a b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  number&lt;-     page%&gt;%
+    html_nodes(&quot;.ldrow &gt; b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  
+  weight&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
+  
+  height&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
+  
+  draft_position &lt;- page%&gt;%
+    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+  
+  club_drafted &lt;- page%&gt;%
+    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+  position &lt;-     page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Position: &quot;)%&gt;%
+    str_squish() %&gt;% as.tibble()
+  
+  
+  
+  
+  #combine, name, and make it a tibble
+  player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+  
+  player_information &lt;- as.tibble(player_information)
+
+  print(x)
+  # return(x)
+  return(player_information)
+}
+footywire &lt;- purrr::map_df(url_players, player_info)</code></pre>
+<pre><code>## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--jake-aarts&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--ryan-abbott&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--gary-jnr-ablett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--blake-acres&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--marcus-adams&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--taylor-adams&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--brendon-ah-chee&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--callum-ah-chee&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--paul-ahern&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--ben-ainsworth&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--brayden-ainsworth&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--james-aish&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--aliir-aliir&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--matthew-allen&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--oscar-allen&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--jacob-allison&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--joel-amartey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--patrick-ambrose&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--karl-amon&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--jed-anderson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--harris-andrews&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--noah-answerth&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--flynn-appleby&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--david-armitage&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--david-astbury&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--rory-atkins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--tom-atkins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--joe-atley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--shaun-atley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--logan-austin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--mark-baguley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--zac-bailey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--liam-baker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--oskar-baker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--hayden-ballantyne&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--charlie-ballard&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--connor-ballenden&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--noah-balta&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--bailey-banfield&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--tom-barrass&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--ryan-bastinac&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--josh-battle&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--dayne-beams&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--toby-bedford&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--joshua-begley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--james-bell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--tom-bellchambers&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--harley-bennell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--jarrod-berry&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--thomas-berry&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--edward-betts&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--brett-bewley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--jed-bews&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jack-billings&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--grant-birchall&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--connor-blakely&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--nick-blakey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--mark-blicavs&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--travis-boak&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--shai-bolton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--aiden-bonar&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--riley-bonner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--marcus-bontempelli&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--atu-bosenavulagi&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jack-bowes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--thomas-boyd&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--kaiden-brand&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jarrod-brander&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--andrew-brayshaw&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--angus-brayshaw&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--hamish-brayshaw&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--luke-breust&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--kieren-briggs&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--nathan-broad&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--matthew-broadbent&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--will-brodie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--keegan-brooksby&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--timothy-broomhead&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--ben-brown&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--callum-brown&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--luke-brown&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--mitchell-brown-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--nathan-brown&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--tyler-brown&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--oscar-brownless&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--josh-bruce&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--dylan-buckley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--jack-buckley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--tomas-bugg&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--matthew-buntine&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--chris-burgess&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--shaun-burgoyne&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--ryan-burton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--daniel-butler&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--zak-butters&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--jordon-butts&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--wylie-buzza&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--ciaran-byrne&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--darcy-byrne-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jack-bytel&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--josh-caddy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--jye-caldwell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--charlie-cameron&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--darcy-cameron&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jarrod-cameron&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--jeremy-cameron&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jake-carlisle&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--jason-carter-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--levi-casboult&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--jason-castagna&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--ben-cavarra&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--jonathon-ceglar&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--adam-cerra&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--kade-chandler&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--mabior-chol&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--allen-christensen&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--hunter-clark&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--jordan-clark&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--dylan-clarke&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--ryan-clarke&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--zachary-clarke&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--oscar-clavarino&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--tom-clurey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--nakia-cockatoo&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--nicholas-coffield&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--tom-cole&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--callum-coleman-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--riley-collier-dawkins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--samuel-collins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--travis-colyer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--reece-conca&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--stephen-coniglio&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--charlie-constable&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--josh-corbett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--zaine-cordy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--aidan-corr&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--trent-cotchin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--james-cousins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--brennan-cox&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--cedric-cox&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--mason-cox&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--tobin-cox&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jamie-cripps&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--patrick-cripps&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--jack-crisp&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--ben-crocker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--joel-crocker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--brayden-crossley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--brad-crouch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--matt-crouch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--mitchell-crowden&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--hayden-crozier&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--isaac-cumming&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--jordan-cunico&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--david-cuningham&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--harry-cunningham&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--ben-cunnington&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--charlie-curnow&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--edward-curnow&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--tom-cutler&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--luke-dahlhaus&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--josh-daicos&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--bailey-dale&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--patrick-dangerfield&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--caleb-daniel&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--brent-daniels&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--joe-daniher&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--sean-darcy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jack-darling&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--luke-davies-uniacke&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--ben-davis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--phil-davis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--majak-daw&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jacob-dawson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--jordan-dawson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--sam-day&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--matthew-dea&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--matthew-deboer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--jordan-de-goey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--tom-de-koning&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--brett-deledio&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--tory-dickson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--charlie-dixon&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--hugh-dixon&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--sam-docherty&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-doedee&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--richard-douglas&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--paddy-dow&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--sam-draper&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--willem-drew&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--liam-duggan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--taylin-duman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--trent-dumont&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--mitchell-duncan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--josh-dunkley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--lynden-dunn&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--luke-dunstan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--sam-durdin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--taylor-duryea&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--xavier-duursma&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--matt-eagles&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--bradley-ebert&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--harry-edwards&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--shane-edwards&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--derek-eggmolesse-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--jamie-elliott-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--brandon-ellis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--corey-ellis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--cameron-ellis-yolmen&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--luke-english&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--timothy-english&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--orazio-fantasia&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--kane-farrell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--alex-fasolo&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--jeremy-finlayson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--brayden-fiorini&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--zac-fisher&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--oliver-florent&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--matthew-flynn&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--darcy-fogarty&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--lachlan-fogarty&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--luke-foley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--zac-foot&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--darcy-fort&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--robbie-fox&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--billy-frampton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--aaron-francis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--lance-franklin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--james-frawley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--bayley-fritsch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--sam-frost&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--nathan-fyfe&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--andrew-gaff&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--jordan-gallucci&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--darcy-gardiner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--jarrod-garlett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--jeff-gartlett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--joel-garner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--taylor-garner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--ryan-garthwaite&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--max-gawn&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jarryn-geary&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--bryce-gibbs&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--stefan-giro&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--conor-glass&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--martin-gleeson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--hugh-goddard&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--will-golds&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--tyson-goldsack&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--todd-goldstein&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--billy-gowers&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--noah-gown&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--caleb-graham&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--jack-graham&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--robert-gray&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--sam-gray&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--damon-greaves&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--fergus-greene&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--toby-greene&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--hugh-greenwood&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--levi-greenwood&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jade-gresham&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--shaun-grigg&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--dylan-grimes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--brodie-grundy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--heath-grundy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--riley-grundy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--matt-guelfi&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--jack-gunston&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--cameron-guthrie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--zach-guthrie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--aaron-hall&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--brayden-ham&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--will-hamill&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--joel-hamling&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--pearce-hanley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--mitchell-hannan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--daniel-hannebery&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--oliver-hanrahan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jarrod-harbrow&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--blake-hardwick&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--james-harmes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--kyle-hartigan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--hamish-hartlett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--michael-hartley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--jackson-hately&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--tom-hawkins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--kyron-hayden&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--sam-hayes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--will-hayes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--nick-haynes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--will-hayward&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--isaac-heeney&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--lachlan-henderson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--ricky-henderson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--jack-henry&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--dyson-heppell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jacob-heron&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--cameron-hewett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--george-hewett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--michael-hibberd&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--tom-hickey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--jack-higgins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--shaun-higgins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--bradley-hill&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--ian-hill&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--stephen-hill&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--elliot-himmelberg&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--harrison-himmelberg&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--nick-hind&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--mitchell-hinge&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--eric-hipwood&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--luke-hodge&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--jesse-hogan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--nicholas-holman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jack-hombsch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--cale-hooker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--jacob-hopper&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--marty-hore&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--george-horlin-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--jordan-houlahan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--bachar-houli&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--dan-houston&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--dougal-howard&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--daniel-howe&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--jeremy-howe&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--nathan-hrovat&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--ethan-hughes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--jayden-hunt&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--lachlan-hunter&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--paul-hunter&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--michael-hurley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--shannon-hurn&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-hutchings&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--connor-idun&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--jarman-impey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--kieran-jack&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--ben-jacobs&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--sam-jacobs&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--ben-jarvis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--josh-jenkins&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--lewis-jetta&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--neville-jetta&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--changkuoth-jiath&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--jason-johannisen&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--aidyn-johnson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--tom-jok&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--thomas-jonas&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--chayce-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--harrison-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--jamaine-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--liam-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--nathan-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--scott-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--zak-jones&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--lin-jong&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--james-jordan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--darragh-joyce&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jesse-joyce&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--tom-joyce&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--mark-keane&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--alex-keath&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--ben-keays&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--lachlan-keeffe&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--declan-keilty&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--jake-kelly&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--joshua-kelly&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--tim-kelly&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-kelly&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--adam-kennedy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--josh-p--kennedy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--joshua-kennedy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--matthew-kennedy-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--jay-kennedy-harris&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--jacob-kennerley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--dean-kent&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--pat-kerr&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--shane-kersten&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--ben-king&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--max-king-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--kayle-kirby&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--riley-knight&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--jake-kolodjashnij&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--kade-kolodjashnij&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--jacob-koschitzke&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--matthew-kreuzer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--peter-ladhams&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--rory-laird&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--kane-lambert&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--darcy-lang&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--ed-langdon&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--tom-langdon&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--zac-giles-langdon&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--kyle-langford&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--william-langford&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--doulton-langlands&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--nick-larkey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--luke-lavender&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--jayden-laverde&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--kym-lebois&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--sean-lemmens&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jack-leslie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--ryan-lester&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--jake-lever&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--jordan-lewis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--mitchell-lewis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--thomas-liberatore&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--jarrod-lienert&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--matthew-ling&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--patrick-lipinski&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--daniel-lloyd&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--jake-lloyd&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--sam-lloyd&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--rory-lobb&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--matthew-lobbe&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--griffin-logue&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--ben-long&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--jake-long&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--billy-longer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jack-lonie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jack-lukosius&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--scott-lycett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--bradley-lynch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--max-lynch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-lynch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--thomas-lynch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--corey-lyons&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--jarryd-lyons&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--david-mackay&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--jamie-macmillan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--darcy-macpherson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--jackson-macrae&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--harrison-macreadie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--jack-madgen&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--jack-maibaum&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--caleb-marchbank&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--oleg-markov&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--rowan-marshall&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--todd-marshall&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--dustin-martin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jack-martin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--stefan-martin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--chris-masten&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--brandon-matera&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--rhys-mathieson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--steven-may&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--sam-mayes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--brayden-maynard&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--corey-maynard&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--christopher-mayne&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--shane-mcadam&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--cameron-mccarthy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--lincoln-mccarthy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--paddy-mccartin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--tom-mccartin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--hugh-mccluggage&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--cillian-mcdaid&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--luke-mcdonald&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--oscar-mcdonald&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--tom-mcdonald&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--anthony-mcdonald-tipungwuti&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--ben-mcevoy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--connor-mcfadyen&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jeremy-mcgovern&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--mitch-mcgovern&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--andrew-mcgrath&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--edward-mchenry&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--justin-mcinerney&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--oscar-mcinerney&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--fraser-mcinnes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--kamdyn-mcintosh&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--ben-mckay&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--harry-mckay&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--conor-mckenna&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--daniel-mckenzie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--tom-mckenzie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--trent-mckenzie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--shaun-mckernan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--toby-mclean&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jez-mclennan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--ben-mcniece&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--andrew-mcpherson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--daniel-mcstay&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--jarrad-mcveigh&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--lloyd-meek&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--lewis-melican&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--jake-melksham&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--tim-membrey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--connor-menadue&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--sam-menegola&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--daniel-menzel&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--zachary-merrett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--gryan-miers&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--brody-mihocek&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--wayne-milera&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--anthony-miles&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--teia-miles&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--ben-miller&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--touk-miller&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--callum-mills&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--darren-minchington&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--david-mirra&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--tom-mitchell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--timothy-mohr&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--callum-moore&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--darcy-moore&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--dylan-moore&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--dale-morris&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--harry-morrison&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--irving-mosquito&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--steven-motlop&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--shane-mumford&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--david-mundy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jordan-murdoch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--lachlan-murphy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--marc-murphy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--nathan-murphy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--thomas-murphy-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--samuel-murray&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--kobe-mutch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--kurt-mutimer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--david-myers&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--trent-mynott&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--patrick-naish&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--sam-naismith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--nicholas-naitanui&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--toby-nankervis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--quinton-narkle&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--conor-nash&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--aaron-naughton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--alex-neal-bullen&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--lachie-neale&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jackson-nelson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--nic-newman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jack-newnes&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--tom-nicholls&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--aaron-nietschke&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--tom-north&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--connor-nutting&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--ryan-nyhuis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--lochie-o-brien&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--reilly-o-brien&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--tim-o-brien&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--mark-o-connor&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--finbar-o-dwyer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--red-og-murphy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--xavier-o-halloran&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--clayton-oliver&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--jaeger-o-meara&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--xavier-o-neill&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--colin-o-riordan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--andy-otten&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--tom-papley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--brandan-parfitt&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--darcy-parish&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--luke-parker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--matthew-parker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--james-parsons&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--jake-patmore&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--ben-paton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--jonathon-patton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--jack-payne&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--alex-pearce&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--scott-pendlebury&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--harry-perryman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--christian-petracca&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--sam-petrevski-seton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jack-petruccelle&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--harrison-petty&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--andrew-phillips-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--edward-phillips&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--tom-phillips&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--liam-picken&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--jarrod-pickett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--lewis-pierce&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--toby-pink&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--jasper-mcmillan-pittard&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--marc-pittonet&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--lachlan-plowman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--myles-poholke&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--jared-polec&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--cameron-polson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--callum-porter&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--wil-powell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--sam-powell-pepper&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--dion-prestia&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--braydon-preuss&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--paul-puopolo&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--isaac-quaynor&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--dane-rampe&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--alex-rance&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--izak-rankine&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--esava-ratugolea&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--cameron-rayner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jack-redden&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--mason-redman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--ben-reid&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--sam-reid-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--samuel-reid&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--harry-reynolds&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--bailey-rice&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--daniel-rich&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--ed-richards&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--jordan-ridley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--jack-riewoldt&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--daniel-rioli&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--willie-rioli&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--michael-rischitell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--dylan-roberton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--fletcher-roberts&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--nicholas-robertson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--mitch-robinson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--tom-rockliff&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--gary-rohan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--ben-ronke&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--james-rose&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--jack-ross&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--jackson-ross&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--sebastian-ross&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--josh-rotham&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--jarryd-roughead&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--jordan-roughead&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--james-rowbottom&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--connor-rozee&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--liam-ryan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--luke-ryan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--patrick-ryder&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--adam-saad&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--christian-salem&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--aaron-sandilands&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--shane-savage&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--josh-schache&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--matthew-scharenberg&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--bradley-scheer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--blake-schlensog&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--joshua-schoenfeld&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--ryan-schoenmakers&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--will-schofield&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--lachlan-schultz&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--angus-schumacher&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--bailey-scott&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--jack-scrimshaw&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--tom-scully&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--paul-seedsman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--joel-selwood&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--scott-selwood&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--will-setterfield&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--alex-sexton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--heath-shaw&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--dominic-sheed&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--bradley-sheppard&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--thomas-sheridan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--dylan-shiel&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--liam-shiels&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--nicholas-shipley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--lachlan-sholl&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--jayden-short&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--luke-shuey&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--james-sicily&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--steele-sidebottom&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--brayden-sier&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--ben-silvagni&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--jack-silvagni&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--jy-simpkin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--dawson-simpson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--kade-simpson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--sam-simpson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--callum-sinclair&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jack-sinclair&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--sam-skinner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--rory-sloane&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--archie-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--bailey-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--brodie-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--devon-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--ely-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--isaac-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--joel-smith-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--josh-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--nick-smith-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--roarke-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--tim-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--zac-smith&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--ivan-soldo&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--charlie-spargo&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--tom-sparrow&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--zachary-sproule&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--rhys-stanley&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--brandon-starcevich&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jack-steele&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--jake-stein&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--tyson-stengle&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--jaidyn-stephenson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jack-steven&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--james-stewart&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--thomas-stewart&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--liam-stocker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--ryley-stoddart&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--kieran-strachan&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--benjamin-stratton&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--billy-stretch&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--jake-stringer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--sam-sturt&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--matthew-suckling&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--david-swallow&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--jordon-sweet&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--sam-switkowski&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--matthew-taberner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--daniel-talia&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--tim-taranto&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--jake-tarca&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--robert-tarrant&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--curtis-taylor&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--harry-taylor&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--lewis-taylor&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--sam-taylor&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--dale-thomas&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--josh-thomas&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--tarryn-thomas&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--rory-thompson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--scott-thompson-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--jackson-thurlow&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--kurt-tippett&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--anton-tohill&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--adam-tomlinson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--jacob-townsend&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--adam-treloar&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--jack-trengove&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--jackson-trengove&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--darcy-tucker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-sydney-swans--durak-tucker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-geelong-cats--zach-tuohy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--fraser-turner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--kayne-turner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--dom-tyson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--luke-valente&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--aaron-vandenberg&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--laitham-vandermeer&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--travis-varcoe&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--nathan-vardy&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--daniel-venables&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--ed-vickers-willis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--jack-viney&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--nick-vlastuin&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--corey-wagner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--joshua-wagner&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--joshua-walker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--mathew-walker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--taylor-walker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--will-walker&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--mitchell-wallis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--sam-walsh&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--michael-walters&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--callan-ward&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--jake-waterman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--declan-watson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--francis-watson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--tobe-watson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--jack-watts&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--lukas-webb&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--jimmy-webster&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-melbourne-demons--sam-weideman&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--jacob-weitering&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--lachlan-weller&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-richmond-tigers--maverick-weller&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--daniel-wells&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--rhylee-west&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--justin-westhoff&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--brandon-white&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--lachie-whitfield&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--harrison-wigg&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--callum-wilkie&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--thomas-wilkinson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--bailey-williams&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--bailey-williams-1&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--marley-williams&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-greater-western-sydney-giants--zachary-williams&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-carlton-blues--tom-williamson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-collingwood-magpies--rupert-wills&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-fremantle-dockers--nathan-wilson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-adelaide-crows--patrick-wilson&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--oliver-wines&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--chad-wingard&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--alex-witherden&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--jarrod-witts&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--easton-wood&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--mason-wood&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-port-adelaide-power--boyd-woodcock&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--toby-wooller&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-hawthorn-hawks--james-worpel&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--peter-wright&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--samuel-wright&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--tristan-xerri&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--elliot-yeo&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-gold-coast-suns--aaron-young&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--lachie-young&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-western-bulldogs--lewis-young&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-st-kilda-saints--robert-young&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--david-zaharakis&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-essendon-bombers--brandon-zerk-thatcher&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--jack-ziebell&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-brisbane-lions--dayne-zorko&quot;
+## [1] &quot;https://www.footywire.com/afl/footy/pp-kangaroos--cameron-zurhaar&quot;</code></pre>
+<pre class="r"><code>names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;)</code></pre>
 </div>
