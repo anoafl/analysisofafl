@@ -20,6 +20,8 @@ tags: ["academic", "modelling", "regression"]
 <p>The good thing about this paper, is that it only uses data that is already available in <a href="https://github.com/jimmyday12/fitzRoy">#fitzRoy</a></p>
 <div id="variables-used" class="section level1">
 <h1>Variables used</h1>
+<p>The variables used were across the 2013 and 2014 AFL season.</p>
+<p>So something that could be an interesting extension of this, is because <a href="https://www.footywire.com/">footywire</a> has made some extra statistics available like meters gained, intercepts and tackles inside 50 to name a few. You could run the same model type that the paper used say logistic regression. But you could see if variables like meters gained, intercepts and tackles added any extra value. This is why this particular part of my blog exists, because its an interesting question and one that a fan of the game can hopefully answer online.</p>
 <pre class="r"><code>c(&quot;Variables used&quot;,
   &quot;Kicks&quot;,
   &quot;Marks&quot;,
@@ -62,4 +64,23 @@ tags: ["academic", "modelling", "regression"]
 <h1>How to get the data ready</h1>
 <p>To fit the models described in the paper, we would need a dataset that contains the game information joined with a binary indicator 1 if the team won and 0 if the team lost (in the paper draws were removed).</p>
 <p>To do this using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> would require joining <code>fitzRoy::match_results</code> onto <code>fitzRoy::player_stats</code></p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## -- Attaching packages ---------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.7
+## v tidyr   0.8.1     v stringr 1.3.1
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;stringr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## -- Conflicts ------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(fitzRoy)</code></pre>
+<pre><code>## Warning: package &#39;fitzRoy&#39; was built under R version 3.5.1</code></pre>
+<pre class="r"><code>df1&lt;-fitzRoy::match_results
+df2&lt;-fitzRoy::player_stats</code></pre>
 </div>

@@ -21,6 +21,10 @@ The good thing about this paper, is that it only uses data that is already avail
 
 # Variables used
 
+The variables used were across the 2013 and 2014 AFL season. 
+
+So something that could be an interesting extension of this, is because [footywire](https://www.footywire.com/) has made some extra statistics available like meters gained, intercepts and tackles inside 50 to name a few. You could run the same model type that the paper used say logistic regression. But you could see if variables like meters gained, intercepts and tackles added any extra value. This is why this particular part of my blog exists, because its an interesting question and one that a fan of the game can hopefully answer online.
+
 ```{r}
 c("Variables used",
   "Kicks",
@@ -50,3 +54,10 @@ For example [Multicollinearity](https://en.wikipedia.org/wiki/Multicollinearity)
 To fit the models described in the paper, we would need a dataset that contains the game information joined with a binary indicator 1 if the team won and 0 if the team lost (in the paper draws were removed).
 
 To do this using [fitzRoy](https://github.com/jimmyday12/fitzRoy) would require joining `fitzRoy::match_results` onto `fitzRoy::player_stats`
+
+```{r}
+library(tidyverse)
+library(fitzRoy)
+df1<-fitzRoy::match_results
+df2<-fitzRoy::player_stats
+```
