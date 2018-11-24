@@ -1,0 +1,199 @@
+---
+title: "Getting player information"
+author: "Robert Nguyen"
+date: 2018-11-24
+tags : ["fitzRoy", "scraping","R","open science"]
+---
+
+So its draft time in AFL at the moment and being a keen fan on all drafting  I was a little disappointing with the coverage. Not because there were not people doing some interesting work. We had a great article on [ABC](https://www.abc.net.au/news/2018-11-22/the-art-of-success-in-the-afl-draft/10517766) by the guys over at [HPN](https://www.hpnfooty.com/) who were contributors to [footballistics](https://www.harpercollins.com.au/9780733338441/) a great book for anyone who is interested in some numbers behind the game. But I just wished there were more!
+
+Tony over at [Matterofstats](http://www.matterofstats.com/) has been recently doing a great series of [blog posts](http://www.matterofstats.com/mafl-stats-journal/2018/11/21/classifying-recent-afl-players-by-position-part-2-whos-where) trying to classify players into positions based on their data.
+
+So it would seem as though people are interested in players draft positions, what club they play for and their playing positions. 
+
+But I guess another question could be, if these blog posts are so interesting and presumebly useful to AFL clubs and fans why is there not more content? 
+
+My guess is that its mainly because the data isn't readily available.
+
+So lets make this data available for all from [footywire](https://www.footywire.com/) and if the demand is there (which I suspect it will be) expect some integration to [fitzRoy](https://jimmyday12.github.io/fitzRoy/index.html)
+
+# Step One
+
+First we have to find a page that contains the data we are after, for ease it would be best if all the information we wanted, say player name, club, height, weight, draft positon and playing position were available on the same page. 
+
+So lets go to footywire do some digging around and lets find a specific players page say [Dominic Sheed](https://www.footywire.com/afl/footy/pp-west-coast-eagles--dominic-sheed). 
+
+![Grand Final Hero](/img/domsheed.JPG)
+
+So Looking at the page, we can see there is a fair bit of information we would like. We want his height, weight, position and his draft position. Hopefully by following this example if you wanted to you could also get his supercoach price, fantasy price and his contract status. 
+
+# Step 2
+
+Install the R packages that we need. 
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(stringr)
+```
+
+# Step 3 A single example
+
+I find its best to just scrape a single page then we can figure out how to automate the scrape so we can get a list of players. 
+
+So just looking at Dominic Sheed lets go step by step and get some of his information. 
+
+## Step 3a Read in the html
+
+```{r}
+page<-read_html(x="https://www.footywire.com/afl/footy/pp-west-coast-eagles--dominic-sheed")
+page
+```
+
+So now we have the content of our page, we essentially have to filter out the information we don't want and leave the information we do want in hopefully a nice table so we can analyse it.
+
+## Step 3b Get the player name
+
+```{r}
+ player<- page%>%
+          html_nodes(".ldrow .hltitle")%>%
+          html_text()
+player
+```
+
+We take the html of the page and we find the information we want to extact into our table using html_nodes.
+
+While it looks a little weird the `html_nodes(".ldrow .hltitle")` its fairly simple to do using [selector gadget](https://selectorgadget.com/) 
+
+## Step 3c Get the rest of the information
+
+```{r}
+
+url<-"https://www.footywire.com/afl/footy/ft_players"
+
+
+link<-read_html(url)%>%
+html_nodes("br+ a , .lnormtop a:nth-child(1)")%>%
+  html_attr("href")
+
+url_players<-str_c("https://www.footywire.com/afl/footy/",link)
+
+playing.for<-  page%>%
+    html_nodes(".ldrow a b")%>%
+    html_text() %>% as.tibble()
+  number<-     page%>%
+    html_nodes(".ldrow > b")%>%
+    html_text() %>% as.tibble()
+  
+  weight<-page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+  
+  height<-page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+  
+  draft_position <- page%>%
+    html_nodes("tr:nth-child(5) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+  
+  club_drafted <- page%>%
+    html_nodes("tr:nth-child(5) .ldrow")%>%
+    html_text()%>%str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_remove(".*by") %>% as.tibble()
+  position <-     page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Position: ")%>%
+    str_squish() %>% as.tibble()
+  
+  
+
+```
+
+# Last step make it into a function
+
+```{r}
+cbind.fill <- function(...){
+    nm <- list(...) 
+    nm <- lapply(nm, as.matrix)
+    n <- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+player_info <- function(x){
+  # page <- read_html(x)
+  page<-read_html(x)  
+  player<-       page%>%
+    html_nodes(".ldrow .hltitle")%>%
+    html_text() %>% as.tibble()
+  playing.for<-  page%>%
+    html_nodes(".ldrow a b")%>%
+    html_text() %>% as.tibble()
+  number<-     page%>%
+    html_nodes(".ldrow > b")%>%
+    html_text() %>% as.tibble()
+  
+  weight<-page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+  
+  height<-page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+  
+  draft_position <- page%>%
+    html_nodes("tr:nth-child(5) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+  
+  club_drafted <- page%>%
+    html_nodes("tr:nth-child(5) .ldrow")%>%
+    html_text()%>%str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_remove(".*by") %>% as.tibble()
+  position <-     page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Position: ")%>%
+    str_squish() %>% as.tibble()
+  
+  
+  
+  
+  #combine, name, and make it a tibble
+  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+  
+  player_information <- as.tibble(player_information)
+
+  print(x)
+  # return(x)
+  return(player_information)
+}
+footywire <- purrr::map_df(url_players, player_info)
+
+names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position")
+
+
+```
