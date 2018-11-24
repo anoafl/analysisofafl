@@ -70,4 +70,6 @@ math = true
 [[menu.main]]
     name = "project"
     url = "/project/"
-    weight = 5        
+    weight = 7
+    
+    
