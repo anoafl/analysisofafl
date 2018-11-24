@@ -69,14 +69,6 @@ While it looks a little weird the `html_nodes(".ldrow .hltitle")` its fairly sim
 
 ```{r}
 
-url<-"https://www.footywire.com/afl/footy/ft_players"
-
-
-link<-read_html(url)%>%
-html_nodes("br+ a , .lnormtop a:nth-child(1)")%>%
-  html_attr("href")
-
-url_players<-str_c("https://www.footywire.com/afl/footy/",link)
 
 playing.for<-  page%>%
     html_nodes(".ldrow a b")%>%
@@ -125,6 +117,16 @@ playing.for<-  page%>%
 # Last step make it into a function
 
 ```{r}
+
+url<-"https://www.footywire.com/afl/footy/ft_players"
+
+
+link<-read_html(url)%>%
+html_nodes("br+ a , .lnormtop a:nth-child(1)")%>%
+  html_attr("href")
+
+url_players<-str_c("https://www.footywire.com/afl/footy/",link)
+
 cbind.fill <- function(...){
     nm <- list(...) 
     nm <- lapply(nm, as.matrix)
