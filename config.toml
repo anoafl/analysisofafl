@@ -39,7 +39,7 @@ math = true
 
 [[menu.main]]
     name = "Thoughts"
-    url = "thoughts/"
+    url = "/thoughts/"
     weight = 1
 
 [[menu.main]]
