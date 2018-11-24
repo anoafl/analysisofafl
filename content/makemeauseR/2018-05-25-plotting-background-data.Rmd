@@ -1,6 +1,6 @@
 ---
 title : "Plotting Background Data"
-description : ""
+description : "Example of plotting background data"
 author : "Robert Nguyen"
 date : 2018-05-25
 tags : ["fitzRoy", "graphics","R","open science","statistics"]

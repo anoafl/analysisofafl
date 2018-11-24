@@ -1,12 +1,13 @@
 ---
 title: "Maths in Sport Script"
+description : "Script that ran live comparable to official champion data 2017 predictions"
 author: Robert Nguyen
 date: 2018-05-18
 slug: maths-in-sport-script
 categories:
   - Brownlow
 tags : ["fitzRoy", "graphics","R","open science", "statistics"]
-description: ''
+
 ---
 
 ```{r, eval=FALSE}

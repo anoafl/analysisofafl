@@ -1,5 +1,6 @@
 ---
 title: "Getting player information"
+description : "Writing a function to get extra player information from footywire"
 author: "Robert Nguyen"
 date: 2018-11-24
 tags : ["fitzRoy", "scraping","R","open science"]

@@ -38,13 +38,13 @@ math = true
     post = "/:year/:month/:day/:filename/"
 
 [[menu.main]]
-    name = "Blog"
+    name = "Thoughts"
     url = "/"
     weight = 1
 
 [[menu.main]]
-    name = "Projects"
-    url = "/project/"
+    name = "Models"
+    url = "/models/"
     weight = 2
 [[menu.main]]
 
@@ -56,8 +56,18 @@ math = true
     name = "makemeauseR"
     url = "/makemeauseR/"
     weight = 4
+    
+[[menu.main]]
+    name = "data"
+    url = "/data/"
+    weight = 5    
 
 [[menu.main]]
     name = "About"
     url = "/page/about/"
-    weight = 5
+    weight = 6
+    
+[[menu.main]]
+    name = "project"
+    url = "/project/"
+    weight = 5        
