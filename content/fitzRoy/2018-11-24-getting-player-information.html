@@ -51,7 +51,15 @@ tags : ["fitzRoy", "scraping","R","open science"]
 <pre><code>## The following object is masked from &#39;package:readr&#39;:
 ## 
 ##     guess_encoding</code></pre>
-<pre class="r"><code>library(stringr)</code></pre>
+<pre class="r"><code>library(stringr)
+
+cbind.fill &lt;- function(...){
+    nm &lt;- list(...) 
+    nm &lt;- lapply(nm, as.matrix)
+    n &lt;- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}</code></pre>
 </div>
 <div id="step-3-a-single-example" class="section level1">
 <h1>Step 3 A single example</h1>
@@ -156,10 +164,118 @@ player</code></pre>
 ##   value   
 ##   &lt;chr&gt;   
 ## 1 &quot; 87kg &quot;</code></pre>
+<p>The next thing that might look a little weird is the <code>str_extract</code> and the <code>str_remove</code></p>
+<p>So lets think about a sentence or a bunch of text information like we have just scraped from Dom Sheeds page.</p>
+<p>We might want one of essentially 3 situations</p>
+<ol style="list-style-type: decimal">
+<li>All the text up to a certain word</li>
+<li>All the text between two words</li>
+<li>All the text after a word</li>
+</ol>
+<p>Lets use as our example the scrape we have just done</p>
+<pre class="r"><code>page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+     str_squish()</code></pre>
+<pre><code>## [1] &quot;Height: 185cm Weight: 87kg Position: Midfield&quot;</code></pre>
+<p>which should return us</p>
+<p>“Height: 185cm Weight: 87kg Position: Midfield”</p>
+<ol style="list-style-type: decimal">
+<li>All the text up to a certain word</li>
+</ol>
+<p>If we wanted only height, which we do we would extract all the text up until the word Weight.</p>
+<pre class="r"><code>page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;.*(?=Weight:)&quot;))</code></pre>
+<pre><code>## [1] &quot;Height: 185cm &quot;</code></pre>
+<p>The <code>.*</code> that just refers to what you want to extract then the next part is well when do we stop, we stop once we reach Weight <code>?=Weight:)</code></p>
+<ol start="2" style="list-style-type: decimal">
+<li>All the text between two words</li>
+</ol>
+<p>The next part of the example is, lets say you don’t want the word height, but instead you wanted what was inbetween the words Height: and Weight: i.e. the actually measurement.</p>
+<p>You can do that as follows.</p>
+<pre class="r"><code>page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))</code></pre>
+<pre><code>## [1] &quot; 185cm &quot;</code></pre>
+<p>The first thing is we need to find the word <code>Height:</code> which we do using <code>(?&lt;=Height:)</code> then we place our <code>.*</code> for the text we actually want to pull out and then we stop once we hit <code>Weight:</code> <code>(?=Weight:)</code></p>
+<ol start="3" style="list-style-type: decimal">
+<li>All the text after a word</li>
+</ol>
+<p>Lets look at our original text. <code>&quot;Height: 185cm Weight: 87kg Position: Midfield&quot;</code></p>
+<p>What we want now is the position of the player, which thankfully always appears after the string <code>Position:</code></p>
+<p>So lets think about it we want to get the string <code>.*</code> after <code>Position:</code></p>
+<pre class="r"><code>page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Position: &quot;)%&gt;%
+    str_squish()</code></pre>
+<pre><code>## [1] &quot;Midfield&quot;</code></pre>
 </div>
 </div>
 <div id="last-step-make-it-into-a-function" class="section level1">
 <h1>Last step make it into a function</h1>
+<p>If we were to just do Dom Sheed alone, our script would look something like this.</p>
+<pre class="r"><code>page&lt;-read_html(x=&quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--dominic-sheed&quot;)
+
+player&lt;- page%&gt;%
+          html_nodes(&quot;.ldrow .hltitle&quot;)%&gt;%
+          html_text()
+
+playing.for&lt;-  page%&gt;%
+    html_nodes(&quot;.ldrow a b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  number&lt;-     page%&gt;%
+    html_nodes(&quot;.ldrow &gt; b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  
+  weight&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
+  
+  height&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
+  
+  draft_position &lt;- page%&gt;%
+    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+  
+  club_drafted &lt;- page%&gt;%
+    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+  position &lt;-     page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Position: &quot;)%&gt;%
+    str_squish() %&gt;% as.tibble()
+  
+  player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+  
+  player_information &lt;- as.tibble(player_information)</code></pre>
+<p>So that’s great it has all the information we want, the information we are after is in the same spot across pages so all we need to do is go to each individual page and run the same script and we we get all the tables to join.</p>
+<p>Sounds a bit annyoing hey?</p>
+<p>So it would be better to get a list of urls and for each of those urls we take from the page the information we are after. That sounds a lot better right?</p>
 <pre class="r"><code>url&lt;-&quot;https://www.footywire.com/afl/footy/ft_players&quot;
 
 

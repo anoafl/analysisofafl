@@ -35,6 +35,14 @@ Install the R packages that we need.
 library(tidyverse)
 library(rvest)
 library(stringr)
+
+cbind.fill <- function(...){
+    nm <- list(...) 
+    nm <- lapply(nm, as.matrix)
+    n <- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
 ```
 
 # Step 3 A single example
@@ -169,7 +177,151 @@ page%>%
 
 ```
 
+The next thing that might look a little weird is the `str_extract` and the `str_remove`
+
+
+So lets think about a sentence or a bunch of text information like we have just scraped from Dom Sheeds page. 
+
+We might want one of essentially 3 situations
+
+1. All the text up to a certain word
+2. All the text between two words
+3. All the text after a word
+
+Lets use as our example the scrape we have just done
+
+```{r}
+
+page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+     str_squish()
+
+
+```
+
+which should return us
+
+"Height: 185cm Weight: 87kg Position: Midfield"
+
+1. All the text up to a certain word
+
+If we wanted only height, which we do we would extract all the text up until the word Weight.
+
+```{r}
+page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =(".*(?=Weight:)"))
+```
+
+The `.*` that just refers to what you want to extract then the next part is well when do we stop, we stop once we reach Weight `?=Weight:)` 
+
+2. All the text between two words
+
+The next part of the example is, lets say you don't want the word height, but instead you wanted what was inbetween the words Height: and Weight: i.e. the actually measurement.
+
+You can do that as follows.
+
+```{r}
+page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))
+
+```
+
+The first thing is we need to find the word `Height:` which we do using `(?<=Height:)` then we place our `.*` for the text we actually want to pull out and then we stop once we hit `Weight:` `(?=Weight:)`
+
+3. All the text after a word 
+
+Lets look at our original text. `"Height: 185cm Weight: 87kg Position: Midfield" `
+
+What we want now is the position of the player, which thankfully always appears after the string `Position:` 
+
+So lets think about it we want to get the string `.*` after `Position:`
+
+```{r}
+page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Position: ")%>%
+    str_squish()
+```
+
+
 # Last step make it into a function
+
+If we were to just do Dom Sheed alone, our script would look something like this.
+
+```{r}
+page<-read_html(x="https://www.footywire.com/afl/footy/pp-west-coast-eagles--dominic-sheed")
+
+player<- page%>%
+          html_nodes(".ldrow .hltitle")%>%
+          html_text()
+
+playing.for<-  page%>%
+    html_nodes(".ldrow a b")%>%
+    html_text() %>% as.tibble()
+  number<-     page%>%
+    html_nodes(".ldrow > b")%>%
+    html_text() %>% as.tibble()
+  
+  weight<-page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+  
+  height<-page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+  
+  draft_position <- page%>%
+    html_nodes("tr:nth-child(5) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+  
+  club_drafted <- page%>%
+    html_nodes("tr:nth-child(5) .ldrow")%>%
+    html_text()%>%str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_remove(".*by") %>% as.tibble()
+  position <-     page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Position: ")%>%
+    str_squish() %>% as.tibble()
+  
+  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+  
+  player_information <- as.tibble(player_information)
+  
+  
+  
+```
+
+So that's great it has all the information we want, the information we are after is in the same spot across pages so all we need to do is go to each individual page and run the same script and we we get all the tables to join. 
+
+Sounds a bit annyoing hey?
+
+So it would be better to get a list of urls and for each of those urls we take from the page the information we are after. That sounds a lot better right?
+
+
 
 ```{r}
 
