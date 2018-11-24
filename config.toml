@@ -63,18 +63,16 @@ math = true
     weight = 5    
 
 [[menu.main]]
-    name = "About"
-    url = "/page/about/"
-    weight = 6
-    
-[[menu.main]]
     name = "Papers Thoughts"
     url = "/page/Paperthoughts/"
-    weight = 7    
+    weight = 6    
     
 [[menu.main]]
-    name = "project"
-    url = "/project/"
-    weight = 8
+    name = "projects"
+    url = "/projects/"
+    weight = 7
     
-    
+[[menu.main]]
+    name = "About"
+    url = "/page/about/"
+    weight = 8    
