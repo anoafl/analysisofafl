@@ -9,13 +9,13 @@ tags: ["academic", "modelling", "regression"]
 
 Link to paper [here](https://www.ncbi.nlm.nih.gov/pubmed/26176890)
 
-As a summary, I think the paper is about seeing "box score" data can be used to predict the winner of a game. 
+As a summary, I think the paper is about seeing if "box score" data can be used to predict the winner of a game. 
 
-Put another way, if I were to show you the AFL stats on say footywire at the end of a game. I of course covered up the Goals and Behinds as well.
+Put another way, if I were to show you the AFL stats on say footywire at the end of a game and I of course covered up the Goals and Behinds as well could you predict who won the game?
 
 ![footywire box-score adelaide](/img/boxscoreafl.JPG)
 
-Could you predict who won the game?
+
 
 The good thing about this paper, is that it only uses data that is already available in [#fitzRoy](https://github.com/jimmyday12/fitzRoy)
 
