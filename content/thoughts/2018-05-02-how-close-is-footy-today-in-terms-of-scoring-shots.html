@@ -3,6 +3,7 @@ title : "How Close Is Footy Today in Terms of Scoring Shots"
 author : "Robert Nguyen"
 date : '2017-07-08'
 tags : ["538","r","graphics"]
+description: "based on a 538 piece"
 
 ---
 
@@ -36,17 +37,22 @@ bg3 &lt;- read.fwf(
   slice(-1) ##you could just skip the first two rows, but I like showing different functions :)</code></pre>
 <p>Now that we have the data, we should always view it. Always.</p>
 <pre class="r"><code>head(bg3)</code></pre>
-<pre><code>## # A tibble: 6 x 7
-##      V1 V2              V3           V4        V5        V6       V7      
-##   &lt;dbl&gt; &lt;fct&gt;           &lt;fct&gt;        &lt;fct&gt;     &lt;fct&gt;     &lt;fct&gt;    &lt;fct&gt;   
-## 1     1 &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Fitzroy~ &quot;6.13.49~ &quot;Carlto~ &quot;2.4.16~
-## 2     2 &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Colling~ &quot;5.11.41~ &quot;St Kil~ &quot;2.4.16~
-## 3     3 &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;Geelong~ &quot;3.6.24 ~ &quot;Essend~ &quot;7.5.47~
-## 4     4 &quot; 8-May-1897  &quot; &quot;     R1   &quot; &quot;South M~ &quot;3.9.27 ~ &quot;Melbou~ &quot;6.8.44~
-## 5     5 &quot; 15-May-1897 &quot; &quot;     R2   &quot; &quot;South M~ &quot;6.4.40 ~ &quot;Carlto~ &quot;5.6.36~
-## 6     6 &quot; 15-May-1897 &quot; &quot;     R2   &quot; &quot;Essendo~ &quot;4.6.30 ~ &quot;Collin~ &quot;8.2.50~</code></pre>
+<pre><code>##   V1            V2         V3                 V4                V5
+## 1  1  8-May-1897        R1    Fitzroy            6.13.49          
+## 2  2  8-May-1897        R1    Collingwood        5.11.41          
+## 3  3  8-May-1897        R1    Geelong            3.6.24           
+## 4  4  8-May-1897        R1    South Melbourne    3.9.27           
+## 5  5  15-May-1897       R2    South Melbourne    6.4.40           
+## 6  6  15-May-1897       R2    Essendon           4.6.30           
+##                   V6                 V7
+## 1 Carlton            2.4.16            
+## 2 St Kilda           2.4.16            
+## 3 Essendon           7.5.47            
+## 4 Melbourne          6.8.44            
+## 5 Carlton            5.6.36            
+## 6 Collingwood        8.2.50</code></pre>
 <pre class="r"><code>glimpse(bg3)</code></pre>
-<pre><code>## Observations: 15,281
+<pre><code>## Observations: 15,407
 ## Variables: 7
 ## $ V1 &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, ...
 ## $ V2 &lt;fct&gt;  8-May-1897  ,  8-May-1897  ,  8-May-1897  ,  8-May-1897  ,...
@@ -56,29 +62,34 @@ bg3 &lt;- read.fwf(
 ## $ V6 &lt;fct&gt; Carlton           , St Kilda          , Essendon          ,...
 ## $ V7 &lt;fct&gt; 2.4.16            , 2.4.16            , 7.5.47            ,...</code></pre>
 <pre class="r"><code>str(bg3)</code></pre>
-<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    15281 obs. of  7 variables:
+<pre><code>## &#39;data.frame&#39;:    15407 obs. of  7 variables:
 ##  $ V1: num  1 2 3 4 5 6 7 8 9 10 ...
-##  $ V2: Factor w/ 4681 levels &quot; 1-Apr-1972  &quot;,..: 4467 4467 4467 4467 1013 1013 1013 1013 2198 2198 ...
+##  $ V2: Factor w/ 4737 levels &quot; 1-Apr-1972  &quot;,..: 4521 4521 4521 4521 1027 1027 1027 1027 2225 2225 ...
 ##  $ V3: Factor w/ 29 levels &quot;     EF   &quot;,&quot;     GF   &quot;,..: 5 5 5 5 16 16 16 16 22 22 ...
 ##  $ V4: Factor w/ 24 levels &quot;Adelaide          &quot;,..: 7 5 10 19 19 6 20 15 5 7 ...
 ##  $ V5: Factor w/ 675 levels &quot;0.18.18          &quot;,..: 579 554 504 507 592 548 506 650 593 575 ...
 ##  $ V6: Factor w/ 24 levels &quot;Adelaide          &quot;,..: 4 20 6 15 4 5 7 10 10 15 ...
-##  $ V7: Factor w/ 632 levels &quot;0.1.1             &quot;,..: 291 291 576 554 531 591 45 458 532 579 ...</code></pre>
+##  $ V7: Factor w/ 633 levels &quot;0.1.1             &quot;,..: 292 292 577 555 532 592 45 459 533 580 ...</code></pre>
 <pre class="r"><code>#View(bg3)</code></pre>
 <p>What do you notice about $V2, it is saved as a factor variable. We know by looking at it that it is our date variable so lets change it to that.</p>
 <pre class="r"><code>bg3$V2&lt;-dmy(bg3$V2) ###using the lubridate R package converting v2 to dates
 head(bg3)</code></pre>
-<pre><code>## # A tibble: 6 x 7
-##      V1 V2         V3           V4                   V5      V6     V7    
-##   &lt;dbl&gt; &lt;date&gt;     &lt;fct&gt;        &lt;fct&gt;                &lt;fct&gt;   &lt;fct&gt;  &lt;fct&gt; 
-## 1     1 1897-05-08 &quot;     R1   &quot; &quot;Fitzroy           &quot; &quot;6.13.~ &quot;Carl~ &quot;2.4.~
-## 2     2 1897-05-08 &quot;     R1   &quot; &quot;Collingwood       &quot; &quot;5.11.~ &quot;St K~ &quot;2.4.~
-## 3     3 1897-05-08 &quot;     R1   &quot; &quot;Geelong           &quot; &quot;3.6.2~ &quot;Esse~ &quot;7.5.~
-## 4     4 1897-05-08 &quot;     R1   &quot; &quot;South Melbourne   &quot; &quot;3.9.2~ &quot;Melb~ &quot;6.8.~
-## 5     5 1897-05-15 &quot;     R2   &quot; &quot;South Melbourne   &quot; &quot;6.4.4~ &quot;Carl~ &quot;5.6.~
-## 6     6 1897-05-15 &quot;     R2   &quot; &quot;Essendon          &quot; &quot;4.6.3~ &quot;Coll~ &quot;8.2.~</code></pre>
+<pre><code>##   V1         V2         V3                 V4                V5
+## 1  1 1897-05-08      R1    Fitzroy            6.13.49          
+## 2  2 1897-05-08      R1    Collingwood        5.11.41          
+## 3  3 1897-05-08      R1    Geelong            3.6.24           
+## 4  4 1897-05-08      R1    South Melbourne    3.9.27           
+## 5  5 1897-05-15      R2    South Melbourne    6.4.40           
+## 6  6 1897-05-15      R2    Essendon           4.6.30           
+##                   V6                 V7
+## 1 Carlton            2.4.16            
+## 2 St Kilda           2.4.16            
+## 3 Essendon           7.5.47            
+## 4 Melbourne          6.8.44            
+## 5 Carlton            5.6.36            
+## 6 Collingwood        8.2.50</code></pre>
 <pre class="r"><code>glimpse(bg3)</code></pre>
-<pre><code>## Observations: 15,281
+<pre><code>## Observations: 15,407
 ## Variables: 7
 ## $ V1 &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, ...
 ## $ V2 &lt;date&gt; 1897-05-08, 1897-05-08, 1897-05-08, 1897-05-08, 1897-05-15...
@@ -88,34 +99,37 @@ head(bg3)</code></pre>
 ## $ V6 &lt;fct&gt; Carlton           , St Kilda          , Essendon          ,...
 ## $ V7 &lt;fct&gt; 2.4.16            , 2.4.16            , 7.5.47            ,...</code></pre>
 <pre class="r"><code>str(bg3)</code></pre>
-<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    15281 obs. of  7 variables:
+<pre><code>## &#39;data.frame&#39;:    15407 obs. of  7 variables:
 ##  $ V1: num  1 2 3 4 5 6 7 8 9 10 ...
 ##  $ V2: Date, format: &quot;1897-05-08&quot; &quot;1897-05-08&quot; ...
 ##  $ V3: Factor w/ 29 levels &quot;     EF   &quot;,&quot;     GF   &quot;,..: 5 5 5 5 16 16 16 16 22 22 ...
 ##  $ V4: Factor w/ 24 levels &quot;Adelaide          &quot;,..: 7 5 10 19 19 6 20 15 5 7 ...
 ##  $ V5: Factor w/ 675 levels &quot;0.18.18          &quot;,..: 579 554 504 507 592 548 506 650 593 575 ...
 ##  $ V6: Factor w/ 24 levels &quot;Adelaide          &quot;,..: 4 20 6 15 4 5 7 10 10 15 ...
-##  $ V7: Factor w/ 632 levels &quot;0.1.1             &quot;,..: 291 291 576 554 531 591 45 458 532 579 ...</code></pre>
+##  $ V7: Factor w/ 633 levels &quot;0.1.1             &quot;,..: 292 292 577 555 532 592 45 459 533 580 ...</code></pre>
 <pre class="r"><code>#View(bg3)</code></pre>
 <p>Next we want to get out the scores</p>
 <pre class="r"><code>afl.games&lt;-separate(bg3,V5, into=c(&quot;Home Goals&quot;,&quot;Home Behinds&quot;,&quot;Home Score&quot;),sep=&quot;\\.&quot;) 
   afl.games&lt;-separate(afl.games,V7, into=c(&quot;Away Goals&quot;,&quot;Away Behinds&quot;,&quot;Away Score&quot;),sep=&quot;\\.&quot;)
 
 head(afl.games)</code></pre>
-<pre><code>## # A tibble: 6 x 11
-##      V1 V2         V3     V4      `Home Goals` `Home Behinds` `Home Score`
-##   &lt;dbl&gt; &lt;date&gt;     &lt;fct&gt;  &lt;fct&gt;   &lt;chr&gt;        &lt;chr&gt;          &lt;chr&gt;       
-## 1     1 1897-05-08 &quot;    ~ &quot;Fitzr~ 6            13             &quot;49        ~
-## 2     2 1897-05-08 &quot;    ~ &quot;Colli~ 5            11             &quot;41        ~
-## 3     3 1897-05-08 &quot;    ~ &quot;Geelo~ 3            6              &quot;24        ~
-## 4     4 1897-05-08 &quot;    ~ &quot;South~ 3            9              &quot;27        ~
-## 5     5 1897-05-15 &quot;    ~ &quot;South~ 6            4              &quot;40        ~
-## 6     6 1897-05-15 &quot;    ~ &quot;Essen~ 4            6              &quot;30        ~
-## # ... with 4 more variables: V6 &lt;fct&gt;, `Away Goals` &lt;chr&gt;, `Away
-## #   Behinds` &lt;chr&gt;, `Away Score` &lt;chr&gt;</code></pre>
+<pre><code>##   V1         V2         V3                 V4 Home Goals Home Behinds
+## 1  1 1897-05-08      R1    Fitzroy                     6           13
+## 2  2 1897-05-08      R1    Collingwood                 5           11
+## 3  3 1897-05-08      R1    Geelong                     3            6
+## 4  4 1897-05-08      R1    South Melbourne             3            9
+## 5  5 1897-05-15      R2    South Melbourne             6            4
+## 6  6 1897-05-15      R2    Essendon                    4            6
+##      Home Score                 V6 Away Goals Away Behinds     Away Score
+## 1  49           Carlton                     2            4 16            
+## 2  41           St Kilda                    2            4 16            
+## 3 24            Essendon                    7            5 47            
+## 4 27            Melbourne                   6            8 44            
+## 5 40            Carlton                     5            6 36            
+## 6 30            Collingwood                 8            2 50</code></pre>
 <pre class="r"><code>afl.games&lt;-cbind(afl.games,season=year(afl.games$V2))
 glimpse(afl.games)</code></pre>
-<pre><code>## Observations: 15,281
+<pre><code>## Observations: 15,407
 ## Variables: 12
 ## $ V1             &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, ...
 ## $ V2             &lt;date&gt; 1897-05-08, 1897-05-08, 1897-05-08, 1897-05-08...
@@ -130,7 +144,7 @@ glimpse(afl.games)</code></pre>
 ## $ `Away Score`   &lt;chr&gt; &quot;16            &quot;, &quot;16            &quot;, &quot;47        ...
 ## $ season         &lt;dbl&gt; 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897,...</code></pre>
 <pre class="r"><code>str(afl.games)</code></pre>
-<pre><code>## &#39;data.frame&#39;:    15281 obs. of  12 variables:
+<pre><code>## &#39;data.frame&#39;:    15407 obs. of  12 variables:
 ##  $ V1          : num  1 2 3 4 5 6 7 8 9 10 ...
 ##  $ V2          : Date, format: &quot;1897-05-08&quot; &quot;1897-05-08&quot; ...
 ##  $ V3          : Factor w/ 29 levels &quot;     EF   &quot;,&quot;     GF   &quot;,..: 5 5 5 5 16 16 16 16 22 22 ...
@@ -154,7 +168,7 @@ afl.games$`Away Behinds`&lt;-as.numeric(afl.games$`Away Behinds`)
 afl.games$`Away Score`&lt;-as.numeric(afl.games$`Away Score`)
 afl.games$margin&lt;-afl.games$`Home Score`-afl.games$`Away Score`
 glimpse(afl.games)</code></pre>
-<pre><code>## Observations: 15,281
+<pre><code>## Observations: 15,407
 ## Variables: 13
 ## $ V1             &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, ...
 ## $ V2             &lt;date&gt; 1897-05-08, 1897-05-08, 1897-05-08, 1897-05-08...
@@ -170,7 +184,7 @@ glimpse(afl.games)</code></pre>
 ## $ season         &lt;dbl&gt; 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897,...
 ## $ margin         &lt;dbl&gt; 33, 25, -23, -17, 4, -20, -40, 45, 4, -11, 37, ...</code></pre>
 <pre class="r"><code>str(afl.games)</code></pre>
-<pre><code>## &#39;data.frame&#39;:    15281 obs. of  13 variables:
+<pre><code>## &#39;data.frame&#39;:    15407 obs. of  13 variables:
 ##  $ V1          : num  1 2 3 4 5 6 7 8 9 10 ...
 ##  $ V2          : Date, format: &quot;1897-05-08&quot; &quot;1897-05-08&quot; ...
 ##  $ V3          : Factor w/ 29 levels &quot;     EF   &quot;,&quot;     GF   &quot;,..: 5 5 5 5 16 16 16 16 22 22 ...
@@ -198,7 +212,7 @@ glimpse(afl.games)</code></pre>
    ggplot(aes(x=season,y=avemargin))+geom_line() +
   ylab(&quot;Average Margin&quot;) + 
   xlab(&quot;Season&quot;) + ggtitle(&quot;Are margins really going down?&quot;)</code></pre>
-<p><img src="/post/2018-05-02-how-close-is-footy-today-in-terms-of-scoring-shots_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/thoughts/2018-05-02-how-close-is-footy-today-in-terms-of-scoring-shots_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>Looking at the plot above do you think that the average margin of games is going up or down recently? What about compared to a few years ago?</p>
 </div>
 </div>
@@ -253,7 +267,7 @@ head(games)</code></pre>
 ## 5   1897      R2    South Melbourne         -1
 ## 6   1897      R2    Essendon                 0</code></pre>
 <pre class="r"><code>glimpse(games)</code></pre>
-<pre><code>## Observations: 30,562
+<pre><code>## Observations: 30,814
 ## Variables: 4
 ## $ Season  &lt;dbl&gt; 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, 1897, ...
 ## $ Round   &lt;fct&gt;      R1   ,      R1   ,      R1   ,      R1   ,      R...
@@ -289,7 +303,7 @@ head(df1)</code></pre>
   ggplot(aes(x=Season,y=average.ss.diff))+
   geom_point() +geom_hline(yintercept = 5)+
   geom_hline(yintercept = -5) +ylab(&quot;Average Scoring Shot Differential&quot;)</code></pre>
-<p><img src="/post/2018-05-02-how-close-is-footy-today-in-terms-of-scoring-shots_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><img src="/thoughts/2018-05-02-how-close-is-footy-today-in-terms-of-scoring-shots_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>This graph is pretty interesting</p>
 <p>From it we can see at first glance</p>
 <ul>
