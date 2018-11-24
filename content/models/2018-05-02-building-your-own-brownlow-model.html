@@ -1,6 +1,7 @@
 ---
 title : "Building Your Own Brownlow Model"
 author : "Robert Nguyen"
+description : "A quick guide"
 date : 2017-09-24
 tags : ["brownlow","regression","R","open science"]
 
@@ -194,12 +195,12 @@ brownlow_data$sfs&lt;-brownlow_data$score.involvement -brownlow_data$goalAssists
 <p>As an example of increasing ‘boxes’ lets look at SC which is the supercoach score of the player in the game.</p>
 <pre class="r"><code>p &lt;- ggplot(brownlow_data, aes(votes, SC))
 p + geom_boxplot() + ggtitle(&quot;Supercoach Scores Vs Brownlow Votes&quot;) +ylab(&quot;Supercoach Score&quot;)</code></pre>
-<p><img src="/post/2018-05-02-building-your-own-brownlow-model_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/models/2018-05-02-building-your-own-brownlow-model_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>So looking at that graph, it would seem as though it makes sense to include Supercoach scores as a predictor in your own Brownlow Model.</p>
 <p>Lets look at a variable that doesn’t seem to seperate players into voting categories.</p>
 <pre class="r"><code>p &lt;- ggplot(brownlow_data, aes(votes, gr))
 p + geom_boxplot() </code></pre>
-<p><img src="/post/2018-05-02-building-your-own-brownlow-model_files/figure-html/unnamed-chunk-8-1.png" width="672" /> After exploring the variables you yourself will come up with a list of variables that you think are predictive they might be stats that are already being provided or you might be creative and create some of your own.</p>
+<p><img src="/models/2018-05-02-building-your-own-brownlow-model_files/figure-html/unnamed-chunk-8-1.png" width="672" /> After exploring the variables you yourself will come up with a list of variables that you think are predictive they might be stats that are already being provided or you might be creative and create some of your own.</p>
 <p>Whatever the case maybe lets put those variables in a model!</p>
 </div>
 <div id="the-model" class="section level2">

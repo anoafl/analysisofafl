@@ -2,7 +2,7 @@
 title: "Scraping Data from the Web"
 author: "Robert Nguyen"
 date: '2017-06-20'
-
+description : "Yet another scraping example"
 tags: ["R","Web scraping", "open science"]
 ---
 

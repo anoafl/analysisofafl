@@ -14,14 +14,21 @@ tags : ["betting","fitzRoy"]
 <h1>Step One Read in the Betfair Data</h1>
 <p>The first step is just go to the <a href="https://www.betfair.com.au/hub/tools/betting-tools/betfair-data/">betfair site</a> and download the AFL file with the data we need.</p>
 <p>I will only be joining the 2017-onwards data because that’s what squiggle has!</p>
-<pre class="r"><code>library(readxl)
-library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 2.2.1     v purrr   0.2.5
-## v tibble  1.4.2     v dplyr   0.7.5
+<pre class="r"><code>library(readxl)</code></pre>
+<pre><code>## Warning: package &#39;readxl&#39; was built under R version 3.5.1</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## -- Attaching packages ---------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.7
 ## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;stringr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## -- Conflicts ------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>Copy_of_Weekly_AFL_Data_Dump_2017_YTD &lt;- read_excel(&quot;C:/Users/rober/Downloads/Copy-of-Weekly-AFL-Data-Dump-2017-YTD.xlsx&quot;, 
@@ -58,8 +65,9 @@ names(df_bookie)</code></pre>
 </div>
 <div id="step-two-get-the-squiggle-data" class="section level1">
 <h1>Step Two Get the squiggle data</h1>
-<pre class="r"><code>library(fitzRoy)
-tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
+<pre class="r"><code>library(fitzRoy)</code></pre>
+<pre><code>## Warning: package &#39;fitzRoy&#39; was built under R version 3.5.1</code></pre>
+<pre class="r"><code>tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
 <pre><code>## Getting data from https://api.squiggle.com.au/?q=tips</code></pre>
 <pre class="r"><code>df&lt;-tips%&gt;%mutate(home.margin=ifelse(hteam==tip, margin,-margin))%&gt;%
   mutate(away.margin=ifelse(ateam==tip, margin,-margin)) %&gt;%
@@ -348,18 +356,18 @@ df3$Date&lt;-as.Date(df3$Date)</code></pre>
 <pre class="r"><code>inner_join(df_bookie,df3, by=c(&quot;Team&quot;,&quot;Date&quot;))%&gt;%
   filter(Team %in% c(&quot;Adelaide Crows&quot;, &quot;Adelaide&quot;))</code></pre>
 <pre><code>## # A tibble: 117 x 12
-##    Date       Team   WAP    source  correct hconfidence margin   err tip  
-##    &lt;date&gt;     &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;     &lt;int&gt;       &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
-##  1 2018-04-07 Adela~ 1.364~ Squigg~       1        31     24    25   Adel~
-##  2 2018-04-07 Adela~ 1.364~ Aggreg~       1        33.7   16.7  32.3 Adel~
-##  3 2018-04-07 Adela~ 1.364~ The Arc       1        34.8   14    35   Adel~
-##  4 2018-04-07 Adela~ 1.364~ Punters       1        27.1   NA    NA   Adel~
-##  5 2018-04-07 Adela~ 1.364~ Graft         1        29.1   21    28   Adel~
-##  6 2018-04-07 Adela~ 1.364~ PlusSi~       1        42.2   12    37   Adel~
-##  7 2018-04-07 Adela~ 1.364~ Matter~       1        31.1   18.9  30.1 Adel~
-##  8 2018-04-07 Adela~ 1.364~ Footy ~       1        33     22    27   Adel~
-##  9 2018-04-07 Adela~ 1.364~ Live L~       1        38.2   11    38   Adel~
-## 10 2018-04-07 Adela~ 1.364~ Stattr~       1        40.3   11    38   Adel~
+##    Date       Team  WAP   source correct hconfidence margin   err tip  
+##    &lt;date&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    &lt;int&gt;       &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+##  1 2018-04-07 Adel~ 1.36~ Squig~       1        31     24    25   Adel~
+##  2 2018-04-07 Adel~ 1.36~ Aggre~       1        33.7   16.7  32.3 Adel~
+##  3 2018-04-07 Adel~ 1.36~ The A~       1        34.8   14    35   Adel~
+##  4 2018-04-07 Adel~ 1.36~ Punte~       1        27.1   NA    NA   Adel~
+##  5 2018-04-07 Adel~ 1.36~ Graft        1        29.1   21    28   Adel~
+##  6 2018-04-07 Adel~ 1.36~ PlusS~       1        42.2   12    37   Adel~
+##  7 2018-04-07 Adel~ 1.36~ Matte~       1        31.1   18.9  30.1 Adel~
+##  8 2018-04-07 Adel~ 1.36~ Footy~       1        33     22    27   Adel~
+##  9 2018-04-07 Adel~ 1.36~ Live ~       1        38.2   11    38   Adel~
+## 10 2018-04-07 Adel~ 1.36~ Statt~       1        40.3   11    38   Adel~
 ## # ... with 107 more rows, and 3 more variables: round &lt;int&gt;, year &lt;int&gt;,
 ## #   H_A &lt;chr&gt;</code></pre>
 <p>So lets just fix up the team names</p>
@@ -383,11 +391,11 @@ df_joined&lt;-left_join(df3,df_bookie, by=c(&quot;Team&quot;,&quot;Date&quot;))<
 <p>So remember what we wanted originally, we wanted to join betting data to the squiggle data. Our squiggle data was a dataframe called <code>df3</code> and our bookie data was a dataframe called <code>df_bookie</code>. One way to check our join, is to make sure the dimension lines up.</p>
 <p>We do this using <code>dim</code>.</p>
 <pre class="r"><code>dim(df3)</code></pre>
-<pre><code>## [1] 7858   11</code></pre>
+<pre><code>## [1] 9108   11</code></pre>
 <pre class="r"><code>dim(df_bookie)</code></pre>
 <pre><code>## [1] 952   3</code></pre>
 <pre class="r"><code>dim(df_joined)</code></pre>
-<pre><code>## [1] 7858   12</code></pre>
+<pre><code>## [1] 9108   12</code></pre>
 <p>Our dimension for df3 is 7842 rows and 11 columns, and our joined data <code>df_joined</code> is 7842 rows and 12 columns, i.e. it is the same as df3 (squiggle data) but has an extra column (betfair odds)</p>
 <p>So it seems as though we have a clean dataset to analyse. Now we just got to go ahead and do it!</p>
 </div>
@@ -442,4 +450,11 @@ df_joined&lt;-left_join(df3,df_bookie, by=c(&quot;Team&quot;,&quot;Date&quot;))<
 ## 12 Stattraction                1     5         14 0.357
 ## 13 The Arc                     1     8         23 0.348
 ## 14 Swinburne                   1     3         10 0.3</code></pre>
+<p>Note we can automatically download the AFL file using the following script.</p>
+<pre class="r"><code>library(readxl)
+filetodownload &lt;- &quot;http://www.aussportsbetting.com/historical_data/afl.xlsx&quot;
+download.file(filetodownload,&quot;aflodds.xlsx&quot;,mode=&quot;wb&quot;)
+
+
+res &lt;-read_excel(&quot;aflodds.xlsx&quot;, sheet = 1,skip = 1) </code></pre>
 </div>

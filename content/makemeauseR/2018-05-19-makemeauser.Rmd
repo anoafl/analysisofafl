@@ -1,6 +1,6 @@
 ---
 title : "makemeauseR"
-description : "Purpose"
+description : "Purpose of #makemeauseR"
 author: "Robert Nguyen"
 date : 2018-05-18
 tags : ["fitzRoy", "graphics","R","open science", "statistics"]

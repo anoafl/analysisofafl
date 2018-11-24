@@ -1,6 +1,7 @@
 ---
 title : "Building Your Own Brownlow Model"
 author : "Robert Nguyen"
+description : "A quick guide"
 date : 2017-09-24
 tags : ["brownlow","regression","R","open science"]
 

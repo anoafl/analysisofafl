@@ -183,6 +183,19 @@ df_joined%>%filter(WAP>2 & Team==tip)%>%
 
 ```
 
+Note we can automatically download the AFL file using the following script.
+
+```{r, eval=FALSE}
+library(readxl)
+filetodownload <- "http://www.aussportsbetting.com/historical_data/afl.xlsx"
+download.file(filetodownload,"aflodds.xlsx",mode="wb")
+
+
+res <-read_excel("aflodds.xlsx", sheet = 1,skip = 1) 
+
+
+
+```
 
 
 
