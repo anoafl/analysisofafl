@@ -19,7 +19,7 @@ Then we will see if we can see visually if it looks like ruckman have a peak at 
 
 The metric I will use will be supercoach scores and the aim would be to explore Supercoach score by age across the various positions. 
 
-As always the first step should be to create a dataset which involves two datasets the first one being already in [fitzRoy] and the second one being a fresh scrape of data
+As always the first step should be to create a dataset which involves two datasets the first one being already in [fitzRoy](https://github.com/jimmyday12/fitzRoy) and the second one being a fresh scrape of data
 
 ```{r}
 library(fitzRoy)

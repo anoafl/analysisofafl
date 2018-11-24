@@ -1,0 +1,202 @@
+---
+title: "Do Ruckman Mature later"
+author: "Robert Nguyen"
+date: '2018-11-24'
+description: "Saw a tweet"
+slug: do-ruckman-mature-later
+categories: ["R", "regression", "fitzRoy"]
+tags: []
+
+---
+
+
+
+<p>Recently I saw this <a href="https://twitter.com/swishtter/status/1065804886435028992">tweet</a> at James Coventry the author of <a href="https://www.harpercollins.com.au/9780733338441/">footballistics</a>. It got me thinking that this would be an interesting example now that we have players heights, position and weight to answer this kind of question.</p>
+<p>This by no means is meant to be a rigorous statistical analysis full of models. But more of a fun one with a few graphs and hopefully for the reader picking up a few R skills along the way.</p>
+<p>To answer this question, my first thought that I hope you will explore with me is to just take the player data we have from footywire, join on to the player data the players height, age and position.</p>
+<p>Then we will see if we can see visually if it looks like ruckman have a peak at a later age.</p>
+<p>The metric I will use will coach score and the aim would be to explore Supercoach score by age across the various positions.</p>
+<p>As always the first step should be to create a dataset which involves two datasets the first one being already in [fitzRoy] and the second one being a fresh scrape of data</p>
+<pre class="r"><code>library(fitzRoy)</code></pre>
+<pre><code>## Warning: package &#39;fitzRoy&#39; was built under R version 3.5.1</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## -- Attaching packages ---------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.7
+## v tidyr   0.8.1     v stringr 1.3.1
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;stringr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## -- Conflicts ------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(rvest)</code></pre>
+<pre><code>## Loading required package: xml2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;rvest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     pluck</code></pre>
+<pre><code>## The following object is masked from &#39;package:readr&#39;:
+## 
+##     guess_encoding</code></pre>
+<pre class="r"><code>df&lt;-fitzRoy::player_stats</code></pre>
+<pre class="r"><code>url&lt;-&quot;https://www.footywire.com/afl/footy/ft_players&quot;
+
+
+link&lt;-read_html(url)%&gt;%
+  html_nodes(&quot;br+ a , .lnormtop a:nth-child(1)&quot;)%&gt;%
+  html_attr(&quot;href&quot;)
+
+url_players&lt;-str_c(&quot;https://www.footywire.com/afl/footy/&quot;,link)
+
+cbind.fill &lt;- function(...){
+  nm &lt;- list(...) 
+  nm &lt;- lapply(nm, as.matrix)
+  n &lt;- max(sapply(nm, nrow)) 
+  do.call(cbind, lapply(nm, function (x) 
+    rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+player_info &lt;- function(x){
+  # page &lt;- read_html(x)
+  page&lt;-read_html(x)  
+  player&lt;-       page%&gt;%
+    html_nodes(&quot;.ldrow .hltitle&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  playing.for&lt;-  page%&gt;%
+    html_nodes(&quot;.ldrow a b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  number&lt;-     page%&gt;%
+    html_nodes(&quot;.ldrow &gt; b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  
+  weight&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
+  
+  height&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
+  
+  draft_position &lt;- page%&gt;%
+    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+  
+  club_drafted &lt;- page%&gt;%
+    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+  position &lt;-     page%&gt;%
+    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Position: &quot;)%&gt;%
+    str_squish() %&gt;% as.tibble()
+  
+  born&lt;-page%&gt;%
+    html_nodes(&quot;form tr:nth-child(3) .ldrow&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Born: &quot;)%&gt;%
+    str_squish() %&gt;% as.tibble()
+  player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position,born)
+  
+
+  player_information &lt;- as.tibble(player_information)
+  
+  # print(x)
+  # return(x)
+  return(player_information)
+}
+footywire &lt;- purrr::map_df(url_players, player_info)
+
+names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;,&quot;born&quot;)</code></pre>
+<p>Looking at the <code>footywire</code> table we have just created we have a few issues that we need to fix up before we do some graphs.</p>
+<p>The first is that we can see by looking at the first row that players who have just been drafted have not had all their information filled out in the table so these players will need to be filtered out.</p>
+<p>The easiest way to do this it would seem is to just filter out any row that contains an NA. We can do that using <code>complete.cases</code></p>
+<pre class="r"><code>footywire&lt;-footywire[complete.cases(footywire),]</code></pre>
+<p>The next thing we have to do, is because we want to join our datasets together we need the team names to be consistent as we would like to join on both player and club.</p>
+<p>So to do that what we need is a list from the fitzRoy data.</p>
+<pre class="r"><code>unique(df$Team)</code></pre>
+<pre><code>##  [1] &quot;Richmond&quot;         &quot;Carlton&quot;          &quot;Geelong&quot;         
+##  [4] &quot;Essendon&quot;         &quot;Melbourne&quot;        &quot;Hawthorn&quot;        
+##  [7] &quot;Brisbane&quot;         &quot;West Coast&quot;       &quot;Sydney&quot;          
+## [10] &quot;St Kilda&quot;         &quot;Port Adelaide&quot;    &quot;North Melbourne&quot; 
+## [13] &quot;Western Bulldogs&quot; &quot;Collingwood&quot;      &quot;Fremantle&quot;       
+## [16] &quot;Adelaide&quot;         &quot;Gold Coast&quot;       &quot;GWS&quot;</code></pre>
+<pre class="r"><code>unique(footywire$club)</code></pre>
+<pre><code>##  [1] &quot;Geelong Cats&quot;              &quot;St Kilda Saints&quot;          
+##  [3] &quot;Brisbane Lions&quot;            &quot;Collingwood Magpies&quot;      
+##  [5] &quot;West Coast Eagles&quot;         &quot;Gold Coast Suns&quot;          
+##  [7] &quot;North Melbourne Kangaroos&quot; &quot;Sydney Swans&quot;             
+##  [9] &quot;Essendon Bombers&quot;          &quot;Port Adelaide Power&quot;      
+## [11] &quot;Richmond Tigers&quot;           &quot;Adelaide Crows&quot;           
+## [13] &quot;Melbourne Demons&quot;          &quot;Fremantle Dockers&quot;        
+## [15] &quot;Hawthorn Hawks&quot;            &quot;GWS Giants&quot;               
+## [17] &quot;Western Bulldogs&quot;          &quot;Carlton Blues&quot;</code></pre>
+<p>So basically lets replace one list with the other.</p>
+<p>In this example I am going to replace the footywire dataset with the extra information team names with the team names used in the fitzRoy dataset.</p>
+<pre class="r"><code>footywire$club[footywire$club==&quot;Richmond Tigers&quot;] &lt;- &quot;Richmond&quot;
+footywire$club[footywire$club==&quot;St Kilda Saints&quot;] &lt;- &quot;St Kilda&quot; 
+footywire$club[footywire$club==&quot;Gold Coast Suns&quot; ] &lt;- &quot;Gold Coast&quot;
+footywire$club[footywire$club==&quot;Port Adelaide Power&quot;] &lt;- &quot;Port Adelaide&quot;
+footywire$club[footywire$club==&quot;Melbourne Demons&quot;] &lt;- &quot;Melbourne&quot;
+footywire$club[footywire$club==&quot;Hawthorn Hawks&quot; ] &lt;- &quot;Hawthorn&quot; 
+footywire$club[footywire$club==&quot;Western Bulldogs&quot;] &lt;-&quot;Western Bulldogs&quot; 
+footywire$club[footywire$club==&quot;Geelong Cats&quot;] &lt;-  &quot;Geelong&quot;
+footywire$club[footywire$club==&quot;Brisbane Lions&quot; ] &lt;- &quot;Brisbane&quot;
+footywire$club[footywire$club==&quot;West Coast Eagles&quot; ] &lt;- &quot;West Coast&quot;
+footywire$club[footywire$club==&quot;North Melbourne Kangaroos&quot;] &lt;- &quot;North Melbourne&quot;
+footywire$club[footywire$club==&quot;Essendon Bombers&quot;] &lt;- &quot;Essendon&quot;
+footywire$club[footywire$club==&quot;Adelaide Crows&quot; ] &lt;- &quot;Adelaide&quot;
+footywire$club[footywire$club==&quot;Fremantle Dockers&quot;  ] &lt;- &quot;Fremantle&quot;
+footywire$club[footywire$club==&quot;GWS Giants&quot; ] &lt;- &quot;GWS&quot; 
+footywire$club[footywire$club==&quot;Carlton Blues&quot;  ] &lt;- &quot;Carlton&quot;
+footywire$club[footywire$club==&quot;Collingwood Magpies&quot;] &lt;-&quot;Collingwood&quot; 
+footywire$club[footywire$club==&quot;Sydney Swans&quot;] &lt;-  &quot;Sydney&quot;  </code></pre>
+<p>Now we can <code>left_join</code></p>
+<pre class="r"><code>left_join(df, footywire, by=c(&quot;Player&quot;=&quot;player&quot;,&quot;Team&quot;=&quot;club&quot;))%&gt;%
+  View(&quot;New issues with dataset&quot;)</code></pre>
+<p>So what are the new issues, well the page we have scraped from only listed currently active players, so if the player isn’t currently playing but had data for 2010 say then there isn’t any position information to join too so it appears as a NA.</p>
+<p>However, it should be noted that you can construct past players positions from footywire.</p>
+<p>But lets not get too hung up on that. Lets’ acknowledge it and if anyone wants to they can just go ahead and hopefully edit the scraper above to get past players.</p>
+<p>So again lets filter out the NA rows.</p>
+<pre class="r"><code>data_joined&lt;-left_join(df, footywire, by=c(&quot;Player&quot;=&quot;player&quot;,&quot;Team&quot;=&quot;club&quot;))
+
+data_joined&lt;-data_joined[complete.cases(data_joined),]</code></pre>
+<p>Now to work out a rough age, lets take out the last 4 characters because thats the year the player was born in then we can calculate their rough age.</p>
+<pre class="r"><code>data_joined$year_born&lt;-str_sub(data_joined$born, start= -4)
+data_joined$year_born&lt;-as.numeric(data_joined$year_born)
+summary(data_joined$year_born)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    1982    1989    1992    1992    1995    1999</code></pre>
+<pre class="r"><code>data_joined$age&lt;-data_joined$Season-data_joined$year_born</code></pre>
+<p>Now we can start doing some simple comparisons of say the top ruckman by year age vs the top midfielders by years age.</p>
+<pre class="r"><code>data_joined%&gt;%select(position, Player, Team, Season, SC, age)%&gt;%
+  filter(position %in% c(&quot;Midfield&quot;, &quot;Ruck&quot;))%&gt;%
+  group_by(Player, Team, Season, age, position)%&gt;%
+  dplyr::summarise(meansc=mean(SC))%&gt;%
+  group_by(position, Season) %&gt;%
+  top_n(n = 18, wt = meansc)%&gt;%
+  arrange(desc(Season))%&gt;%
+  ggplot(aes(x=age,group=position))+geom_bar()+facet_wrap(~position)+ggtitle(&quot;Age of top 18 Ruckman and Midfielders within Season&quot;) </code></pre>
+<p><img src="/thoughts/2018-11-24-do-ruckman-mature-later_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>So looking at the graph and with all the caveats such as incomplete datasets, only looking at game data from 2010 onwards but only including players that are currently active etc (there are more but I am sharing all code!)</p>
+<p>It would seem as though there are more topline ruckman going around past 25 then there are midfielders.</p>
+<p>What is going on here? Is this a data issue should we join on the data from players who have retired as well? Is there a confounder at play?</p>
+<p>I am not terribly sure, but I hope that by sharing all this script that someone can do some digging.</p>
