@@ -2,6 +2,7 @@
 title: "Death of the Big Bag"
 author : " Robert Nguyen"
 date: '2017-07-06'
+description: "Wheres all the bags gone"
 
 tags: ["graphics","goalkicking","bags"]
 ---
