@@ -189,7 +189,7 @@ player_info <- function(x){
   
   player_information <- as.tibble(player_information)
 
-  print(x)
+  # print(x)
   # return(x)
   return(player_information)
 }
