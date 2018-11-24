@@ -2,6 +2,7 @@
 title : "Make Your Own AFL Graph"
 author : "Robert Nguyen"
 date : 2018-05-04
+description: "A few AFL ggplot examples"
 tags : ["fitzRoy", "graphics","R","open science"]
 
 ---
@@ -25,20 +26,33 @@ install.packages(&quot;devtools&quot;)
 devtools::install_github(&quot;jimmyday12/fitzRoy&quot;)
 library(fitzRoy)
 library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ----------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 2.2.1     v purrr   0.2.4
-## v tibble  1.4.2     v dplyr   0.7.4
-## v tidyr   0.8.0     v stringr 1.3.0
+<pre><code>## Warning: package &#39;fitzRoy&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## -- Attaching packages ---------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.7
+## v tidyr   0.8.1     v stringr 1.3.1
 ## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts -------------------------- tidyverse_conflicts() --
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## Warning: package &#39;stringr&#39; was built under R version 3.5.1</code></pre>
+<pre><code>## -- Conflicts ------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())</code></pre>
-<pre><code>## Returning data from 1897-01-01 to 2018-09-04</code></pre>
+<pre><code>## Returning data from 1897-01-01 to 2018-11-24</code></pre>
 <pre><code>## Downloading data</code></pre>
 <pre><code>## 
 ## Finished downloading data. Processing XMLs</code></pre>
-<pre><code>## Warning: Unknown variables: `Substitute`</code></pre>
+<pre><code>## Warning in rbind(names(probs), probs_f): number of columns of result is not
+## a multiple of vector length (arg 1)</code></pre>
+<pre><code>## Warning: 396 parsing failures.
+## row # A tibble: 5 x 5 col     row col   expected   actual file                                       expected   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;  &lt;chr&gt;                                      actual 1  8713 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~ file 2  8714 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~ row 3  8715 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~ col 4  8716 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~ expected 5  8717 Round an integer QF     &#39;https://afltables.com/afl/stats/2018_sta~
+## ... ................. ... .......................................................................... ........ .......................................................................... ...... .......................................................................... .... .......................................................................... ... .......................................................................... ... .......................................................................... ........ ..........................................................................
+## See problems(...) for more details.</code></pre>
+<pre><code>## Warning: Unknown columns: `Substitute`</code></pre>
 <pre><code>## Finished getting afltables data</code></pre>
 <pre class="r"><code>df%&gt;%filter(Season&gt;1990)%&gt;%
   group_by(ID) %&gt;%
@@ -112,34 +126,34 @@ ggplot(aes(x=Marks, y=Contested.Marks)) +
 tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
 <pre><code>## Getting data from https://api.squiggle.com.au/?q=tips</code></pre>
 <pre class="r"><code>head(tips) </code></pre>
-<pre><code>##     err                date hconfidence             updated correct
-## 1 42.00 2017-03-23 19:20:00        50.0 2017-07-11 13:59:46       1
-## 2    NA 2017-03-23 19:20:00        42.0 2017-04-10 12:18:02       1
-## 3 48.39 2017-03-23 19:20:00        56.7 2017-07-11 13:59:46       0
-## 4  3.69 2017-03-24 19:50:00        37.3 2017-07-11 13:59:46       1
-## 5  3.00 2017-03-24 19:50:00        38.0 2017-07-11 13:59:46       1
-## 6 53.00 2017-03-26 15:20:00        50.0 2017-07-11 13:59:46       1
-##   tipteamid    bits round         venue year margin sourceid
-## 1        14  0.0000     1        M.C.G. 2017   1.00        1
-## 2        14  0.2141     1        M.C.G. 2017     NA        3
-## 3         3 -0.2076     1        M.C.G. 2017   5.39        4
-## 4        18  0.3265     1        M.C.G. 2017  10.31        4
-## 5        18  0.3103     1        M.C.G. 2017  17.00        1
-## 6         1  0.0000     1 Adelaide Oval 2017   3.00        1
-##                    ateam gameid hteamid ateamid              tip
-## 1               Richmond      1       3      14         Richmond
-## 2               Richmond      1       3      14         Richmond
-## 3               Richmond      1       3      14          Carlton
-## 4       Western Bulldogs      2       4      18 Western Bulldogs
-## 5       Western Bulldogs      2       4      18 Western Bulldogs
-## 6 Greater Western Sydney      8       1       9         Adelaide
-##   confidence       hteam          source
-## 1       50.0     Carlton        Squiggle
-## 2       58.0     Carlton  Figuring Footy
-## 3       56.7     Carlton Matter of Stats
-## 4       62.7 Collingwood Matter of Stats
-## 5       62.0 Collingwood        Squiggle
-## 6       50.0    Adelaide        Squiggle</code></pre>
+<pre><code>##         hteam         venue                  ateam   err
+## 1     Carlton        M.C.G.               Richmond 42.00
+## 2     Carlton        M.C.G.               Richmond    NA
+## 3     Carlton        M.C.G.               Richmond 48.39
+## 4 Collingwood        M.C.G.       Western Bulldogs  3.69
+## 5 Collingwood        M.C.G.       Western Bulldogs  3.00
+## 6    Adelaide Adelaide Oval Greater Western Sydney 53.00
+##                  date hconfidence hteamid             updated correct
+## 1 2017-03-23 19:20:00        50.0       3 2017-07-11 13:59:46       1
+## 2 2017-03-23 19:20:00        42.0       3 2017-04-10 12:18:02       1
+## 3 2017-03-23 19:20:00        56.7       3 2017-07-11 13:59:46       0
+## 4 2017-03-24 19:50:00        37.3       4 2017-07-11 13:59:46       1
+## 5 2017-03-24 19:50:00        38.0       4 2017-07-11 13:59:46       1
+## 6 2017-03-26 15:20:00        50.0       1 2017-07-11 13:59:46       1
+##            source round    bits              tip gameid year tipteamid
+## 1        Squiggle     1  0.0000         Richmond      1 2017        14
+## 2  Figuring Footy     1  0.2141         Richmond      1 2017        14
+## 3 Matter of Stats     1 -0.2076          Carlton      1 2017         3
+## 4 Matter of Stats     1  0.3265 Western Bulldogs      2 2017        18
+## 5        Squiggle     1  0.3103 Western Bulldogs      2 2017        18
+## 6        Squiggle     1  0.0000         Adelaide      8 2017         1
+##   margin confidence ateamid sourceid
+## 1   1.00       50.0      14        1
+## 2     NA       58.0      14        3
+## 3   5.39       56.7      14        4
+## 4  10.31       62.7      18        4
+## 5  17.00       62.0      18        1
+## 6   3.00       50.0       9        1</code></pre>
 <div id="getting-data-in-the-right-format" class="section level2">
 <h2>Getting data in the right format</h2>
 <p>What do I actually want to visualise here?</p>
@@ -148,7 +162,7 @@ tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
   filter(year&gt;2017)%&gt;%
    group_by(round, source)%&gt;%
    summarise(MAE_by_round=mean(err))</code></pre>
-<pre><code>## # A tibble: 308 x 3
+<pre><code>## # A tibble: 351 x 3
 ## # Groups:   round [?]
 ##    round source                MAE_by_round
 ##    &lt;int&gt; &lt;chr&gt;                        &lt;dbl&gt;
@@ -162,7 +176,7 @@ tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
 ##  8     1 PlusSixOne                    19.7
 ##  9     1 Punters                       NA  
 ## 10     1 Squiggle                      22  
-## # ... with 298 more rows</code></pre>
+## # ... with 341 more rows</code></pre>
 <p>Now that we have our data in the right format for plotting lets you know get plotting!</p>
 <pre class="r"><code>tips%&gt;%
   filter(year&gt;2017)%&gt;%
@@ -170,7 +184,7 @@ tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
    summarise(MAE_by_round=mean(err))%&gt;%
   ggplot(aes(x=round, y=MAE_by_round))+ 
   geom_point()</code></pre>
-<pre><code>## Warning: Removed 32 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 27 rows containing missing values (geom_point).</code></pre>
 <p><img src="/fitzRoy/2018-05-04-make-your-own-afl-graphs_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>So what can we see here? We can see the average MAE by tipster by round for 2018. The problem is we can’t identify which tipster is who. So how can we do that? Just add colour.</p>
 <pre class="r"><code>tips%&gt;%
@@ -179,7 +193,7 @@ tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
    summarise(MAE_by_round=mean(err))%&gt;%
   ggplot(aes(x=round, y=MAE_by_round))+ 
   geom_point(aes(colour=source))</code></pre>
-<pre><code>## Warning: Removed 32 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 27 rows containing missing values (geom_point).</code></pre>
 <p><img src="/fitzRoy/2018-05-04-make-your-own-afl-graphs_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>Ok now that we have added some colour things are still hard to see, so what if we joined each point for the respective tipster?</p>
 <pre class="r"><code>tips%&gt;%
@@ -189,8 +203,8 @@ tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
   ggplot(aes(x=round, y=MAE_by_round))+ 
   geom_point(aes(colour=source)) +
   geom_line(aes(group=source, colour=source))</code></pre>
-<pre><code>## Warning: Removed 32 rows containing missing values (geom_point).</code></pre>
-<pre><code>## Warning: Removed 8 rows containing missing values (geom_path).</code></pre>
+<pre><code>## Warning: Removed 27 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 27 rows containing missing values (geom_path).</code></pre>
 <p><img src="/fitzRoy/2018-05-04-make-your-own-afl-graphs_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p>Ok so now things are a bit clearer but still not as clear as we would like. Its hard to get a feel for each individual tipster because all the points are fairly close which makes our lines close together so disentanglement becomes difficult. This is where faceting or small multiples comes in handy.</p>
 <pre class="r"><code>tips%&gt;%
@@ -200,8 +214,8 @@ tips &lt;- get_squiggle_data(&quot;tips&quot;)</code></pre>
   ggplot(aes(x=round, y=MAE_by_round))+ 
   geom_point(aes(colour=source)) +
   geom_line(aes(group=source, colour=source)) +facet_wrap(~source)</code></pre>
-<pre><code>## Warning: Removed 32 rows containing missing values (geom_point).</code></pre>
-<pre><code>## Warning: Removed 8 rows containing missing values (geom_path).</code></pre>
+<pre><code>## Warning: Removed 27 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 27 rows containing missing values (geom_path).</code></pre>
 <p><img src="/fitzRoy/2018-05-04-make-your-own-afl-graphs_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>There you go how cool is that!</p>
 </div>
