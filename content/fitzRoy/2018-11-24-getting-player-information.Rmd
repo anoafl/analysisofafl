@@ -61,7 +61,7 @@ So now we have the content of our page, we essentially have to filter out the in
 player
 ```
 
-We take the html of the page and we find the information we want to extact into our table using html_nodes.
+We take the html of the page and we find the information we want to extact into our table using html_nodes and html_text.
 
 While it looks a little weird the `html_nodes(".ldrow .hltitle")` its fairly simple to do using [selector gadget](https://selectorgadget.com/) 
 
@@ -111,6 +111,61 @@ playing.for<-  page%>%
     str_squish() %>% as.tibble()
   
   
+
+```
+
+This step has a few tricky steps usually revolving around how to deal with text data that isn't neat. 
+
+So lets go through some of them with some additional commentary. 
+
+`str_replace_all("[\r\n]" , "")` and `str_squish` Why did we have to use this? 
+
+We first use this to get the weight of the player. 
+
+What happens if we don't use `str_replace_all` and `str_squish`
+
+```{r}
+page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    # str_squish()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+
+```
+
+
+```{r}
+page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))
+
+```
+
+We get an NA even though we are using str_extract trying to get the text between `Weight:` and `Position:`
+
+So the next step would be to do some investigation. 
+
+One of the best things about `%>%` is that we can run bits of code piecewise and easily see what it returns. 
+
+
+```{r}
+page%>%
+        html_nodes("form tr:nth-child(4) .ldrow")%>%
+        html_text()
+
+```
+
+So what we can see is that we have these `\n` and long spaces between things we want. So this is why we use `str_replace_all("[\r\n]" , "")` and `str_squish` to get something a lot nicer like follows.
+
+```{r}
+page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
 
 ```
 
