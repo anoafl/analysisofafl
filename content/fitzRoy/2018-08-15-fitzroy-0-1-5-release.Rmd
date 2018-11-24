@@ -1,6 +1,7 @@
 ---
 title: "fitzRoy - 0.1.5 release"
 author: "James Day"
+description: "New fitzRoy release!"
 date: 2018-08-15
 tags : ["fitzRoy", "graphics","R","open science"]
 
