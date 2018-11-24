@@ -1,0 +1,65 @@
+---
+title: "Explaining Match outcome in elite australian rules football using team performance indicators"
+author: "Robert Nguyen"
+date: 2018-11-23
+
+tags: ["academic", "modelling", "regression"]
+
+---
+
+
+
+<p>Link to paper <a href="https://www.ncbi.nlm.nih.gov/pubmed/26176890">here</a></p>
+<p>As a summary, I think the paper is about seeing “box score” data can be used to predict the winner of a game.</p>
+<p>Put another way, if I were to show you the AFL stats on say footywire at the end of a game. I of course covered up the Goals and Behinds as well.</p>
+<div class="figure">
+<img src="/img/boxscoreafl.JPG" alt="footywire box-score adelaide" />
+<p class="caption">footywire box-score adelaide</p>
+</div>
+<p>Could you predict who won the game?</p>
+<p>The good thing about this paper, is that it only uses data that is already available in <a href="https://github.com/jimmyday12/fitzRoy">#fitzRoy</a></p>
+<div id="variables-used" class="section level1">
+<h1>Variables used</h1>
+<pre class="r"><code>c(&quot;Variables used&quot;,
+  &quot;Kicks&quot;,
+  &quot;Marks&quot;,
+  &quot;Handballs&quot;,
+  &quot;Tackles&quot;,
+  &quot;Inside 50s&quot;,
+  &quot;Clearances&quot;,
+  &quot;Clangers&quot;,
+  &quot;Contested possessions&quot;,
+  &quot;Uncontested possessions&quot;,
+  &quot;Contested marks&quot;,
+  &quot;Marks inside 50&quot;,
+  &quot;Goal conversion&quot;,
+  &quot;Kick:handball ratio&quot;,
+  &quot;contested:uncontested possession ratio&quot;,
+  &quot;disposals&quot;,
+  &quot;hit outs&quot;,
+  &quot;Free kick differential&quot;)</code></pre>
+<pre><code>##  [1] &quot;Variables used&quot;                        
+##  [2] &quot;Kicks&quot;                                 
+##  [3] &quot;Marks&quot;                                 
+##  [4] &quot;Handballs&quot;                             
+##  [5] &quot;Tackles&quot;                               
+##  [6] &quot;Inside 50s&quot;                            
+##  [7] &quot;Clearances&quot;                            
+##  [8] &quot;Clangers&quot;                              
+##  [9] &quot;Contested possessions&quot;                 
+## [10] &quot;Uncontested possessions&quot;               
+## [11] &quot;Contested marks&quot;                       
+## [12] &quot;Marks inside 50&quot;                       
+## [13] &quot;Goal conversion&quot;                       
+## [14] &quot;Kick:handball ratio&quot;                   
+## [15] &quot;contested:uncontested possession ratio&quot;
+## [16] &quot;disposals&quot;                             
+## [17] &quot;hit outs&quot;                              
+## [18] &quot;Free kick differential&quot;</code></pre>
+<p>They then removed some variables from the model fitting process. For example <a href="https://en.wikipedia.org/wiki/Multicollinearity">Multicollinearity</a> is a typical problem in regression. It happens when there is a relationship between your predictor variables. In this case we know that essentially kicks + handballs = disposals which would be an example of multicollinearity.</p>
+</div>
+<div id="how-to-get-the-data-ready" class="section level1">
+<h1>How to get the data ready</h1>
+<p>To fit the models described in the paper, we would need a dataset that contains the game information joined with a binary indicator 1 if the team won and 0 if the team lost (in the paper draws were removed).</p>
+<p>To do this using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> would require joining <code>fitzRoy::match_results</code> onto <code>fitzRoy::player_stats</code></p>
+</div>

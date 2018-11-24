@@ -1,0 +1,52 @@
+---
+title: "Explaining Match outcome in elite australian rules football using team performance indicators"
+author: "Robert Nguyen"
+date: 2018-11-23
+
+tags: ["academic", "modelling", "regression"]
+
+---
+
+Link to paper [here](https://www.ncbi.nlm.nih.gov/pubmed/26176890)
+
+As a summary, I think the paper is about seeing "box score" data can be used to predict the winner of a game. 
+
+Put another way, if I were to show you the AFL stats on say footywire at the end of a game. I of course covered up the Goals and Behinds as well.
+
+![footywire box-score adelaide](/img/boxscoreafl.JPG)
+
+Could you predict who won the game?
+
+The good thing about this paper, is that it only uses data that is already available in [#fitzRoy](https://github.com/jimmyday12/fitzRoy)
+
+# Variables used
+
+```{r}
+c("Variables used",
+  "Kicks",
+  "Marks",
+  "Handballs",
+  "Tackles",
+  "Inside 50s",
+  "Clearances",
+  "Clangers",
+  "Contested possessions",
+  "Uncontested possessions",
+  "Contested marks",
+  "Marks inside 50",
+  "Goal conversion",
+  "Kick:handball ratio",
+  "contested:uncontested possession ratio",
+  "disposals",
+  "hit outs",
+  "Free kick differential")
+```
+
+They then removed some variables from the model fitting process. 
+For example [Multicollinearity](https://en.wikipedia.org/wiki/Multicollinearity) is a typical problem in regression. It happens when there is a relationship between your predictor variables. In this case we know that essentially kicks + handballs = disposals which would be an example of multicollinearity. 
+
+# How to get the data ready 
+
+To fit the models described in the paper, we would need a dataset that contains the game information joined with a binary indicator 1 if the team won and 0 if the team lost (in the paper draws were removed).
+
+To do this using [fitzRoy](https://github.com/jimmyday12/fitzRoy) would require joining `fitzRoy::match_results` onto `fitzRoy::player_stats`

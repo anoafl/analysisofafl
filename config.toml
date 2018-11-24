@@ -64,7 +64,7 @@ math = true
 
 [[menu.main]]
     name = "Papers Thoughts"
-    url = "/page/Paperthoughts/"
+    url = "/Paperthoughts/"
     weight = 6    
     
 [[menu.main]]
