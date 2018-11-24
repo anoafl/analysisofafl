@@ -41,16 +41,16 @@ tags: ["Player", "plots"]
 <p>But across the 198 games in the 2015 AFL season, we we saw 141 of them from 93 different players. Last year 665 players played a single game so that would mean that 14 per cent of players in 2015 achieved a triple-double.</p>
 <p>Interestingly, last year triple-doubles went to their highest level since 2010.</p>
 <div class="figure">
-<img src="/img/tripledouble.png" alt="Caption for the picture." />
-<p class="caption">Caption for the picture.</p>
+<img src="/img/tripledouble.png" alt="Triple Doubles by Year" />
+<p class="caption">Triple Doubles by Year</p>
 </div>
 <p>All up that doesn’t seem that special. Certainly not akin to the rarity of a triple-double in NBA.</p>
 <p>What are we really trying to capture here? What makes a triple-double so special in basketball is that to achieve it you have to great in three categories. Points and assists are how good a player is offensively. Blocks and steals represent how good a player is defensively and rebounds represent a player’s willingness to hustle and attack a loose ball. So how can we make an AFL equivalent that captures the difficulty to achieve of an NBA triple?</p>
 <p>For our offence categories let’s use goals plus goal assists (i.e. double-figures if you have five goals and five goal assists). We will call this goal contribution and we will use goal contributions and inside 50s as an offensive measure. For defence let’s use rebound 50s and tackles and for our hustle contested ball let’s use contested possessions and clearances.</p>
 <p>How rare would this triple double be? It happened 190 times in the years 2003 to 2015.</p>
 <div class="figure">
-<img src="/img/tripledouble1.png" alt="Caption for the picture." />
-<p class="caption">Caption for the picture.</p>
+<img src="/img/tripledouble1.png" alt="A rare triple double" />
+<p class="caption">A rare triple double</p>
 </div>
 <p>Retired Hawthorn premiership star Brad Sewell had the most of these triple-doubles in a single season with four in 2009. Lenny Hayes (St Kilda) and Shane Tuck (Hawthorn) both had three in 2010, as did Tom Liberatore in 2013.</p>
 <p>A total of 23 players achieved the feat twice in the season, including West Coasts Matt Priddis in 2007, 2009, 2010 and 2011.</p>
@@ -62,3 +62,15 @@ tags: ["Player", "plots"]
 <p>It’s the only triple-double of its type since 2003.</p>
 <p>*chosen 2003 because it’s the first year we see Goal assists listed.</p>
 <p>**these counts of triple doubles include quad doubles.</p>
+<div id="update" class="section level1">
+<h1>Update</h1>
+<p>Now that we have <a href="https://github.com/jimmyday12/fitzRoy">#fitzRoy</a>, we can update this post with current data!</p>
+<pre class="r"><code>library(fitzRoy)
+library(tidyverse)
+data&lt;-fitzRoy::get_afltables_stats()
+
+data%&gt;%
+    select(Season,Date,First.name,Surname, Goals, Goal.Assists,   Inside.50s, Rebounds, Tackles, Contested.Possessions, Clearances)%&gt;%
+    mutate(goal.contribution=Goals+Goal.Assists)%&gt;%
+  filter(Season&gt;2002)</code></pre>
+</div>
