@@ -163,3 +163,4 @@ mylogit <- glm(win_loss ~ K_difference + M_difference + HB_difference+T_differen
 
 ```
 
+The question is why doesn't our model here match the paper?
