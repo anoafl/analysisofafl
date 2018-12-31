@@ -1,10 +1,12 @@
 ---
-title: "Explaining Match outcome in elite australian rules football using team performance indicators"
+title: Explaining Match outcome in elite australian rules football using team performance
+  indicators
 author: "Robert Nguyen"
-date: 2018-11-23
-
-tags: ["academic", "modelling", "regression"]
-
+date: '2018-11-23'
+tags:
+- academic
+- modelling
+- regression
 ---
 
 
@@ -21,6 +23,9 @@ tags: ["academic", "modelling", "regression"]
 <h1>Variables used</h1>
 <p>The variables used were across the 2013 and 2014 AFL season.</p>
 <p>So something that could be an interesting extension of this, is because <a href="https://www.footywire.com/">footywire</a> has made some extra statistics available like meters gained, intercepts and tackles inside 50 to name a few. You could run the same model type that the paper used say logistic regression. But you could see if variables like meters gained, intercepts and tackles added any extra value. This is why this particular part of my blog exists, because its an interesting question and one that a fan of the game can hopefully answer online.</p>
+<p>Other things to note from the paper is that its not the raw team total that is being used in the model, rather relative difference values between opposing teams for each performance indicators were used.</p>
+<p>What I think this means is that instead of WCE totals kicked being used it was WCE total kicks minus Collingwoods total kicks being used.</p>
+<p>The other thing to note, is that the paper only talks about home and away matches so we have to filter out finals</p>
 <pre class="r"><code>c(&quot;Variables used&quot;,
   &quot;Kicks&quot;,
   &quot;Marks&quot;,
@@ -65,7 +70,7 @@ tags: ["academic", "modelling", "regression"]
 <p>To do this using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> would require joining <code>fitzRoy::match_results</code> onto <code>fitzRoy::player_stats</code></p>
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## -- Attaching packages ---------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages ----------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
 ## v tibble  1.4.2     v dplyr   0.7.7
 ## v tidyr   0.8.1     v stringr 1.3.1
@@ -75,11 +80,115 @@ tags: ["academic", "modelling", "regression"]
 <pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.5.1</code></pre>
 <pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.1</code></pre>
 <pre><code>## Warning: package &#39;stringr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## -- Conflicts ------------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts -------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(fitzRoy)</code></pre>
 <pre><code>## Warning: package &#39;fitzRoy&#39; was built under R version 3.5.1</code></pre>
+<pre class="r"><code>library(knitr)
+library(broom)</code></pre>
+<pre><code>## Warning: package &#39;broom&#39; was built under R version 3.5.1</code></pre>
 <pre class="r"><code>df1&lt;-fitzRoy::match_results
 df2&lt;-fitzRoy::player_stats</code></pre>
+<p>So once we have the box-score statistics from footywire, <code>fitzRoy::player_stats</code> we have to aggregate them to a match level. That is because the paper looked at team level statistics not player level.</p>
+<p>So to do that using the <a href="https://www.tidyverse.org/learn/">tidyverse</a> we first have to come up with at what level we want to summarise our data by (team and game). To do this we use <code>group_by</code>.</p>
+<pre class="r"><code>library(tidyverse)
+teamdata&lt;-df2%&gt;%dplyr::select(-Player)%&gt;%
+  group_by(Date, Season, Round, Venue, Team, Opposition, Status, Match_id)%&gt;%
+  summarise_all(sum)%&gt;%
+  filter(Season %in% c(&quot;2013&quot;,&quot;2014&quot;))%&gt;%
+         group_by(Date,Season, Round, Team, Status, Opposition, Venue, Match_id)%&gt;%
+         summarise_all(.funs = sum)%&gt;%
+         group_by(Match_id)%&gt;%
+         arrange(Match_id)%&gt;%
+         mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))%&gt;%
+  filter(!Round %in% c(&quot;Qualifying Final&quot;,&quot;Elimination Final&quot;,
+                       &quot;Semi Final&quot;,&quot;Preliminary Final&quot;,&quot;Grand Final&quot;  ))</code></pre>
+<p>After that we would want to join on the score dataset so we can come up with win/loss column.</p>
+<pre class="r"><code>dataset_scores1&lt;-df1%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2&lt;-df1%&gt;%dplyr::select(Date, Round, Away.Team, Away.Points,Game)
+#Sometimes when joining datasets together it helps to rename things for consistency
+
+colnames(dataset_scores1)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores1)[4]&lt;-&quot;Points&quot;
+colnames(dataset_scores2)[3]&lt;-&quot;Team&quot;
+colnames(dataset_scores2)[4]&lt;-&quot;Points&quot;
+
+df5&lt;-rbind(dataset_scores1,dataset_scores2)
+dataset_margins&lt;-df5%&gt;%group_by(Game)%&gt;%
+  arrange(Game)%&gt;%
+  mutate(margin=c(-diff(Points),diff(Points)))
+# View(dataset_margins) # I have commented this out, but always good to view 
+dataset_margins$Date&lt;-as.Date(dataset_margins$Date)
+
+dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Brisbane Lions&quot;, &quot;Brisbane&quot;))
+
+dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
+
+complete_df&lt;-left_join(teamdata,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Team&quot;=&quot;Team&quot;))</code></pre>
+<p>The next step in the paper is feature creation. What this means is that we are creating some variables to be fed in the model. In this paper while it uses data available from <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> it also has some varaibles created. These variables are:</p>
+<pre class="r"><code>library(knitr)
+df&lt;-data.frame(stringsAsFactors=FALSE,
+   Feature.created = c(&quot;Goal Conversion&quot;, &quot;Kick to handball ratio&quot;,
+                       &quot;Contested to uncontested possession ratio&quot;),
+       Description = c(&quot;the percentage of scoring events that were goals&quot;,
+                       &quot;the number of kicks compared to handballs expressed as a ratio&quot;,
+                       &quot;the number of contested possessions compared to uncontested posessessions expressed as a ratio&quot;))
+df%&gt;% 
+  kable(&quot;html&quot;, caption = &quot;Table of Variables Created for Paper&quot;)</code></pre>
+<table>
+<caption>
+<span id="tab:unnamed-chunk-5">Table 1: </span>Table of Variables Created for Paper
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Feature.created
+</th>
+<th style="text-align:left;">
+Description
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Goal Conversion
+</td>
+<td style="text-align:left;">
+the percentage of scoring events that were goals
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Kick to handball ratio
+</td>
+<td style="text-align:left;">
+the number of kicks compared to handballs expressed as a ratio
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Contested to uncontested possession ratio
+</td>
+<td style="text-align:left;">
+the number of contested possessions compared to uncontested posessessions expressed as a ratio
+</td>
+</tr>
+</tbody>
+</table>
+<p>So lets just go ahead and create them. In the <a href="https://www.tidyverse.org/">tidyverse</a>, this would be done using the mutate function.</p>
+<pre class="r"><code>dataset_model&lt;-complete_df%&gt;%filter(margin!=0)%&gt;%
+  mutate(goal_conversion=(G/(G+B)),
+                     kicktohandball=K/HB,
+                     Contestedtouncontested=CP/UP,
+                     win_loss=ifelse(margin&gt;0,1,0))%&gt;%
+  mutate(kicktohandball_diff=c(-diff(kicktohandball),diff(kicktohandball)),
+  Contestedtouncontested_diff=c(-diff(Contestedtouncontested),diff(Contestedtouncontested)),
+  goal_conversion_diff=c(-diff(goal_conversion),diff(goal_conversion))
+         )</code></pre>
+<p>Whats the next step now we have our dataset like the paper?</p>
+<pre class="r"><code>mylogit &lt;- glm(win_loss ~ K_difference + M_difference + HB_difference+T_difference+I50_difference+CL_difference+CG_difference+CP_difference+UP_difference+CM_difference+goal_conversion+kicktohandball+Contestedtouncontested
+               
+               ,data = dataset_model[which(dataset_model$Season==2013),], family =&quot;binomial&quot;)</code></pre>
 </div>
