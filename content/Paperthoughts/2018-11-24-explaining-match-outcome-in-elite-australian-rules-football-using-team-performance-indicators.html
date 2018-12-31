@@ -69,26 +69,18 @@ tags:
 <p>To fit the models described in the paper, we would need a dataset that contains the game information joined with a binary indicator 1 if the team won and 0 if the team lost (in the paper draws were removed).</p>
 <p>To do this using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> would require joining <code>fitzRoy::match_results</code> onto <code>fitzRoy::player_stats</code></p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## -- Attaching packages ----------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
-## v tibble  1.4.2     v dplyr   0.7.7
-## v tidyr   0.8.1     v stringr 1.3.1
-## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## Warning: package &#39;stringr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## -- Conflicts -------------------------------------- tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>library(fitzRoy)</code></pre>
-<pre><code>## Warning: package &#39;fitzRoy&#39; was built under R version 3.5.1</code></pre>
-<pre class="r"><code>library(knitr)
-library(broom)</code></pre>
-<pre><code>## Warning: package &#39;broom&#39; was built under R version 3.5.1</code></pre>
-<pre class="r"><code>df1&lt;-fitzRoy::match_results
+<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
+## ✔ tibble  1.4.2     ✔ dplyr   0.7.8
+## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
+## ✔ readr   1.3.1     ✔ forcats 0.3.0</code></pre>
+<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(fitzRoy)
+library(knitr)
+library(broom)
+df1&lt;-fitzRoy::match_results
 df2&lt;-fitzRoy::player_stats</code></pre>
 <p>So once we have the box-score statistics from footywire, <code>fitzRoy::player_stats</code> we have to aggregate them to a match level. That is because the paper looked at team level statistics not player level.</p>
 <p>So to do that using the <a href="https://www.tidyverse.org/learn/">tidyverse</a> we first have to come up with at what level we want to summarise our data by (team and game). To do this we use <code>group_by</code>.</p>
@@ -190,5 +182,6 @@ the number of contested possessions compared to uncontested posessessions expres
 <p>Whats the next step now we have our dataset like the paper?</p>
 <pre class="r"><code>mylogit &lt;- glm(win_loss ~ K_difference + M_difference + HB_difference+T_difference+I50_difference+CL_difference+CG_difference+CP_difference+UP_difference+CM_difference+goal_conversion+kicktohandball+Contestedtouncontested
                
-               ,data = dataset_model[which(dataset_model$Season==2013),], family =&quot;binomial&quot;)</code></pre>
+               ,data = dataset_model, family =&quot;binomial&quot;)</code></pre>
+<p>The question is why doesn’t our model here match the paper?</p>
 </div>

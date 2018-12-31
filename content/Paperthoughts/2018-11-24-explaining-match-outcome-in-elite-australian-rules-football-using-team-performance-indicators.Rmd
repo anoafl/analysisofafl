@@ -158,7 +158,7 @@ Whats the next step now we have our dataset like the paper?
 
 mylogit <- glm(win_loss ~ K_difference + M_difference + HB_difference+T_difference+I50_difference+CL_difference+CG_difference+CP_difference+UP_difference+CM_difference+goal_conversion+kicktohandball+Contestedtouncontested
                
-               ,data = data, family ="binomial")
+               ,data = dataset_model, family ="binomial")
 
 
 ```
