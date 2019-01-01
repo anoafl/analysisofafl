@@ -19,6 +19,7 @@ tags:
 <p class="caption">footywire box-score adelaide</p>
 </div>
 <p>The good thing about this paper, is that it only uses data that is already available in <a href="https://github.com/jimmyday12/fitzRoy">#fitzRoy</a>. Of course fitzRoy wasn’t around when the paper was written, but it just so happens that the data used is also available within fitzRoy.</p>
+<p>Of course there are some caveats to this. The main one being even though we have the same variables. We might not have the same data source. Nonetheless this post should be a good guide as to how to recreate and if you are so inclined maybe even improve on the work.</p>
 <div id="variables-used" class="section level1">
 <h1>Variables used</h1>
 <p>The variables used were across the 2013 and 2014 AFL season.</p>
@@ -118,7 +119,7 @@ dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;
 dataset_margins&lt;-dataset_margins %&gt;%mutate(Team = str_replace(Team, &quot;Footscray&quot;, &quot;Western Bulldogs&quot;))
 
 complete_df&lt;-left_join(teamdata,dataset_margins,by=c(&quot;Date&quot;=&quot;Date&quot;,  &quot;Team&quot;=&quot;Team&quot;))</code></pre>
-<p>The next step in the paper is feature creation. What this means is that we are creating some variables to be fed in the model. In this paper while it uses data available from <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> it also has some varaibles created. These variables are:</p>
+<p>The next step in the paper is feature creation. What this means is that we are creating some variables to be fed in the model. In this paper while it uses data available from <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> it also has some variables created. These variables are:</p>
 <pre class="r"><code>library(knitr)
 df&lt;-data.frame(stringsAsFactors=FALSE,
    Feature.created = c(&quot;Goal Conversion&quot;, &quot;Kick to handball ratio&quot;,
@@ -169,6 +170,9 @@ the number of contested possessions compared to uncontested posessessions expres
 </tr>
 </tbody>
 </table>
+<ul>
+<li>goal conversion is an example of a variable that we might not be able to fully replicate. For example if the player has a shot on goal but kicks it out of bounds that isn’t recorded in fitzRoy.</li>
+</ul>
 <p>So lets just go ahead and create them. In the <a href="https://www.tidyverse.org/">tidyverse</a>, this would be done using the mutate function.</p>
 <pre class="r"><code>dataset_model&lt;-complete_df%&gt;%filter(margin!=0)%&gt;%
   mutate(goal_conversion=(G/(G+B)),
@@ -178,10 +182,68 @@ the number of contested possessions compared to uncontested posessessions expres
   mutate(kicktohandball_diff=c(-diff(kicktohandball),diff(kicktohandball)),
   Contestedtouncontested_diff=c(-diff(Contestedtouncontested),diff(Contestedtouncontested)),
   goal_conversion_diff=c(-diff(goal_conversion),diff(goal_conversion))
-         )</code></pre>
+         )%&gt;%
+  filter(!margin==0)%&gt;%
+  filter(Season==2013)</code></pre>
 <p>Whats the next step now we have our dataset like the paper?</p>
+<p>That would be to fit a logistic regression.</p>
 <pre class="r"><code>mylogit &lt;- glm(win_loss ~ K_difference + M_difference + HB_difference+T_difference+I50_difference+CL_difference+CG_difference+CP_difference+UP_difference+CM_difference+goal_conversion+kicktohandball+Contestedtouncontested
                
-               ,data = dataset_model, family =&quot;binomial&quot;)</code></pre>
+               ,data = dataset_model, family =&quot;binomial&quot;)
+summary(mylogit)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = win_loss ~ K_difference + M_difference + HB_difference + 
+##     T_difference + I50_difference + CL_difference + CG_difference + 
+##     CP_difference + UP_difference + CM_difference + goal_conversion + 
+##     kicktohandball + Contestedtouncontested, family = &quot;binomial&quot;, 
+##     data = dataset_model)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -2.17684  -0.42682  -0.00021   0.44963   2.48144  
+## 
+## Coefficients:
+##                         Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)            -5.098957   1.632251  -3.124 0.001785 ** 
+## K_difference            0.017970   0.026365   0.682 0.495513    
+## M_difference           -0.040118   0.017819  -2.251 0.024356 *  
+## HB_difference          -0.045039   0.029275  -1.538 0.123927    
+## T_difference            0.027667   0.014805   1.869 0.061654 .  
+## I50_difference          0.065159   0.018815   3.463 0.000534 ***
+## CL_difference          -0.062603   0.021532  -2.907 0.003644 ** 
+## CG_difference          -0.008463   0.020111  -0.421 0.673890    
+## CP_difference           0.062228   0.028254   2.202 0.027633 *  
+## UP_difference           0.054032   0.028425   1.901 0.057324 .  
+## CM_difference           0.057289   0.041005   1.397 0.162379    
+## goal_conversion         6.563385   1.600541   4.101 4.12e-05 ***
+## kicktohandball          1.224616   0.900988   1.359 0.174086    
+## Contestedtouncontested -0.771994   1.195178  -0.646 0.518328    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 546.20  on 393  degrees of freedom
+## Residual deviance: 256.91  on 380  degrees of freedom
+## AIC: 284.91
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
 <p>The question is why doesn’t our model here match the paper?</p>
+<ul>
+<li>I’m wrong (what should I do different thoughts feedback email me!)</li>
+<li>The data is different</li>
+<li>reading the paper again I didn’t remove draws whoops! (now fixed)</li>
+</ul>
+</div>
+<div id="some-possible-interesting-changes-to-make" class="section level1">
+<h1>Some possible interesting changes to make</h1>
+<div id="include-some-more-years-or-different-years" class="section level3">
+<h3>include some more years or different years</h3>
+<p>I think this makes sense as AFL is a constantly evolving game, the variables that might have been important a few years ago might not be so important now.</p>
+</div>
+<div id="look-at-other-data-the-authors-didnt" class="section level3">
+<h3>look at other data the authors didn’t</h3>
+<p>fitzRoy does have some extra variables you can try like tackles inside 50, meters gained, give it a go does it give you any extra predictive power?</p>
+</div>
 </div>

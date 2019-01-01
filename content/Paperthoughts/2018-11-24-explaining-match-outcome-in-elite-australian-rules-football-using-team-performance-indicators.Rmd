@@ -21,6 +21,8 @@ Put another way, if I were to show you the AFL stats on say footywire at the end
 
 The good thing about this paper, is that it only uses data that is already available in [#fitzRoy](https://github.com/jimmyday12/fitzRoy). Of course fitzRoy wasn't around when the paper was written, but it just so happens that the data used is also available within fitzRoy.
 
+Of course there are some caveats to this. The main one being even though we have the same variables. We might not have the same data source. Nonetheless this post should be a good guide as to how to recreate and if you are so inclined maybe even improve on the work. 
+
 # Variables used
 
 The variables used were across the 2013 and 2014 AFL season. 
@@ -117,7 +119,7 @@ dataset_margins<-dataset_margins %>%mutate(Team = str_replace(Team, "Footscray",
 complete_df<-left_join(teamdata,dataset_margins,by=c("Date"="Date",  "Team"="Team"))
 ```
 
-The next step in the paper is feature creation. What this means is that we are creating some variables to be fed in the model. In this paper while it uses data available from [fitzRoy](https://github.com/jimmyday12/fitzRoy) it also has some varaibles created. These variables are:
+The next step in the paper is feature creation. What this means is that we are creating some variables to be fed in the model. In this paper while it uses data available from [fitzRoy](https://github.com/jimmyday12/fitzRoy) it also has some variables created. These variables are:
 
 ```{r}
 library(knitr)
@@ -134,6 +136,8 @@ df%>%
 
 ```
 
+* goal conversion is an example of a variable that we might not be able to fully replicate. For example if the player has a shot on goal but kicks it out of bounds that isn't recorded in fitzRoy.
+
 So lets just go ahead and create them. In the [tidyverse](https://www.tidyverse.org/), this would be done using the mutate function.
 
 ```{r}
@@ -146,12 +150,16 @@ dataset_model<-complete_df%>%filter(margin!=0)%>%
   mutate(kicktohandball_diff=c(-diff(kicktohandball),diff(kicktohandball)),
   Contestedtouncontested_diff=c(-diff(Contestedtouncontested),diff(Contestedtouncontested)),
   goal_conversion_diff=c(-diff(goal_conversion),diff(goal_conversion))
-         )
+         )%>%
+  filter(!margin==0)%>%
+  filter(Season==2013)
 
 
 ```
 
 Whats the next step now we have our dataset like the paper? 
+
+That would be to fit a logistic regression. 
 
 
 ```{r}
@@ -159,8 +167,23 @@ Whats the next step now we have our dataset like the paper?
 mylogit <- glm(win_loss ~ K_difference + M_difference + HB_difference+T_difference+I50_difference+CL_difference+CG_difference+CP_difference+UP_difference+CM_difference+goal_conversion+kicktohandball+Contestedtouncontested
                
                ,data = dataset_model, family ="binomial")
+summary(mylogit)
 
 
 ```
 
 The question is why doesn't our model here match the paper?
+
+* I'm wrong (what should I do different thoughts feedback email me!)
+* The data is different
+* reading the paper again I didn't remove draws whoops! (now fixed)
+
+# Some possible interesting changes to make
+
+### include some more years or different years
+I think this makes sense as AFL is a constantly evolving game, the variables that might have been important a few years ago might not be so important now. 
+
+### look at other data the authors didn't
+fitzRoy does have some extra variables you can try like tackles inside 50, meters gained, give it a go does it give you any extra predictive power?
+
+
