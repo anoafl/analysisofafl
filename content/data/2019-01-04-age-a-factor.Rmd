@@ -12,7 +12,7 @@ tags:
 description: 'Want to look at age effects but need data?'
 ---
 
-[fitzRoy](https://github.com/jimmyday12/fitzRoy) is as always a work in progress and I know that James and I are always keen on getting ideas on how to encourage users to produce great content that hopefully we all love to read, learn and debate. 
+[fitzRoy](https://github.com/jimmyday12/fitzRoy) is as always a work in progress and I know that [James](https://twitter.com/jamesday87) and I are always keen on getting ideas on how to encourage users to produce great content that hopefully we all love to read, learn and debate. 
 
 One of my personal favourite bloggers [Tony](https://twitter.com/MatterOfStats) over at [matterofstats](http://www.matterofstats.comb) has some thoughts on age vs experience. To investigate this you need a couple of things mainly the players experience but also their age!
 
@@ -85,6 +85,8 @@ stats%>%filter(First.name =="Gary" & Surname=="Ablett")%>%tail()
 ```
 
 So these are two players who have the same name but played for the same team. So we couldn't just join on first name and surname we need to know the season in which the player played. (This would break down the moment two players with the same name play for the same team).
+
+So I am thinking one way to do this could be to get the start season and end season as a sequence, then we just duplicate the rows for all values in the sequence. Then we can join it onto the dataset in [fitzRoy](https://github.com/jimmyday12/fitzRoy)
 
 ```{r}
 
