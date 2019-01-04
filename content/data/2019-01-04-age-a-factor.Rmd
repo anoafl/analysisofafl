@@ -88,10 +88,19 @@ So these are two players who have the same name but played for the same team. So
 
 So I am thinking one way to do this could be to get the start season and end season as a sequence, then we just duplicate the rows for all values in the sequence. Then we can join it onto the dataset in [fitzRoy](https://github.com/jimmyday12/fitzRoy)
 
-So looking at the dataset if we look at the `Seasons` column the first 4 characters are the first season the player has played, and our end of sequence should be the last 4 characters.
+So looking at the dataset if we look at the `Seasons` column the first 4 characters are the first season the player has played, and our end of sequence should be the last 4 characters. So we will create two new columns called start of sequence and end of sequence.
 
+First lets get our start of sequences
 
 ```{r}
-
+adelaide_crows_players$start_sequence<-substr(adelaide_crows_players[,10], start = 1, stop = 4)
+head(adelaide_crows_players)
 ```
 
+Now lets get our end of sequence
+
+```{r}
+adelaide_crows_players$end_sequence<-substr(adelaide_crows_players[,10], start = -4)
+head(adelaide_crows_players)
+
+```
