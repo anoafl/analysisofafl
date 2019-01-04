@@ -14,7 +14,7 @@ description: 'Want to look at age effects but need data?'
 
 
 
-<p><a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> is as always a work in progress and I know that James and I are always keen on getting ideas on how to encourage users to produce great content that hopefully we all love to read, learn and debate.</p>
+<p><a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> is as always a work in progress and I know that <a href="https://twitter.com/jamesday87">James</a> and I are always keen on getting ideas on how to encourage users to produce great content that hopefully we all love to read, learn and debate.</p>
 <p>One of my personal favourite bloggers <a href="https://twitter.com/MatterOfStats">Tony</a> over at <a href="http://www.matterofstats.comb">matterofstats</a> has some thoughts on age vs experience. To investigate this you need a couple of things mainly the players experience but also their age!</p>
 <p>To work out age should be relatively simple you can just take their date of birth but the problem is how do you get the players date of birth?</p>
 <p>So here is a quick blog post on how to get players age, for those who want to analyse it in detail. But also I think eventually it will get integrated within fitzRoy.</p>
@@ -201,4 +201,6 @@ head(adelaide_crows_players)</code></pre>
 ## #   Substitute &lt;int&gt;, Umpire.1 &lt;chr&gt;, Umpire.2 &lt;chr&gt;, Umpire.3 &lt;chr&gt;,
 ## #   Umpire.4 &lt;chr&gt;, group_id &lt;int&gt;</code></pre>
 <p>So these are two players who have the same name but played for the same team. So we couldn’t just join on first name and surname we need to know the season in which the player played. (This would break down the moment two players with the same name play for the same team).</p>
+<p>So I am thinking one way to do this could be to get the start season and end season as a sequence, then we just duplicate the rows for all values in the sequence. Then we can join it onto the dataset in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a></p>
+<p>So looking at the dataset if we look at the <code>Seasons</code> column the first 4 characters are the first season the player has played, and our end of sequence should be the last 4 characters.</p>
 </div>

@@ -88,6 +88,9 @@ So these are two players who have the same name but played for the same team. So
 
 So I am thinking one way to do this could be to get the start season and end season as a sequence, then we just duplicate the rows for all values in the sequence. Then we can join it onto the dataset in [fitzRoy](https://github.com/jimmyday12/fitzRoy)
 
+So looking at the dataset if we look at the `Seasons` column the first 4 characters are the first season the player has played, and our end of sequence should be the last 4 characters.
+
+
 ```{r}
 
 ```
