@@ -1,0 +1,92 @@
+---
+title: Age a factor?
+author: Robert Nguyen
+date: '2019-01-04'
+slug: age-a-factor
+categories:
+  - fitzRoy
+tags:
+  - fantasy
+  - fitzRoy
+  - Player
+description: 'Want to look at age effects but need data?'
+---
+
+[fitzRoy](https://github.com/jimmyday12/fitzRoy) is as always a work in progress and I know that James and I are always keen on getting ideas on how to encourage users to produce great content that hopefully we all love to read, learn and debate. 
+
+One of my personal favourite bloggers [Tony](https://twitter.com/MatterOfStats) over at [matterofstats](http://www.matterofstats.comb) has some thoughts on age vs experience. To investigate this you need a couple of things mainly the players experience but also their age!
+
+To work out age should be relatively simple you can just take their date of birth but the problem is how do you get the players date of birth?
+
+So here is a quick blog post on how to get players age, for those who want to analyse it in detail. But also I think eventually it will get integrated within fitzRoy. 
+
+So like with anything, the first step in web-scraping the data is to first find the page you want to scrape it from, do one page and then see if we can go through all the pages that contain the data we are after. 
+
+An example of a page that contains all the players date of birth for the [adelaide crows](https://afltables.com/afl/stats/alltime/adelaide.html)
+
+So the first step would be lets just scrape that single page. 
+
+```{r}
+
+library(tidyverse)
+library(rvest)
+adelaide<-read_html("https://afltables.com/afl/stats/alltime/adelaide.html", encoding = "UTF-8")
+
+tables<-html_table(adelaide, fill = TRUE)
+adelaide_crows_players<-tables[[1]] 
+head(adelaide_crows_players)
+
+```
+
+So now we have an example page, the next thing we have to think about is how will we join this data onto the data in [fitzRoy](https://github.com/jimmyday12/fitzRoy)
+
+Lets have a look at the player data in fitzRoy specifically the player data from afltables
+
+```{r}
+library(fitzRoy)
+stats <- get_afltables_stats(start_date = "1990-01-01", end_date = "2018-10-01")
+names(stats)
+tail(stats)
+```
+
+So looking at the data from [fitzRoy](https://github.com/jimmyday12/fitzRoy) our best way to join on the date of births would be from joining based on player name, team playing for and season. This works best so long as there hasn't been a team that has played two players of the same first name and last name in a game in a season. 
+
+So looking at what we just scraped from the [adelaide crows page on afltables](https://afltables.com/afl/stats/alltime/adelaide.html) we have player names, the team they played for and seasons. 
+
+The main issue is that season is a little difficult to work with so lets edit the season column and the player name column so its a little bit easier to analyse. 
+
+# Lets do the player name first. 
+
+In [fitzRoy](https://github.com/jimmyday12/fitzRoy) when we use the `get_afltables_stats1` function, we have seperated player names by first name and surname columns. But when we just scraped the data from [afltables](https://afltables.com/afl/afl_index.html) and it doesn't appear like this. 
+
+
+
+```{r}
+adelaide_crows_players<- adelaide_crows_players%>%
+      separate(Player,c("Surname","First Name"),sep=",")
+head(adelaide_crows_players)
+
+```
+
+A few football fans might wonder how hyphenate names work on [afltables](https://afltables.com/afl/afl_index.html) the first name that popped into my head was [Nick Dal Santo](https://afltables.com/afl/stats/players/N/Nick_Dal_Santo.html) and if we go to the [St Kilda Saints page](https://afltables.com/afl/stats/alltime/stkilda.html) we can see that it should seperate fine.  
+
+# Now lets look at season 
+
+So why is this a problem firstly?
+
+[Gary](https://afltables.com/afl/stats/players/G/Gary_Ablett0.html) [Ablett](https://afltables.com/afl/stats/players/G/Gary_Ablett1.html)
+
+```{r}
+stats%>%filter(First.name =="Gary" & Surname=="Ablett")%>%head()
+
+
+stats%>%filter(First.name =="Gary" & Surname=="Ablett")%>%tail()
+
+```
+
+So these are two players who have the same name but played for the same team. So we couldn't just join on first name and surname we need to know the season in which the player played. (This would break down the moment two players with the same name play for the same team).
+
+```{r}
+
+```
+
