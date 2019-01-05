@@ -100,7 +100,9 @@ head(adelaide_crows_players)
 Now lets get our end of sequence
 
 ```{r}
-adelaide_crows_players$end_sequence<-substr(adelaide_crows_players[,10], start = -4)
+library(stringr)
+adelaide_crows_players$end_sequence<-str_sub(adelaide_crows_players[,10], start = -4)
 head(adelaide_crows_players)
+
 
 ```

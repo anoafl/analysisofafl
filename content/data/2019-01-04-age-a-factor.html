@@ -203,7 +203,7 @@ head(adelaide_crows_players)</code></pre>
 <p>So these are two players who have the same name but played for the same team. So we couldn’t just join on first name and surname we need to know the season in which the player played. (This would break down the moment two players with the same name play for the same team).</p>
 <p>So I am thinking one way to do this could be to get the start season and end season as a sequence, then we just duplicate the rows for all values in the sequence. Then we can join it onto the dataset in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a></p>
 <p>So looking at the dataset if we look at the <code>Seasons</code> column the first 4 characters are the first season the player has played, and our end of sequence should be the last 4 characters. So we will create two new columns called start of sequence and end of sequence.</p>
-<p>First lets get our start of sequence</p>
+<p>First lets get our start of sequences</p>
 <pre class="r"><code>adelaide_crows_players$start_sequence&lt;-substr(adelaide_crows_players[,10], start = 1, stop = 4)
 head(adelaide_crows_players)</code></pre>
 <pre><code>##   Cap  #  Surname First Name        DOB    HT   WT   Games (W-D-L) Goals
@@ -220,4 +220,22 @@ head(adelaide_crows_players)</code></pre>
 ## 4 1992-2006 17y 257d  32y 49d           1992
 ## 5 1991-2004 21y 305d  35y 30d           1991
 ## 6 1997-2010  20y 94d 33y 202d           1997</code></pre>
+<p>Now lets get our end of sequence</p>
+<pre class="r"><code>library(stringr)
+adelaide_crows_players$end_sequence&lt;-str_sub(adelaide_crows_players[,10], start = -4)
+head(adelaide_crows_players)</code></pre>
+<pre><code>##   Cap  #  Surname First Name        DOB    HT   WT   Games (W-D-L) Goals
+## 1  66 23   McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
+## 2  67  9  Edwards      Tyson 1976-08-06 178cm 81kg 321 (175-0-146)   192
+## 3  51 32 Ricciuto       Mark 1975-06-08 184cm 93kg 312 (162-1-149)   292
+## 4  38 34     Hart        Ben 1974-07-09 190cm 83kg 311 (166-1-144)    45
+## 5  16  7    Smart      Nigel 1969-05-21 188cm 91kg 278 (140-1-137)   116
+## 6  77 36  Goodwin      Simon 1976-12-26 185cm 86kg 275 (155-0-120)   162
+##     Seasons    Debut     Last start_sequence end_sequence
+## 1 1995-2010 18y 274d 33y 346d           1995         2010
+## 2 1995-2010 18y 308d 33y 303d           1995         2010
+## 3 1993-2007 17y 326d  32y 92d           1993         2007
+## 4 1992-2006 17y 257d  32y 49d           1992         2006
+## 5 1991-2004 21y 305d  35y 30d           1991         2004
+## 6 1997-2010  20y 94d 33y 202d           1997         2010</code></pre>
 </div>
