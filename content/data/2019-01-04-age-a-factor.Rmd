@@ -106,3 +106,27 @@ head(adelaide_crows_players)
 
 
 ```
+
+Now we just need to duplicate the rows so we can join on the date of birth for the players.   
+
+To do this we can use [tidyverse](https://tidyr.tidyverse.org/reference/nest.html) specifically we can use `gather`.
+
+```{r}
+
+  gather(data=adelaide_crows_players, key = "career_start_end", value = "year", c("start_sequence", "end_sequence")) %>%head()
+
+```
+
+To check this gives us what we want, lets take an example player, say the great [Andrew McLeod](https://afltables.com/afl/stats/players/A/Andrew_McLeod.html).
+
+```{r}
+
+  gather(data=adelaide_crows_players, key = "career_start_end", value = "year", c("start_sequence", "end_sequence")) %>%filter(Player=="McLeod, Andrew")
+
+```
+
+So we can see this gives us what we want, now all we have to do is expand this dataset so we have entries for Andrew McLeod for each year he was with the Crows. 
+
+
+
+  
