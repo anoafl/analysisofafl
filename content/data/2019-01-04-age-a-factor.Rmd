@@ -63,7 +63,7 @@ In [fitzRoy](https://github.com/jimmyday12/fitzRoy) when we use the `get_afltabl
 
 ```{r}
 adelaide_crows_players<- adelaide_crows_players%>%
-      separate(Player,c("Surname","First.Name"),sep=",")
+      separate(Player,c("Surname","First.name"),sep=",")
 head(adelaide_crows_players)
 
 ```
@@ -138,9 +138,9 @@ gathered_dataset<- gather(data=adelaide_crows_players, key = "career_start_end",
 gathered_dataset$year<-as.numeric(gathered_dataset$year)
 gathered_dataset<-gathered_dataset[complete.cases(gathered_dataset),]
 adelaide_data_to_join<-gathered_dataset%>%
-  select(Surname, First.Name, DOB, career_start_end, year)%>%
-  group_by(Surname, First.Name, career_start_end)%>%
-  complete(Surname, First.Name, DOB, career_start_end, year=seq(min(year), max(year),by=1))
+  select(Surname, First.name, DOB, career_start_end, year)%>%
+  group_by(Surname, First.name, career_start_end)%>%
+  complete(Surname, First.name, DOB, career_start_end, year=seq(min(year), max(year),by=1))
 ```
 
 Now view it
@@ -150,4 +150,59 @@ head(adelaide_data_to_join)
 ```
 
 So it seems OK. 
+
+Now the next part is lets take the crows stuff as an example how do we join it back onto the fitzRoy afltables data. 
+
+Lets first quickly look at the two datasets we have
+* dataset in [fitzRoy](https://github.com/jimmyday12/fitzRoy) we have already `stats`
+* dataset of the [adelaide crows](https://afltables.com/afl/stats/alltime/adelaide.html) date of births we have just created `adelaide_data_to_join`
+
+```{r}
+head(stats)
+tail(adelaide_data_to_join)
+```
+
+So remembering what we wanted to join on was `First.name`, `Surname`, `year` and `Playing.for`. 
+
+Well the column I forgot to add is the Playing.for column. 
+
+We can do that as follows:
+
+```{r}
+adelaide_data_to_join$Playing.for<-"Adelaide" 
+
+```
+
+Now we can [left_join](https://stat545.com/bit001_dplyr-cheatsheet.html) it onto the `stats` dataset.
+
+```{r}
+check_crows_dataset<-left_join(stats, adelaide_data_to_join, by = c("First.name" = "First.name", "Surname" = "Surname", "Season"="year", "Playing.for"="Playing.for"))
+
+head(check_crows_dataset)
+```
+This didn't work, which means that our column values don't exactly align. 
+
+To check why this might occur lets check how the join from our `adelaide_data_to_join` works.
+
+```{r}
+adelaide_data_to_join%>%
+  filter(Playing.for=="Adelaide" &Surname=="Jarman")%>%head()
+
+```
+
+So what we can see here is that there seems to be a space between the first letter of the First.name which is why our join isn't working. 
+
+```{r}
+adelaide_data_to_join$First.name<-trimws(adelaide_data_to_join$First.name, which = c( "both","left", "right"))
+check_crows_dataset<-left_join(stats, adelaide_data_to_join, by = c("First.name" = "First.name", "Surname" = "Surname", "Season"="year", "Playing.for"="Playing.for"))
+
+head(check_crows_dataset)
+
+check_crows_dataset%>%filter(Playing.for=="Adelaide")%>%select(DOB)%>%head()
+
+```
+
+Ok so this seems to work now just need to do this for all teams.
+
+Looking forward to reading anywork looking at age and its impact on team or player performance.  
 

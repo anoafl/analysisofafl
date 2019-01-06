@@ -130,9 +130,9 @@ stats &lt;- get_afltables_stats(start_date = &quot;1990-01-01&quot;, end_date = 
 <h1>Lets do the player name first.</h1>
 <p>In <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> when we use the <code>get_afltables_stats1</code> function, we have seperated player names by first name and surname columns. But when we just scraped the data from <a href="https://afltables.com/afl/afl_index.html">afltables</a> and it doesn’t appear like this.</p>
 <pre class="r"><code>adelaide_crows_players&lt;- adelaide_crows_players%&gt;%
-      separate(Player,c(&quot;Surname&quot;,&quot;First.Name&quot;),sep=&quot;,&quot;)
+      separate(Player,c(&quot;Surname&quot;,&quot;First.name&quot;),sep=&quot;,&quot;)
 head(adelaide_crows_players)</code></pre>
-<pre><code>##   Cap  #  Surname First.Name        DOB    HT   WT   Games (W-D-L) Goals
+<pre><code>##   Cap  #  Surname First.name        DOB    HT   WT   Games (W-D-L) Goals
 ## 1  66 23   McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
 ## 2  67  9  Edwards      Tyson 1976-08-06 178cm 81kg 321 (175-0-146)   192
 ## 3  51 32 Ricciuto       Mark 1975-06-08 184cm 93kg 312 (162-1-149)   292
@@ -206,7 +206,7 @@ head(adelaide_crows_players)</code></pre>
 <p>First lets get our start of sequences</p>
 <pre class="r"><code>adelaide_crows_players$start_sequence&lt;-substr(adelaide_crows_players[,10], start = 1, stop = 4)
 head(adelaide_crows_players)</code></pre>
-<pre><code>##   Cap  #  Surname First.Name        DOB    HT   WT   Games (W-D-L) Goals
+<pre><code>##   Cap  #  Surname First.name        DOB    HT   WT   Games (W-D-L) Goals
 ## 1  66 23   McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
 ## 2  67  9  Edwards      Tyson 1976-08-06 178cm 81kg 321 (175-0-146)   192
 ## 3  51 32 Ricciuto       Mark 1975-06-08 184cm 93kg 312 (162-1-149)   292
@@ -224,7 +224,7 @@ head(adelaide_crows_players)</code></pre>
 <pre class="r"><code>library(stringr)
 adelaide_crows_players$end_sequence&lt;-str_sub(adelaide_crows_players[,10], start = -4)
 head(adelaide_crows_players)</code></pre>
-<pre><code>##   Cap  #  Surname First.Name        DOB    HT   WT   Games (W-D-L) Goals
+<pre><code>##   Cap  #  Surname First.name        DOB    HT   WT   Games (W-D-L) Goals
 ## 1  66 23   McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
 ## 2  67  9  Edwards      Tyson 1976-08-06 178cm 81kg 321 (175-0-146)   192
 ## 3  51 32 Ricciuto       Mark 1975-06-08 184cm 93kg 312 (162-1-149)   292
@@ -241,7 +241,7 @@ head(adelaide_crows_players)</code></pre>
 <p>Now we just need to duplicate the rows so we can join on the date of birth for the players.</p>
 <p>To do this we can use <a href="https://tidyr.tidyverse.org/reference/nest.html">tidyverse</a> specifically we can use <code>gather</code>.</p>
 <pre class="r"><code>  gather(data=adelaide_crows_players, key = &quot;career_start_end&quot;, value = &quot;year&quot;, c(&quot;start_sequence&quot;, &quot;end_sequence&quot;)) %&gt;%head()</code></pre>
-<pre><code>##   Cap  #  Surname First.Name        DOB    HT   WT   Games (W-D-L) Goals
+<pre><code>##   Cap  #  Surname First.name        DOB    HT   WT   Games (W-D-L) Goals
 ## 1  66 23   McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
 ## 2  67  9  Edwards      Tyson 1976-08-06 178cm 81kg 321 (175-0-146)   192
 ## 3  51 32 Ricciuto       Mark 1975-06-08 184cm 93kg 312 (162-1-149)   292
@@ -257,7 +257,7 @@ head(adelaide_crows_players)</code></pre>
 ## 6 1997-2010  20y 94d 33y 202d   start_sequence 1997</code></pre>
 <p>To check this gives us what we want, lets take an example player, say the great <a href="https://afltables.com/afl/stats/players/A/Andrew_McLeod.html">Andrew McLeod</a>.</p>
 <pre class="r"><code>  gather(data=adelaide_crows_players, key = &quot;career_start_end&quot;, value = &quot;year&quot;, c(&quot;start_sequence&quot;, &quot;end_sequence&quot;)) %&gt;%filter(Surname==&quot;McLeod&quot;)</code></pre>
-<pre><code>##   Cap  # Surname First.Name        DOB    HT   WT   Games (W-D-L) Goals
+<pre><code>##   Cap  # Surname First.name        DOB    HT   WT   Games (W-D-L) Goals
 ## 1  66 23  McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
 ## 2  66 23  McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
 ##     Seasons    Debut     Last career_start_end year
@@ -272,14 +272,14 @@ gathered_dataset$year&lt;-as.numeric(gathered_dataset$year)</code></pre>
 <pre><code>## Warning: NAs introduced by coercion</code></pre>
 <pre class="r"><code>gathered_dataset&lt;-gathered_dataset[complete.cases(gathered_dataset),]
 adelaide_data_to_join&lt;-gathered_dataset%&gt;%
-  select(Surname, First.Name, DOB, career_start_end, year)%&gt;%
-  group_by(Surname, First.Name, career_start_end)%&gt;%
-  complete(Surname, First.Name, DOB, career_start_end, year=seq(min(year), max(year),by=1))</code></pre>
+  select(Surname, First.name, DOB, career_start_end, year)%&gt;%
+  group_by(Surname, First.name, career_start_end)%&gt;%
+  complete(Surname, First.name, DOB, career_start_end, year=seq(min(year), max(year),by=1))</code></pre>
 <p>Now view it</p>
 <pre class="r"><code>head(adelaide_data_to_join)</code></pre>
 <pre><code>## # A tibble: 6 x 5
-## # Groups:   Surname, First.Name, career_start_end [6]
-##   Surname   First.Name DOB        career_start_end  year
+## # Groups:   Surname, First.name, career_start_end [6]
+##   Surname   First.name DOB        career_start_end  year
 ##   &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;            &lt;dbl&gt;
 ## 1 Abernethy &quot; Bruce&quot;   1962-05-10 end_sequence      1992
 ## 2 Abernethy &quot; Bruce&quot;   1962-05-10 start_sequence    1991
@@ -288,4 +288,124 @@ adelaide_data_to_join&lt;-gathered_dataset%&gt;%
 ## 5 Armstrong &quot; Tony&quot;    1989-09-29 end_sequence      2011
 ## 6 Armstrong &quot; Tony&quot;    1989-09-29 start_sequence    2010</code></pre>
 <p>So it seems OK.</p>
+<p>Now the next part is lets take the crows stuff as an example how do we join it back onto the fitzRoy afltables data.</p>
+<p>Lets first quickly look at the two datasets we have * dataset in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> we have already <code>stats</code> * dataset of the <a href="https://afltables.com/afl/stats/alltime/adelaide.html">adelaide crows</a> date of births we have just created <code>adelaide_data_to_join</code></p>
+<pre class="r"><code>head(stats)</code></pre>
+<pre><code>## # A tibble: 6 x 59
+##   Season Round Date       Local.start.time Venue Attendance Home.team  HQ1G
+##    &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;                &lt;int&gt; &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;     &lt;int&gt;
+## 1   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 2   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 3   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 4   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 5   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 6   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## # ... with 51 more variables: HQ1B &lt;int&gt;, HQ2G &lt;int&gt;, HQ2B &lt;int&gt;,
+## #   HQ3G &lt;int&gt;, HQ3B &lt;int&gt;, HQ4G &lt;int&gt;, HQ4B &lt;int&gt;, Home.score &lt;int&gt;,
+## #   Away.team &lt;chr&gt;, AQ1G &lt;int&gt;, AQ1B &lt;int&gt;, AQ2G &lt;int&gt;, AQ2B &lt;int&gt;,
+## #   AQ3G &lt;int&gt;, AQ3B &lt;int&gt;, AQ4G &lt;int&gt;, AQ4B &lt;int&gt;, Away.score &lt;int&gt;,
+## #   First.name &lt;chr&gt;, Surname &lt;chr&gt;, ID &lt;dbl&gt;, Jumper.No. &lt;dbl&gt;,
+## #   Playing.for &lt;chr&gt;, Kicks &lt;dbl&gt;, Marks &lt;dbl&gt;, Handballs &lt;dbl&gt;,
+## #   Goals &lt;dbl&gt;, Behinds &lt;dbl&gt;, Hit.Outs &lt;dbl&gt;, Tackles &lt;dbl&gt;,
+## #   Rebounds &lt;dbl&gt;, Inside.50s &lt;dbl&gt;, Clearances &lt;dbl&gt;, Clangers &lt;dbl&gt;,
+## #   Frees.For &lt;dbl&gt;, Frees.Against &lt;dbl&gt;, Brownlow.Votes &lt;dbl&gt;,
+## #   Contested.Possessions &lt;dbl&gt;, Uncontested.Possessions &lt;dbl&gt;,
+## #   Contested.Marks &lt;dbl&gt;, Marks.Inside.50 &lt;dbl&gt;, One.Percenters &lt;dbl&gt;,
+## #   Bounces &lt;dbl&gt;, Goal.Assists &lt;dbl&gt;, Time.on.Ground.. &lt;int&gt;,
+## #   Substitute &lt;int&gt;, Umpire.1 &lt;chr&gt;, Umpire.2 &lt;chr&gt;, Umpire.3 &lt;chr&gt;,
+## #   Umpire.4 &lt;chr&gt;, group_id &lt;int&gt;</code></pre>
+<pre class="r"><code>tail(adelaide_data_to_join)</code></pre>
+<pre><code>## # A tibble: 6 x 5
+## # Groups:   Surname, First.name, career_start_end [6]
+##   Surname First.name DOB        career_start_end  year
+##   &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;            &lt;dbl&gt;
+## 1 Wintle  &quot; Darryl&quot;  1976-04-07 end_sequence      1999
+## 2 Wintle  &quot; Darryl&quot;  1976-04-07 start_sequence    1999
+## 3 Wright  &quot; Matthew&quot; 1989-12-14 end_sequence      2015
+## 4 Wright  &quot; Matthew&quot; 1989-12-14 start_sequence    2011
+## 5 Young   &quot; Will&quot;    1990-08-03 end_sequence      2010
+## 6 Young   &quot; Will&quot;    1990-08-03 start_sequence    2010</code></pre>
+<p>So remembering what we wanted to join on was <code>First.name</code>, <code>Surname</code>, <code>year</code> and <code>Playing.for</code>.</p>
+<p>Well the column I forgot to add is the Playing.for column.</p>
+<p>We can do that as follows:</p>
+<pre class="r"><code>adelaide_data_to_join$Playing.for&lt;-&quot;Adelaide&quot; </code></pre>
+<p>Now we can <a href="https://stat545.com/bit001_dplyr-cheatsheet.html">left_join</a> it onto the <code>stats</code> dataset.</p>
+<pre class="r"><code>check_crows_dataset&lt;-left_join(stats, adelaide_data_to_join, by = c(&quot;First.name&quot; = &quot;First.name&quot;, &quot;Surname&quot; = &quot;Surname&quot;, &quot;Season&quot;=&quot;year&quot;, &quot;Playing.for&quot;=&quot;Playing.for&quot;))
+
+head(check_crows_dataset)</code></pre>
+<pre><code>## # A tibble: 6 x 61
+##   Season Round Date       Local.start.time Venue Attendance Home.team  HQ1G
+##    &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;                &lt;int&gt; &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;     &lt;int&gt;
+## 1   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 2   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 3   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 4   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 5   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 6   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## # ... with 53 more variables: HQ1B &lt;int&gt;, HQ2G &lt;int&gt;, HQ2B &lt;int&gt;,
+## #   HQ3G &lt;int&gt;, HQ3B &lt;int&gt;, HQ4G &lt;int&gt;, HQ4B &lt;int&gt;, Home.score &lt;int&gt;,
+## #   Away.team &lt;chr&gt;, AQ1G &lt;int&gt;, AQ1B &lt;int&gt;, AQ2G &lt;int&gt;, AQ2B &lt;int&gt;,
+## #   AQ3G &lt;int&gt;, AQ3B &lt;int&gt;, AQ4G &lt;int&gt;, AQ4B &lt;int&gt;, Away.score &lt;int&gt;,
+## #   First.name &lt;chr&gt;, Surname &lt;chr&gt;, ID &lt;dbl&gt;, Jumper.No. &lt;dbl&gt;,
+## #   Playing.for &lt;chr&gt;, Kicks &lt;dbl&gt;, Marks &lt;dbl&gt;, Handballs &lt;dbl&gt;,
+## #   Goals &lt;dbl&gt;, Behinds &lt;dbl&gt;, Hit.Outs &lt;dbl&gt;, Tackles &lt;dbl&gt;,
+## #   Rebounds &lt;dbl&gt;, Inside.50s &lt;dbl&gt;, Clearances &lt;dbl&gt;, Clangers &lt;dbl&gt;,
+## #   Frees.For &lt;dbl&gt;, Frees.Against &lt;dbl&gt;, Brownlow.Votes &lt;dbl&gt;,
+## #   Contested.Possessions &lt;dbl&gt;, Uncontested.Possessions &lt;dbl&gt;,
+## #   Contested.Marks &lt;dbl&gt;, Marks.Inside.50 &lt;dbl&gt;, One.Percenters &lt;dbl&gt;,
+## #   Bounces &lt;dbl&gt;, Goal.Assists &lt;dbl&gt;, Time.on.Ground.. &lt;int&gt;,
+## #   Substitute &lt;int&gt;, Umpire.1 &lt;chr&gt;, Umpire.2 &lt;chr&gt;, Umpire.3 &lt;chr&gt;,
+## #   Umpire.4 &lt;chr&gt;, group_id &lt;int&gt;, DOB &lt;chr&gt;, career_start_end &lt;chr&gt;</code></pre>
+<p>This didn’t work, which means that our column values don’t exactly align.</p>
+<p>To check why this might occur lets check how the join from our <code>adelaide_data_to_join</code> works.</p>
+<pre class="r"><code>adelaide_data_to_join%&gt;%
+  filter(Playing.for==&quot;Adelaide&quot; &amp;Surname==&quot;Jarman&quot;)%&gt;%head()</code></pre>
+<pre><code>## # A tibble: 4 x 6
+## # Groups:   Surname, First.name, career_start_end [4]
+##   Surname First.name DOB        career_start_end  year Playing.for
+##   &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;      
+## 1 Jarman  &quot; Andrew&quot;  1966-01-14 end_sequence      1996 Adelaide   
+## 2 Jarman  &quot; Andrew&quot;  1966-01-14 start_sequence    1991 Adelaide   
+## 3 Jarman  &quot; Darren&quot;  1967-01-28 end_sequence      2001 Adelaide   
+## 4 Jarman  &quot; Darren&quot;  1967-01-28 start_sequence    1996 Adelaide</code></pre>
+<p>So what we can see here is that there seems to be a space between the first letter of the First.name which is why our join isn’t working.</p>
+<pre class="r"><code>adelaide_data_to_join$First.name&lt;-trimws(adelaide_data_to_join$First.name, which = c( &quot;both&quot;,&quot;left&quot;, &quot;right&quot;))
+check_crows_dataset&lt;-left_join(stats, adelaide_data_to_join, by = c(&quot;First.name&quot; = &quot;First.name&quot;, &quot;Surname&quot; = &quot;Surname&quot;, &quot;Season&quot;=&quot;year&quot;, &quot;Playing.for&quot;=&quot;Playing.for&quot;))
+
+head(check_crows_dataset)</code></pre>
+<pre><code>## # A tibble: 6 x 61
+##   Season Round Date       Local.start.time Venue Attendance Home.team  HQ1G
+##    &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;                &lt;int&gt; &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;     &lt;int&gt;
+## 1   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 2   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 3   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 4   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 5   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## 6   1991 1     1991-03-22             1940 Foot…      44902 Adelaide      6
+## # ... with 53 more variables: HQ1B &lt;int&gt;, HQ2G &lt;int&gt;, HQ2B &lt;int&gt;,
+## #   HQ3G &lt;int&gt;, HQ3B &lt;int&gt;, HQ4G &lt;int&gt;, HQ4B &lt;int&gt;, Home.score &lt;int&gt;,
+## #   Away.team &lt;chr&gt;, AQ1G &lt;int&gt;, AQ1B &lt;int&gt;, AQ2G &lt;int&gt;, AQ2B &lt;int&gt;,
+## #   AQ3G &lt;int&gt;, AQ3B &lt;int&gt;, AQ4G &lt;int&gt;, AQ4B &lt;int&gt;, Away.score &lt;int&gt;,
+## #   First.name &lt;chr&gt;, Surname &lt;chr&gt;, ID &lt;dbl&gt;, Jumper.No. &lt;dbl&gt;,
+## #   Playing.for &lt;chr&gt;, Kicks &lt;dbl&gt;, Marks &lt;dbl&gt;, Handballs &lt;dbl&gt;,
+## #   Goals &lt;dbl&gt;, Behinds &lt;dbl&gt;, Hit.Outs &lt;dbl&gt;, Tackles &lt;dbl&gt;,
+## #   Rebounds &lt;dbl&gt;, Inside.50s &lt;dbl&gt;, Clearances &lt;dbl&gt;, Clangers &lt;dbl&gt;,
+## #   Frees.For &lt;dbl&gt;, Frees.Against &lt;dbl&gt;, Brownlow.Votes &lt;dbl&gt;,
+## #   Contested.Possessions &lt;dbl&gt;, Uncontested.Possessions &lt;dbl&gt;,
+## #   Contested.Marks &lt;dbl&gt;, Marks.Inside.50 &lt;dbl&gt;, One.Percenters &lt;dbl&gt;,
+## #   Bounces &lt;dbl&gt;, Goal.Assists &lt;dbl&gt;, Time.on.Ground.. &lt;int&gt;,
+## #   Substitute &lt;int&gt;, Umpire.1 &lt;chr&gt;, Umpire.2 &lt;chr&gt;, Umpire.3 &lt;chr&gt;,
+## #   Umpire.4 &lt;chr&gt;, group_id &lt;int&gt;, DOB &lt;chr&gt;, career_start_end &lt;chr&gt;</code></pre>
+<pre class="r"><code>check_crows_dataset%&gt;%filter(Playing.for==&quot;Adelaide&quot;)%&gt;%select(DOB)%&gt;%head()</code></pre>
+<pre><code>## # A tibble: 6 x 1
+##   DOB       
+##   &lt;chr&gt;     
+## 1 1962-03-18
+## 2 1964-01-03
+## 3 1970-01-06
+## 4 1970-01-06
+## 5 1970-06-30
+## 6 1966-01-14</code></pre>
+<p>Ok so this seems to work now just need to do this for all teams.</p>
+<p>Looking forward to reading anywork looking at age and its impact on team or player performance.</p>
 </div>
