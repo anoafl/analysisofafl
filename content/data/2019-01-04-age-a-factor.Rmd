@@ -127,6 +127,5 @@ To check this gives us what we want, lets take an example player, say the great 
 
 So we can see this gives us what we want, now all we have to do is expand this dataset so we have entries for Andrew McLeod for each year he was with the Crows. 
 
+So how do we do that? 
 
-
-  
