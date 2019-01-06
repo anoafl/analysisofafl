@@ -255,4 +255,13 @@ head(adelaide_crows_players)</code></pre>
 ## 4 1992-2006 17y 257d  32y 49d   start_sequence 1992
 ## 5 1991-2004 21y 305d  35y 30d   start_sequence 1991
 ## 6 1997-2010  20y 94d 33y 202d   start_sequence 1997</code></pre>
+<p>To check this gives us what we want, lets take an example player, say the great <a href="https://afltables.com/afl/stats/players/A/Andrew_McLeod.html">Andrew McLeod</a>.</p>
+<pre class="r"><code>  gather(data=adelaide_crows_players, key = &quot;career_start_end&quot;, value = &quot;year&quot;, c(&quot;start_sequence&quot;, &quot;end_sequence&quot;)) %&gt;%filter(Surname==&quot;McLeod&quot;)</code></pre>
+<pre><code>##   Cap  # Surname First Name        DOB    HT   WT   Games (W-D-L) Goals
+## 1  66 23  McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
+## 2  66 23  McLeod     Andrew 1976-08-04 181cm 81kg 340 (185-0-155)   275
+##     Seasons    Debut     Last career_start_end year
+## 1 1995-2010 18y 274d 33y 346d   start_sequence 1995
+## 2 1995-2010 18y 274d 33y 346d     end_sequence 2010</code></pre>
+<p>So we can see this gives us what we want, now all we have to do is expand this dataset so we have entries for Andrew McLeod for each year he was with the Crows.</p>
 </div>

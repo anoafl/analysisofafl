@@ -121,7 +121,7 @@ To check this gives us what we want, lets take an example player, say the great 
 
 ```{r}
 
-  gather(data=adelaide_crows_players, key = "career_start_end", value = "year", c("start_sequence", "end_sequence")) %>%filter(Player=="McLeod, Andrew")
+  gather(data=adelaide_crows_players, key = "career_start_end", value = "year", c("start_sequence", "end_sequence")) %>%filter(Surname=="McLeod")
 
 ```
 
