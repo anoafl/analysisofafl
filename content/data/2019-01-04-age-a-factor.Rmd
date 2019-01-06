@@ -63,7 +63,7 @@ In [fitzRoy](https://github.com/jimmyday12/fitzRoy) when we use the `get_afltabl
 
 ```{r}
 adelaide_crows_players<- adelaide_crows_players%>%
-      separate(Player,c("Surname","First Name"),sep=",")
+      separate(Player,c("Surname","First.Name"),sep=",")
 head(adelaide_crows_players)
 
 ```
@@ -123,9 +123,31 @@ To check this gives us what we want, lets take an example player, say the great 
 
   gather(data=adelaide_crows_players, key = "career_start_end", value = "year", c("start_sequence", "end_sequence")) %>%filter(Surname=="McLeod")
 
+
 ```
 
 So we can see this gives us what we want, now all we have to do is expand this dataset so we have entries for Andrew McLeod for each year he was with the Crows. 
 
 So how do we do that? 
+
+```{r}
+
+gathered_dataset<- gather(data=adelaide_crows_players, key = "career_start_end", value = "year", c("start_sequence", "end_sequence"))
+
+
+gathered_dataset$year<-as.numeric(gathered_dataset$year)
+gathered_dataset<-gathered_dataset[complete.cases(gathered_dataset),]
+adelaide_data_to_join<-gathered_dataset%>%
+  select(Surname, First.Name, DOB, career_start_end, year)%>%
+  group_by(Surname, First.Name, career_start_end)%>%
+  complete(Surname, First.Name, DOB, career_start_end, year=seq(min(year), max(year),by=1))
+```
+
+Now view it
+
+```{r}
+head(adelaide_data_to_join)
+```
+
+So it seems OK. 
 
