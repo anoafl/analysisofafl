@@ -31,4 +31,153 @@ description: 'Recreate to create'
 <p>Lets say you are working in clubland, you might like the ideas used, but have your own internal metrics you are collecting and would like to use instead. Hopefully as a fan of the game you are noticing that <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720&amp;advv=Y">more statistics</a> are being made available and accessible through <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>. For example <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> allows users to access both <a href="https://afltables.com/afl/afl_index.html">afltables</a> and <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720&amp;advv=Y">footywire</a> with footywire containing some extra variables that you might want to include in your rating system such as intercepts and tackles inside 50 to name a couple.</p>
 <p><strong>OK so how do we go about recreating?</strong></p>
 <p><em>Well thankfully the guys over at <a href="https://twitter.com/hpnfooty?lang=en">hpn</a> have written about the formula they used.</em></p>
+<p><strong>Step One</strong></p>
+<p>The first thing we do is get our datasets. Now we have access through <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> to both data from <a href="https://afltables.com/afl/afl_index.html">afltables</a> and <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720&amp;advv=Y">footywire</a> and one of the reasons you might be doing this is because you want to use the extra data in one of them for your ratings.</p>
+<p>Now its not only just the data that is available through <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> that you can use. At the time of writing this there are a few extra variables you might want to integrate in such as <a href="https://analysisofafl.netlify.com/data/2018-11-24-getting-player-information/">player position</a> and maybe <a href="https://analysisofafl.netlify.com/data/age-a-factor/">age</a> that haven’t been integrated into fitzRoy but hopefully they will be soonish.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
+## ✔ tibble  1.4.2     ✔ dplyr   0.7.8
+## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
+## ✔ readr   1.3.1     ✔ forcats 0.3.0</code></pre>
+<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>afltables&lt;-fitzRoy::get_afltables_stats(start_date=&quot;1990-01-01&quot;, end_date=&quot;2018-10-10&quot;)</code></pre>
+<pre><code>## Returning data from 1990-01-01 to 2018-10-10</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre class="r"><code>footywire&lt;-fitzRoy::player_stats</code></pre>
+<p>Something to note about the two datasets is that to join them on together we need some sort of joining ID. The easiest ones are usually done via a key of team name, season, player or soemthing similar. Unfortunetely the teams aren’t named the same through the datasets. For example in the footywire dataset the Greater Western Sydney Giants are called GWS, while in the afltables dataset they are called Greater Western Sydney.</p>
+<p>So lets make sure the team names align between datasets so we can join them on later</p>
+<pre class="r"><code>#####step 1 get team names matching to join on scores to player data
+afltables&lt;- mutate_if(tibble::as_tibble(afltables),
+                      is.character,
+                      str_replace_all, pattern = &quot;Greater Western Sydney&quot;, replacement = &quot;GWS&quot;)
+afltables &lt;- mutate_if(tibble::as_tibble(afltables),
+                       is.character,
+                       str_replace_all, pattern = &quot;Brisbane Lions&quot;, replacement = &quot;Brisbane&quot;)
+# names(afltables)</code></pre>
+<p>Now because we are recreating the <a href="http://www.hpnfooty.com/?p=21810">blog post</a> we should just focus on some values that we know so we can check to see if we have things covered. So lets filter our data.</p>
+<pre class="r"><code>afltables&lt;-filter(afltables, Season&gt;2010)
+afltables&lt;-filter(afltables, Season&lt;2017)</code></pre>
+<p><strong>Step Two recreate PAV per <a href="http://www.hpnfooty.com/?p=21810">blogpost</a></strong></p>
+<pre class="r"><code>afltables_home&lt;-filter(afltables, Playing.for==Home.team)
+afltables_away&lt;-filter(afltables,Playing.for==Away.team)
+
+
+afltables_home$pavO&lt;-afltables_home$Home.score +
+  0.25*afltables_home$Hit.Outs +
+  3*afltables_home$Goal.Assists+
+  afltables_home$Inside.50s+
+  afltables_home$Marks.Inside.50+
+  (afltables_home$Frees.For-afltables_home$Frees.Against)
+
+afltables_home$pavD&lt;-20*afltables_home$Rebounds +
+  12*afltables_home$One.Percenters+
+  (afltables_home$Marks-4*afltables_home$Marks.Inside.50+2*(afltables_home$Frees.For-afltables_home$Frees.Against))-
+  2/3*afltables_home$Hit.Outs
+
+afltables_home$pavM&lt;-15*afltables_home$Inside.50s+
+  20*afltables_home$Clearances +
+  3*afltables_home$Tackles+
+  1.5*afltables_home$Hit.Outs +
+  (afltables_home$Frees.For-afltables_home$Frees.Against)
+
+
+
+afltables_away$pavO&lt;-afltables_away$Away.score +
+  0.25*afltables_away$Hit.Outs +
+  3*afltables_away$Goal.Assists+
+  afltables_away$Inside.50s+
+  afltables_away$Marks.Inside.50+
+  (afltables_away$Frees.For-afltables_away$Frees.Against)
+
+
+afltables_away$pavD&lt;-20*afltables_away$Rebounds +
+  12*afltables_away$One.Percenters+
+  (afltables_away$Marks-4*afltables_away$Marks.Inside.50+2*(afltables_away$Frees.For-afltables_away$Frees.Against))-
+  2/3*afltables_away$Hit.Outs
+
+
+
+afltables_away$pavM&lt;-15*afltables_away$Inside.50s+
+  20*afltables_away$Clearances +
+  3*afltables_away$Tackles+
+  1.5*afltables_away$Hit.Outs +
+  (afltables_away$Frees.For-afltables_away$Frees.Against)
+
+fulltable&lt;-rbind(afltables_home,afltables_away)
+names(fulltable)</code></pre>
+<pre><code>##  [1] &quot;Season&quot;                  &quot;Round&quot;                  
+##  [3] &quot;Date&quot;                    &quot;Local.start.time&quot;       
+##  [5] &quot;Venue&quot;                   &quot;Attendance&quot;             
+##  [7] &quot;Home.team&quot;               &quot;HQ1G&quot;                   
+##  [9] &quot;HQ1B&quot;                    &quot;HQ2G&quot;                   
+## [11] &quot;HQ2B&quot;                    &quot;HQ3G&quot;                   
+## [13] &quot;HQ3B&quot;                    &quot;HQ4G&quot;                   
+## [15] &quot;HQ4B&quot;                    &quot;Home.score&quot;             
+## [17] &quot;Away.team&quot;               &quot;AQ1G&quot;                   
+## [19] &quot;AQ1B&quot;                    &quot;AQ2G&quot;                   
+## [21] &quot;AQ2B&quot;                    &quot;AQ3G&quot;                   
+## [23] &quot;AQ3B&quot;                    &quot;AQ4G&quot;                   
+## [25] &quot;AQ4B&quot;                    &quot;Away.score&quot;             
+## [27] &quot;First.name&quot;              &quot;Surname&quot;                
+## [29] &quot;ID&quot;                      &quot;Jumper.No.&quot;             
+## [31] &quot;Playing.for&quot;             &quot;Kicks&quot;                  
+## [33] &quot;Marks&quot;                   &quot;Handballs&quot;              
+## [35] &quot;Goals&quot;                   &quot;Behinds&quot;                
+## [37] &quot;Hit.Outs&quot;                &quot;Tackles&quot;                
+## [39] &quot;Rebounds&quot;                &quot;Inside.50s&quot;             
+## [41] &quot;Clearances&quot;              &quot;Clangers&quot;               
+## [43] &quot;Frees.For&quot;               &quot;Frees.Against&quot;          
+## [45] &quot;Brownlow.Votes&quot;          &quot;Contested.Possessions&quot;  
+## [47] &quot;Uncontested.Possessions&quot; &quot;Contested.Marks&quot;        
+## [49] &quot;Marks.Inside.50&quot;         &quot;One.Percenters&quot;         
+## [51] &quot;Bounces&quot;                 &quot;Goal.Assists&quot;           
+## [53] &quot;Time.on.Ground..&quot;        &quot;Substitute&quot;             
+## [55] &quot;Umpire.1&quot;                &quot;Umpire.2&quot;               
+## [57] &quot;Umpire.3&quot;                &quot;Umpire.4&quot;               
+## [59] &quot;group_id&quot;                &quot;pavO&quot;                   
+## [61] &quot;pavD&quot;                    &quot;pavM&quot;</code></pre>
+<pre class="r"><code>fulltable2016&lt;-filter(fulltable, Season==2016)</code></pre>
+<p><strong>Step 3 - Check a players values</strong></p>
+<p>Now we have the PAV ratings for 2016, lets check a players PAV to see if we have done it right (note you should probably check multiple players but its late)</p>
+<p>The player I am going to check is Bryce Gibbs and I am going to check to see if his midfield PAV matches the blog post</p>
+<pre class="r"><code>### check get same value for bryce gibbs  ###matches blog post http://www.hpnfooty.com/?p=21810
+
+fulltable2016%&gt;%group_by(First.name, Surname)%&gt;% summarise(total_mid_pav=sum(pavM))%&gt;%
+  filter(Surname==&quot;Gibbs&quot;, First.name==&quot;Bryce&quot;)</code></pre>
+<pre><code>## # A tibble: 1 x 3
+## # Groups:   First.name [1]
+##   First.name Surname total_mid_pav
+##   &lt;chr&gt;      &lt;chr&gt;           &lt;dbl&gt;
+## 1 Bryce      Gibbs            3984</code></pre>
+<pre class="r"><code>fulltable2016%&gt;%group_by(Playing.for)%&gt;% summarise(team_mid_pav=sum(pavM))</code></pre>
+<pre><code>## # A tibble: 18 x 2
+##    Playing.for      team_mid_pav
+##    &lt;chr&gt;                   &lt;dbl&gt;
+##  1 Adelaide               45679 
+##  2 Brisbane               36986.
+##  3 Carlton                37702.
+##  4 Collingwood            38445 
+##  5 Essendon               35483 
+##  6 Fremantle              37135 
+##  7 Geelong                45027 
+##  8 Gold Coast             36114.
+##  9 GWS                    46991 
+## 10 Hawthorn               43548 
+## 11 Melbourne              40918.
+## 12 North Melbourne        40982.
+## 13 Port Adelaide          41328.
+## 14 Richmond               35464.
+## 15 St Kilda               38218.
+## 16 Sydney                 49909 
+## 17 West Coast             41712.
+## 18 Western Bulldogs       47766</code></pre>
+<pre class="r"><code>100*(3984/37702)</code></pre>
+<pre><code>## [1] 10.56708</code></pre>
+<p>Hazzaaa it matches. Can someone check the rest tell me where I went wrong and flick me an email please.</p>
 </div>

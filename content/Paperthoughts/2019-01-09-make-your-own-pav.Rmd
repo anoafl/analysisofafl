@@ -37,13 +37,26 @@ Lets say you are working in clubland, you might like the ideas used, but have yo
 
 *Well thankfully the guys over at [hpn](https://twitter.com/hpnfooty?lang=en) have written about the formula they used.*
 
+**Step One**
+
+The first thing we do is get our datasets. Now we have access through [fitzRoy](https://github.com/jimmyday12/fitzRoy) to both data from [afltables](https://afltables.com/afl/afl_index.html) and [footywire](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720&advv=Y) and one of the reasons you might be doing this is because you want to use the extra data in one of them for your ratings. 
+
+Now its not only just the data that is available through [fitzRoy](https://github.com/jimmyday12/fitzRoy) that you can use.
+At the time of writing this there are a few extra variables you might want to integrate in such as [player position](https://analysisofafl.netlify.com/data/2018-11-24-getting-player-information/) and maybe [age](https://analysisofafl.netlify.com/data/age-a-factor/) that haven't been integrated into fitzRoy but hopefully they will be soonish.
+
 ```{r}
 library(tidyverse)
 afltables<-fitzRoy::get_afltables_stats(start_date="1990-01-01", end_date="2018-10-10")
 footywire<-fitzRoy::player_stats
 
 
-##########
+```
+
+Something to note about the two datasets is that to join them on together we need some sort of joining ID. The easiest ones are usually done via a key of team name, season, player or soemthing similar. Unfortunetely the teams aren't named the same through the datasets. For example in the footywire dataset the Greater Western Sydney Giants are called GWS, while in the afltables dataset they are called Greater Western Sydney. 
+
+So lets make sure the team names align between datasets so we can join them on later
+
+```{r}
 
 #####step 1 get team names matching to join on scores to player data
 afltables<- mutate_if(tibble::as_tibble(afltables),
@@ -53,15 +66,24 @@ afltables <- mutate_if(tibble::as_tibble(afltables),
                        is.character,
                        str_replace_all, pattern = "Brisbane Lions", replacement = "Brisbane")
 # names(afltables)
+```
 
+Now because we are recreating the [blog post](http://www.hpnfooty.com/?p=21810) we should just focus on some values that we know so we can check to see if we have things covered. So lets filter our data.
+
+```{r}
 
 afltables<-filter(afltables, Season>2010)
 afltables<-filter(afltables, Season<2017)
+```
 
+**Step Two recreate PAV per [blogpost](http://www.hpnfooty.com/?p=21810)** 
+
+
+
+```{r}
 afltables_home<-filter(afltables, Playing.for==Home.team)
 afltables_away<-filter(afltables,Playing.for==Away.team)
 
-names(afltables_home)
 
 afltables_home$pavO<-afltables_home$Home.score +
   0.25*afltables_home$Hit.Outs +
@@ -108,15 +130,31 @@ fulltable<-rbind(afltables_home,afltables_away)
 names(fulltable)
 
 fulltable2016<-filter(fulltable, Season==2016)
-table(fulltable2016$Season)
 
+```
+
+**Step 3 - Check a players values**
+
+Now we have the PAV ratings for 2016, lets check a players PAV to see if we have done it right (note you should probably check multiple players but its late)
+
+The player I am going to check is Bryce Gibbs and I am going to check to see if his midfield PAV matches the blog post
+
+
+
+```{r}
 ### check get same value for bryce gibbs  ###matches blog post http://www.hpnfooty.com/?p=21810
 
 fulltable2016%>%group_by(First.name, Surname)%>% summarise(total_mid_pav=sum(pavM))%>%
   filter(Surname=="Gibbs", First.name=="Bryce")
+
+
 fulltable2016%>%group_by(Playing.for)%>% summarise(team_mid_pav=sum(pavM))
+
 100*(3984/37702)
 
 
-
 ```
+
+Hazzaaa it matches. Can someone check the rest tell me where I went wrong and flick me an email please.
+
+As always this is a work in progress so this post will probably get an update.
