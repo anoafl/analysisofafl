@@ -1,0 +1,40 @@
+---
+title: Make your own PAV
+author: Robert Nguyen
+date: '2019-01-09'
+slug: make-your-own-pav
+categories:
+  - AFL Modelling
+tags:
+  - fantasy
+  - fitzRoy
+  - Player
+description: 'Recreate to create'
+---
+
+The idea behind the description `recreate to create` is that to make your own rating system be it a player one or a team one, a good first step is to recreate what you see and then add in your own opinion to create your own system. 
+
+The guys over at [HPN](https://twitter.com/hpnfooty?lang=en) have their own player rating system called [PAV](http://www.hpnfooty.com/?p=21810) which stands for [Player Approximate Value](https://thewest.com.au/sport/afl/ranking-a-players-real-worth---the-pav-system-bringing-advanced-analytics-to-the-afl-ng-b88586863z). 
+
+You can explore their PAV ratings for both [Men](http://www.hpnfooty.com/?page_id=22854) and [Womens](http://www.hpnfooty.com/?page_id=25742). 
+
+# Why would you want to create your own system?
+
+**You might have a different opinion in terms of how the formula is derived** 
+
+>The weightings and multipliers used in each component formula will necessarily look a bit arbitrary, but are the results of adjustment and tweaking until the results lined up with other methods of ranking and evaluating players as described above.
+
+That is not to say how it was done is wrong, but maybe you have another method of ranking and evaluating players that you would like your system to align with. 
+
+**You might just want to use different variables?**
+
+> As the collection of several of these measures only commenced in 1998, we have also adapted another formula for the pre-1998 seasons which correlates extremely strongly with the newer formula. Whilst we feel it is less accurate than the newer formula, it still largely conforms to the findings of the newer formula. This formula was created by trying to minimise the standard deviation for each player’s PAV across the last five seasons of AFL football. Around 5% of players have a difference in value of more than one PAV between the new and old formulas.
+
+Lets say you are working in clubland, you might like the ideas used, but have your own internal metrics you are collecting and would like to use instead. Hopefully as a fan of the game you are noticing that [more statistics](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720&advv=Y) are being made available and accessible through [fitzRoy](https://github.com/jimmyday12/fitzRoy). For example [fitzRoy](https://github.com/jimmyday12/fitzRoy) allows users to access both [afltables](https://afltables.com/afl/afl_index.html) and [footywire](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720&advv=Y) with footywire containing some extra variables that you might want to include in your rating system such as intercepts and tackles inside 50 to name a couple.
+
+
+**OK so how do we go about recreating?**
+
+*Well thankfully the guys over at [hpn](https://twitter.com/hpnfooty?lang=en) have written about the formula they used.*
+
+
