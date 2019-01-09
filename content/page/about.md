@@ -18,3 +18,5 @@ Love a [beer](https://littlecreatures.com.au/agegate/), [wine](https://www.fourt
 Analysis and writing done while listening to [dark side of the moon](https://www.youtube.com/watch?v=YI67GAQYsRc)
 
 Feel free to email me on <analysisofafl@gmail.com>
+
+Help support this blog by buying me  a [beer](https://patreon.com/roberto_boberto?utm_medium=social&utm_source=twitter&utm_campaign=creatorshare) or [coffee](https://patreon.com/roberto_boberto?utm_medium=social&utm_source=twitter&utm_campaign=creatorshare) 

@@ -23,3 +23,5 @@ library(fitzRoy)
 ## Docs
 
 https://github.com/jimmyday12/fitzRoy
+
+If you like this part of the blog or have requests consider buying me a [beer](https://patreon.com/roberto_boberto?utm_medium=social&utm_source=twitter&utm_campaign=creatorshare) or [coffee](https://patreon.com/roberto_boberto?utm_medium=social&utm_source=twitter&utm_campaign=creatorshare) or sending an email through.
