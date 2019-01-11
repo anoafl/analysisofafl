@@ -129,6 +129,15 @@ summary(check$sumSC)  </code></pre>
 <pre class="r"><code>library(tidyverse)
 library(stringr)
 
+url&lt;-&quot;https://www.footywire.com/afl/footy/ft_players&quot;
+
+
+link&lt;-read_html(url)%&gt;%
+html_nodes(&quot;br+ a , .lnormtop a:nth-child(1)&quot;)%&gt;%
+  html_attr(&quot;href&quot;)
+
+url_players&lt;-str_c(&quot;https://www.footywire.com/afl/footy/&quot;,link)
+
 cbind.fill &lt;- function(...){
     nm &lt;- list(...) 
     nm &lt;- lapply(nm, as.matrix)
@@ -136,13 +145,14 @@ cbind.fill &lt;- function(...){
     do.call(cbind, lapply(nm, function (x) 
         rbind(x, matrix(, n-nrow(x), ncol(x))))) 
 }
-page&lt;-read_html(x=&quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--dominic-sheed&quot;)
 
-player&lt;- page%&gt;%
-          html_nodes(&quot;.ldrow .hltitle&quot;)%&gt;%
-          html_text()
-
-playing.for&lt;-  page%&gt;%
+player_info &lt;- function(x){
+  # page &lt;- read_html(x)
+  page&lt;-read_html(x)  
+  player&lt;-       page%&gt;%
+    html_nodes(&quot;.ldrow .hltitle&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  playing.for&lt;-  page%&gt;%
     html_nodes(&quot;.ldrow a b&quot;)%&gt;%
     html_text() %&gt;% as.tibble()
   number&lt;-     page%&gt;%
@@ -182,12 +192,19 @@ playing.for&lt;-  page%&gt;%
     str_remove(&quot;.*Position: &quot;)%&gt;%
     str_squish() %&gt;% as.tibble()
   
+  
+  
+  
+  #combine, name, and make it a tibble
   player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
   
   player_information &lt;- as.tibble(player_information)
-  head(player_information)</code></pre>
-<pre><code>## # A tibble: 1 x 8
-##   V1       value     value1 value2  value3  value4         value5    value6
-##   &lt;chr&gt;    &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt;     &lt;chr&gt; 
-## 1 Dominic… West Coa… #4     &quot; 87kg… &quot; 185c… Round 1, Pick… &quot; West C… Midfi…</code></pre>
+
+  # print(x)
+  # return(x)
+  return(player_information)
+}
+footywire &lt;- purrr::map_df(url_players, player_info)
+
+names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;)</code></pre>
 </div>

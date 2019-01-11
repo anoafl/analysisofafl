@@ -172,6 +172,7 @@ player_info <- function(x){
 footywire <- purrr::map_df(url_players, player_info)
 
 names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position")
+head(footywire)
 
 ```
     
