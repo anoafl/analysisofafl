@@ -1,0 +1,177 @@
+---
+title: Poor Tom Mitchell
+author: Robert Nguyen
+date: '2019-01-11'
+slug: poor-tom-mitchell
+categories:
+  - fitzRoy
+  - R
+tags:
+  - fantasy
+  - graphics
+  - Hawthorn
+description: 'Hawks lose one of the best'
+---
+
+Today unfortunetely one of the games best players and the current Bronwnlow Medalist Tom Mitchell [has been injured](https://www.abc.net.au/news/2019-01-11/hawthorn-star-brownlow-medallist-tom-mitchell-breaks-leg/10708464) and will probably miss the whole 2019 AFL season. This is horrible news as he was just coming off arguably his [best season](https://www.abc.net.au/news/2018-09-24/tom-mitchell-wins-brownlow-medal-2018/10300390) (winning the Brownlow Medal). He's an incredibly gifted inside player who through the Hawks savvy recruiting have just gotten him some extra outside players to handball the ball too. 
+
+To put in perspective just how good of a season hes had, I thought I'd share some R script and hopefully some of you will have your own take on just how good of a season hes had and just what Hawthorn is missing in 2019. 
+
+# Contested Possession King
+
+Tom Mitchell we know is a contested possession machine, just how much of a machine was he? 
+
+```{r}
+library(tidyverse)
+fitzRoy::player_stats%>%
+  filter(Season==2018)%>%
+  group_by(Player)%>%
+  summarise(meanCP=mean(CP))%>%
+  arrange(desc(meanCP))
+
+
+```
+
+# Supercoach King
+
+I don't mean this as what will Tom Mitchell missing be on your fantasy team, what I mean is Supercoach scores are probably the best measure of a good player that we have available in fitzRoy. 
+
+We know a few things about SC scores, we don't know their actual formula that is some champion data secret sauce. But in general it does pass the eye test, good players get good scores. If you were to pick a SC team based only on scores it would *probably* look pretty good. We also know that on average a game will get to about 3300 which we can verify below.
+
+```{r}
+library(tidyverse)
+check<-fitzRoy::player_stats%>%
+  group_by(Match_id)%>%
+  summarise(sumSC=sum(SC))%>%
+  arrange(desc(sumSC))
+summary(check$sumSC)  
+
+```
+
+So we can see the mean and the median are the same. 
+
+Lets see how what % of supercoach scores does Tom Mitchell get per game on average and how does that compare?
+
+```{r}
+
+fitzRoy::player_stats%>%
+    group_by(Match_id)%>%
+    mutate(pertSC=SC/sum(SC))%>%
+    group_by(Season, Player)%>%
+    summarise(mean=100*mean(pertSC))%>%
+  arrange(desc(mean))
+```
+
+But just how good are these top 10 years? Lets look at it graphically.
+
+```{r}
+
+fitzRoy::player_stats%>%
+    group_by(Match_id)%>%
+    mutate(pertSC=SC/sum(SC))%>%
+    group_by(Season, Player)%>%
+    summarise(mean=100*mean(pertSC))%>%
+    ggplot(aes(x=mean))+geom_density() + geom_vline(xintercept = 3.89)
+
+```
+
+But thats since 2010, what about just in the 2018 season?
+
+```{r}
+fitzRoy::player_stats%>%
+        filter(Season==2018)%>%
+      group_by(Match_id)%>%
+    mutate(pertSC=SC/sum(SC))%>%
+    group_by(Season, Player)%>%
+    summarise(mean=100*mean(pertSC))%>%
+  arrange(desc(mean))
+```
+
+Lets now join on the player position data. 
+
+```{r}
+library(rvest)
+library(tidyverse)
+library(stringr)
+
+url<-"https://www.footywire.com/afl/footy/ft_players"
+
+
+link<-read_html(url)%>%
+html_nodes("br+ a , .lnormtop a:nth-child(1)")%>%
+  html_attr("href")
+
+url_players<-str_c("https://www.footywire.com/afl/footy/",link)
+
+cbind.fill <- function(...){
+    nm <- list(...) 
+    nm <- lapply(nm, as.matrix)
+    n <- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+player_info <- function(x){
+  # page <- read_html(x)
+  page<-read_html(x)  
+  player<-       page%>%
+    html_nodes(".ldrow .hltitle")%>%
+    html_text() %>% as.tibble()
+  playing.for<-  page%>%
+    html_nodes(".ldrow a b")%>%
+    html_text() %>% as.tibble()
+  number<-     page%>%
+    html_nodes(".ldrow > b")%>%
+    html_text() %>% as.tibble()
+  
+  weight<-page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+  
+  height<-page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+  
+  draft_position <- page%>%
+    html_nodes("tr:nth-child(5) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+  
+  club_drafted <- page%>%
+    html_nodes("tr:nth-child(5) .ldrow")%>%
+    html_text()%>%str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_remove(".*by") %>% as.tibble()
+  position <-     page%>%
+    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Position: ")%>%
+    str_squish() %>% as.tibble()
+  
+  
+  
+  
+  #combine, name, and make it a tibble
+  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+  
+  player_information <- as.tibble(player_information)
+
+  # print(x)
+  # return(x)
+  return(player_information)
+}
+footywire <- purrr::map_df(url_players, player_info)
+
+names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position")
+
+```
+    
