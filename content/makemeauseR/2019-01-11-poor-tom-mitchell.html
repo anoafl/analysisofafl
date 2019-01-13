@@ -359,7 +359,7 @@ footywire%&gt;%filter(player %in%NA_Players)%&gt;%head()</code></pre>
 <pre><code>## [1] player         club           number         weight        
 ## [5] height         draft_position club_drafted   position      
 ## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
-<p>So we can see that we can match a few more players, there will still be a <a href="https://www.footywire.com/afl/footy/pp-richmond-tigers--thomas-lynch">Tom</a> <a href="https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-lynch">Lynch</a> issue but does this fix up most of our players? Well not really…..</p>
+<p>So we can see that we can match a few more players, there will still be a <a href="https://www.footywire.com/afl/footy/pp-richmond-tigers--thomas-lynch">Tom</a> <a href="https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-lynch">Lynch</a> (but thankfully they are both forwards) issue but does this fix up most of our players? Well not really…..</p>
 <p>Our list has been lowered, but on inspection we can see some interesting problems, lets take <a href="https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott">Will Hoskin-Elliot</a> on his <a href="https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott">footywire profile page</a> where we got his details from (position), his name is listed as Will-Hoskin Elliott, but if we were to look at his in game statistics such as the <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720">afl grand final 2018</a> we can see that his name is listed as Will-H Elliott.</p>
 <p>Isn’t that annoying!</p>
 <p>So this is where some domain knowledge comes in handy, I am going to go through the above list and just manually encode those players I know are midfielders.</p>
@@ -369,6 +369,129 @@ footywire%&gt;%filter(player %in%NA_Players)%&gt;%head()</code></pre>
 </ul>
 <p>But I think for blogging purposes its good to see an example of a common problem like this and possible ways to fix it.</p>
 <p>The longer, more robust way would be to scrape not only the current players, but the <em>past</em> players as well this will capture the retirees.</p>
+<p>So how do we replace values?</p>
+<pre class="r"><code>dataset &lt;- dataset %&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                          Player == &quot;Sam P-Seton&quot;), &quot;Midfield, Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                          Player==&quot;Brendon Goddard&quot;), &quot;Defender, Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                          Player==&quot;Cameron E-Yolmen&quot;), &quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                          Player==&quot;Curtly Hampton&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Koby Stevens&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Dom Barry&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Sam P-Pepper&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Danyle Pearce&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Matthew Rosa&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Billy Hartung&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Ed V-Willis&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jarrad Waite&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Luke D-Uniacke&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Cyril Rioli&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player == &quot;Will H-Elliott&quot;), &quot;Midfield, Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Shane Biggs&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Mitch Honeychurch&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Bernie Vince&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Cameron Pedersen&quot;),&quot;Forward, Ruck&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Alex N-Bullen&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Cory Gregson&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Mark Lecras&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Dean Towers&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Cameron O&#39;Shea&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player == &quot;Rohan Bewick&quot;), &quot;Midfield, Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Nathan Wright&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jack Redpath&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Ryan Griffen&quot;),&quot;Midfield, Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Nicholas Graham&quot;),&quot;Midfield, Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Sam Gilbert&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Harrison Marsh&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot; Sam Kerridge&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Sam Rowe&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jake Neade&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Lindsay Thomas&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;George H-Smith&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jesse Lonergan&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jackson Merrett&quot;),&quot;Defender, Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Daniel Robinson&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Michael Barlow&quot;),&quot;Midfield, Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Max Spencer&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Matthew Leuenberger&quot;),&quot;Ruck&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jarryd Blair&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Stewart Crameri&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Brad Scheer&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Brendan Whitecross&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Sam Gibson&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Tim Mohr&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Aaron Black&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Michael Apeness&quot;),&quot;Forward, Ruck&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Kyle Cheney&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jake Barrett&quot;),&quot;Forward&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jonathan O&#39;Rourke&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Matt Shaw&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Jay K-Harris&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Alex Morgan&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Nathan Freeman&quot;),&quot;Midfield&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Alex Johnson&quot;),&quot;Defender&quot;))%&gt;%
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Brady Grey&quot;),&quot;Forward&quot;))%&gt;%
+  
+  mutate(position = replace(position, which(is.na(position) &amp; 
+                                              Player==&quot;Adam Oxley&quot;),&quot;Defender&quot;))</code></pre>
 </div>
 <div id="mitchells-midfield-impact." class="section level1">
 <h1>Mitchells midfield impact.</h1>
@@ -383,15 +506,172 @@ footywire%&gt;%filter(player %in%NA_Players)%&gt;%head()</code></pre>
 <p>What I’m going to run through next, is just some <a href="https://ggplot2.tidyverse.org">ggplot</a> visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max’s article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision.</p>
 <p>You might have other ideas and that’s great hopefully you can take these scripts</p>
 </div>
+<div id="tom-mitchells-contested-possessions-as-a-midfield-group" class="section level1">
+<h1>Tom Mitchells contested possessions % as a midfield group</h1>
+<pre class="r"><code>  dataset%&gt;%
+    filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
+    group_by(Team, Round)%&gt;%
+    summarise(sumCP=sum(CP))%&gt;%
+    group_by(Team)%&gt;%
+    summarise(meanCP=mean(sumCP))%&gt;%
+    arrange(desc(meanCP))</code></pre>
+<pre><code>## # A tibble: 18 x 2
+##    Team             meanCP
+##    &lt;chr&gt;             &lt;dbl&gt;
+##  1 Geelong           104. 
+##  2 Melbourne         101. 
+##  3 Collingwood        94.3
+##  4 Port Adelaide      93.8
+##  5 Brisbane           91.1
+##  6 Adelaide           89.1
+##  7 Western Bulldogs   87.6
+##  8 Fremantle          86.6
+##  9 North Melbourne    84.2
+## 10 Richmond           83.7
+## 11 Gold Coast         81.3
+## 12 Essendon           81.2
+## 13 Carlton            80.8
+## 14 GWS                80.4
+## 15 Sydney             79.3
+## 16 West Coast         78.1
+## 17 St Kilda           70.8
+## 18 Hawthorn           68.4</code></pre>
+<p>But how much does Tom Mitchell average by himself?</p>
+<pre class="r"><code>dataset%&gt;%
+    filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
+    group_by(Team, Round, Player)%&gt;%
+    summarise(sumCP=sum(CP))%&gt;%
+    group_by(Team, Player)%&gt;%
+    summarise(meanCP=mean(sumCP))%&gt;%
+    arrange(desc(meanCP))</code></pre>
+<pre><code>## # A tibble: 301 x 3
+## # Groups:   Team [18]
+##    Team            Player              meanCP
+##    &lt;chr&gt;           &lt;chr&gt;                &lt;dbl&gt;
+##  1 Carlton         Patrick Cripps        17.6
+##  2 Hawthorn        Tom Mitchell          16.2
+##  3 Melbourne       Clayton Oliver        16.2
+##  4 Fremantle       Nathan Fyfe           16.1
+##  5 North Melbourne Ben Cunnington        15.5
+##  6 Geelong         Patrick Dangerfield   15  
+##  7 Fremantle       Lachie Neale          15.0
+##  8 Sydney          Josh P. Kennedy       13.7
+##  9 Gold Coast      Jarryd Lyons          13.6
+## 10 Melbourne       Jack Viney            13.5
+## # … with 291 more rows</code></pre>
+<p>Interestingly Tom Mitchell average the second most contested possessions per game on the team that averaged the least amount of contested possessions per week. Based on a first glance it seems pretty important.</p>
+<p>But lets get back to what I wanted to look at earlier. That was specifically Tom Mitchells contribution as part of the midfield group.</p>
+<pre class="r"><code>teamstats&lt;-dataset%&gt;%
+  
+  filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
+  group_by(Team, Round)%&gt;%
+  summarise(sumCP=sum(CP))%&gt;%
+  group_by(Team)%&gt;%
+  summarise(meanCPTeam=mean(sumCP))
+ 
+
+playerstats&lt;-dataset%&gt;%
+  filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
+  group_by(Team, Round, Player)%&gt;%
+  summarise(sumCP=sum(CP))%&gt;%
+  group_by(Team, Player)%&gt;%
+  summarise(meanCPlayer=mean(sumCP))
+
+df&lt;-left_join(playerstats,teamstats , by=c(&quot;Team&quot;,&quot;Team&quot;))%&gt;%
+  mutate(pertcontribution=meanCPlayer/meanCPTeam)
+
+df%&gt;%arrange(desc(pertcontribution))%&gt;%head()  </code></pre>
+<pre><code>## # A tibble: 6 x 5
+## # Groups:   Team [5]
+##   Team            Player          meanCPlayer meanCPTeam pertcontribution
+##   &lt;chr&gt;           &lt;chr&gt;                 &lt;dbl&gt;      &lt;dbl&gt;            &lt;dbl&gt;
+## 1 Hawthorn        Tom Mitchell           16.2       68.4            0.237
+## 2 Carlton         Patrick Cripps         17.6       80.8            0.218
+## 3 Fremantle       Nathan Fyfe            16.1       86.6            0.186
+## 4 North Melbourne Ben Cunnington         15.5       84.2            0.184
+## 5 Fremantle       Lachie Neale           15.0       86.6            0.173
+## 6 Sydney          Josh P. Kennedy        13.7       79.3            0.172</code></pre>
+<p>Looking at it this way, what could be an interesting observation Tom Mitchell averages less contested possessions per game, but his percentage of them as part of Hawthorns midfield group is actually higher than Patrick Cripps.</p>
+<p>Lets now have a quick look at this graphically. ;</p>
+<pre class="r"><code>df%&gt;%
+  ggplot(aes(x=meanCPTeam, y=pertcontribution))+
+  geom_point(aes(colour=Team)) </code></pre>
+<p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+</div>
 <div id="tom-mitchells-sc-score" class="section level1">
 <h1>Tom Mitchells SC score %</h1>
-<p>insert stuff here</p>
+<pre class="r"><code>teamstats&lt;-dataset%&gt;%
+  
+  filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
+  group_by(Team, Round)%&gt;%
+  summarise(sumSC=sum(SC))%&gt;%
+  group_by(Team)%&gt;%
+  summarise(meanSCTeam=mean(sumSC))
+
+
+playerstats&lt;-dataset%&gt;%
+  filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
+  group_by(Team, Round, Player)%&gt;%
+  summarise(sumSC=sum(SC))%&gt;%
+  group_by(Team, Player)%&gt;%
+  summarise(meanSClayer=mean(sumSC))
+
+df&lt;-left_join(playerstats,teamstats , by=c(&quot;Team&quot;,&quot;Team&quot;))%&gt;%
+  mutate(pertcontribution=meanSClayer/meanSCTeam)
+
+df%&gt;%arrange(desc(pertcontribution))%&gt;%head()  </code></pre>
+<pre><code>## # A tibble: 6 x 5
+## # Groups:   Team [5]
+##   Team       Player         meanSClayer meanSCTeam pertcontribution
+##   &lt;chr&gt;      &lt;chr&gt;                &lt;dbl&gt;      &lt;dbl&gt;            &lt;dbl&gt;
+## 1 Hawthorn   Tom Mitchell          129.       744.            0.173
+## 2 Carlton    Patrick Cripps        119.       792             0.151
+## 3 St Kilda   Sebastian Ross        103.       746.            0.138
+## 4 Sydney     Luke Parker           102.       744.            0.137
+## 5 West Coast Andrew Gaff           108.       791.            0.137
+## 6 Hawthorn   Ben McEvoy            101.       744.            0.136</code></pre>
+<pre class="r"><code>df%&gt;%ggplot(aes(x=meanSClayer, y=pertcontribution))+geom_point(aes(colour=Team))</code></pre>
+<p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
 </div>
 <div id="tom-mitchell-score-involvements" class="section level1">
 <h1>Tom Mitchell Score involvements</h1>
-<p>insert stuff here</p>
-</div>
-<div id="small-multiples" class="section level1">
-<h1>Small Multiples</h1>
+<pre class="r"><code>teamstats&lt;-dataset%&gt;%
+  
+  filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
+  group_by(Team, Round)%&gt;%
+  summarise(sumSI=sum(SI))%&gt;%
+  group_by(Team)%&gt;%
+  summarise(meanSITeam=mean(sumSI))
+
+
+playerstats&lt;-dataset%&gt;%
+  filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
+  group_by(Team, Round, Player)%&gt;%
+  summarise(sumSI=sum(SI))%&gt;%
+  group_by(Team, Player)%&gt;%
+  summarise(meanSIlayer=mean(sumSI))
+
+df&lt;-left_join(playerstats,teamstats , by=c(&quot;Team&quot;,&quot;Team&quot;))%&gt;%
+  mutate(pertcontribution=meanSIlayer/meanSITeam)
+
+df%&gt;%arrange(desc(pertcontribution))</code></pre>
+<pre><code>## # A tibble: 301 x 5
+## # Groups:   Team [18]
+##    Team            Player         meanSIlayer meanSITeam pertcontribution
+##    &lt;chr&gt;           &lt;chr&gt;                &lt;dbl&gt;      &lt;dbl&gt;            &lt;dbl&gt;
+##  1 North Melbourne Shaun Higgins         7.25       47.0            0.154
+##  2 Richmond        Dustin Martin         8.57       55.8            0.154
+##  3 Gold Coast      Michael Barlow        4.67       30.5            0.153
+##  4 Hawthorn        Tom Mitchell          6.21       40.9            0.152
+##  5 Fremantle       Nathan Fyfe           7.93       52.4            0.151
+##  6 Gold Coast      Jarryd Lyons          4.47       30.5            0.147
+##  7 West Coast      Andrew Gaff           6.53       45.6            0.143
+##  8 Hawthorn        Jaeger O&#39;Meara        5.71       40.9            0.140
+##  9 Carlton         Patrick Cripps        5.41       38.7            0.140
+## 10 West Coast      Luke Shuey            6.25       45.6            0.137
+## # … with 291 more rows</code></pre>
+<pre class="r"><code>df%&gt;%ggplot(aes(x=meanSIlayer, y=pertcontribution))+geom_point(aes(colour=Team))</code></pre>
+<p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Tom Mitchell what a season.</p>
 <p>insert stuff here</p>
 </div>

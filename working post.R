@@ -1,95 +1,3 @@
----
-title: Poor Tom Mitchell
-author: Robert Nguyen
-date: '2019-01-11'
-slug: poor-tom-mitchell
-categories:
-  - fitzRoy
-  - R
-tags:
-  - fantasy
-  - graphics
-  - Hawthorn
-description: 'Hawks lose one of the best'
----
-
-Today unfortunetely one of the games best players and the current Bronwnlow Medalist Tom Mitchell [has been injured](https://www.abc.net.au/news/2019-01-11/hawthorn-star-brownlow-medallist-tom-mitchell-breaks-leg/10708464) and will probably miss the whole 2019 AFL season. This is horrible news as he was just coming off arguably his [best season](https://www.abc.net.au/news/2018-09-24/tom-mitchell-wins-brownlow-medal-2018/10300390) (winning the Brownlow Medal). He's an incredibly gifted inside player who through the Hawks savvy recruiting have just gotten him some extra outside players to handball the ball too. 
-
-To put in perspective just how good of a season hes had, I thought I'd share some R script and hopefully some of you will have your own take on just how good of a season hes had and just what Hawthorn is missing in 2019. 
-
-# Contested Possession King
-
-Tom Mitchell we know is a contested possession machine, just how much of a machine was he? 
-
-```{r}
-library(tidyverse)
-fitzRoy::player_stats%>%
-  filter(Season==2018)%>%
-  group_by(Player)%>%
-  summarise(meanCP=mean(CP))%>%
-  arrange(desc(meanCP))
-
-
-```
-
-# Supercoach King
-
-I don't mean this as what will Tom Mitchell missing be on your fantasy team, what I mean is Supercoach scores are probably the best measure of a good player that we have available in fitzRoy. 
-
-We know a few things about SC scores, we don't know their actual formula that is some champion data secret sauce. But in general it does pass the eye test, good players get good scores. If you were to pick a SC team based only on scores it would *probably* look pretty good. We also know that on average a game will get to about 3300 which we can verify below.
-
-```{r}
-library(tidyverse)
-check<-fitzRoy::player_stats%>%
-  group_by(Match_id)%>%
-  summarise(sumSC=sum(SC))%>%
-  arrange(desc(sumSC))
-summary(check$sumSC)  
-
-```
-
-So we can see the mean and the median are the same. 
-
-Lets see how what % of supercoach scores does Tom Mitchell get per game on average and how does that compare?
-
-```{r}
-
-fitzRoy::player_stats%>%
-    group_by(Match_id)%>%
-    mutate(pertSC=SC/sum(SC))%>%
-    group_by(Season, Player)%>%
-    summarise(mean=100*mean(pertSC))%>%
-  arrange(desc(mean))
-```
-
-But just how good are these top 10 years? Lets look at it graphically.
-
-```{r}
-
-fitzRoy::player_stats%>%
-    group_by(Match_id)%>%
-    mutate(pertSC=SC/sum(SC))%>%
-    group_by(Season, Player)%>%
-    summarise(mean=100*mean(pertSC))%>%
-    ggplot(aes(x=mean))+geom_density() + geom_vline(xintercept = 3.89)
-
-```
-
-But thats since 2010, what about just in the 2018 season?
-
-```{r}
-fitzRoy::player_stats%>%
-        filter(Season==2018)%>%
-      group_by(Match_id)%>%
-    mutate(pertSC=SC/sum(SC))%>%
-    group_by(Season, Player)%>%
-    summarise(mean=100*mean(pertSC))%>%
-  arrange(desc(mean))
-```
-
-Lets now join on the player position data. 
-
-```{r}
 library(rvest)
 library(tidyverse)
 library(stringr)
@@ -116,46 +24,46 @@ player_info <- function(x){
   page<-read_html(x)  
   player<-       page%>%
     html_nodes(".ldrow .hltitle")%>%
-    html_text() %>% as_tibble()
+    html_text() %>% as.tibble()
   playing.for<-  page%>%
     html_nodes(".ldrow a b")%>%
-    html_text() %>% as_tibble()
+    html_text() %>% as.tibble()
   number<-     page%>%
     html_nodes(".ldrow > b")%>%
-    html_text() %>% as_tibble()
+    html_text() %>% as.tibble()
   
   weight<-page%>%
     html_nodes("form tr:nth-child(4) .ldrow")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
-    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as_tibble()
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
   
   height<-page%>%
     html_nodes("form tr:nth-child(4) .ldrow")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
-    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as_tibble()
+    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
   
   draft_position <- page%>%
     html_nodes("tr:nth-child(5) .ldrow")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
-    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as_tibble()
+    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
   
   club_drafted <- page%>%
     html_nodes("tr:nth-child(5) .ldrow")%>%
     html_text()%>%str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
-    str_remove(".*by") %>% as_tibble()
+    str_remove(".*by") %>% as.tibble()
   position <-     page%>%
     html_nodes("form tr:nth-child(4) .ldrow")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_remove(".*Position: ")%>%
-    str_squish() %>% as_tibble()
+    str_squish() %>% as.tibble()
   
   
   
@@ -163,7 +71,7 @@ player_info <- function(x){
   #combine, name, and make it a tibble
   player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
   
-  player_information <- as_tibble(player_information)
+  player_information <- as.tibble(player_information)
   
   # print(x)
   # return(x)
@@ -174,33 +82,14 @@ footywire <- purrr::map_df(url_players, player_info)
 names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position")
 head(footywire)
 
-df<-fitzRoy::player_stats%>%
-  filter(Season==2018)
-
-
-dataset<-left_join(df, footywire, by=c("Player"="player","Team"="club"))
-head(dataset)
-
-```
-What we can see here is that the join didn't work, this is because if we look at the pages we are getting the data from. Have different team names which we can see if we click [here](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720) and [here](https://www.footywire.com/afl/footy/pp-west-coast-eagles--luke-shuey) so lets fix this up.
-
-An altertive way to see if its different would be to check a few values that you are joining on like so.
-
-```{r}
-unique(footywire$club)
-unique(fitzRoy::player_stats$Team)
-
-
-```
-
-```{r}
+# need to change the club names so it maches the fitzRoy dataset
 
 footywire <- footywire%>%
   mutate(club=replace(club, club=="Richmond Tigers", "Richmond") )%>%
   mutate(club=replace(club, club=="Geelong Cats", "Geelong"))%>%
   mutate(club=replace(club, club== "St Kilda Saints", "St Kilda"))%>%
   mutate(club=replace(club, club=="Brisbane Lions", "Brisbane"))%>%
-  mutate(club=replace(club, club=="Collingwood Mapies", "Collingwood"))%>%
+  mutate(club=replace(club, club=="Collingwood Magpies", "Collingwood"))%>%
   mutate(club=replace(club, club=="West Coast Eagles", "West Coast"))%>%
   mutate(club=replace(club, club=="Gold Coast Suns", "Gold Coast"))%>%
   mutate(club=replace(club, club=="North Melbourne Kangaroos", "North Melbourne"))%>%
@@ -221,61 +110,21 @@ footywire <- footywire%>%
 
 dataset<-left_join(df, footywire, by=c("Player"="player","Team"="club"))
 head(dataset)
-```
 
-Now that we have the dataset there are a few caveats
+head(dataset)
 
-* the scrape was done in the off season, so it doesn't take into account players who retired they won't have a position. This is annoying I know, so what we can do is view the NA's to see if this is much of an issue. 
+View(dataset)
 
-```{r}
 new_DF <- dataset[is.na(dataset$position),]
 
 NA_Players<-unique(new_DF$Player)
-head(NA_Players)
 
-```
 
-So what we can see is that there are 114 players who have changed clubs or been delisted so aren't in the intial scrape. 
+## take just the players who have changed clubs
 
-So what should we do? 
-
-My initial first thoughts are, scrape all the pages. But that would be pretty tedius/time consuming 
-
-So lets see if its mainly a problem due to our join i.e. trying to join on *both* player and team. 
-
-An easy way to check that would be to re-do our join, but this time only join on player.
-
-```{r}
 dataset<-left_join(df, footywire, by=c("Player"="player"))
 
 new_DF <- dataset[is.na(dataset$position),]
-
-NA_Players<-unique(new_DF$Player)
-
-footywire%>%filter(player %in%NA_Players)%>%head()
-```
-
-So we can see that we can match a few more players, there will still be a [Tom](https://www.footywire.com/afl/footy/pp-richmond-tigers--thomas-lynch) [Lynch](https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-lynch) (but thankfully they are both forwards) issue but does this fix up most of our players? Well not really.....
-
-Our list has been lowered, but on inspection we can see some interesting problems, lets take [Will Hoskin-Elliot](https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott) on his [footywire profile page](https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott) where we got his details from (position), his name is listed as Will-Hoskin Elliott, but if we were to look at his in game statistics such as the [afl grand final 2018](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720) we can see that his name is listed as Will-H Elliott. 
-
-Isn't that annoying!
-
-So this is where some domain knowledge comes in handy, I am going to go through the above list and just manually encode those players I know are midfielders. 
-
-* Obviously I will miss a few
-* I will probably misclassify a few too. 
-
-But I think for blogging purposes its good to see an example of a common problem like this and possible ways to fix it. 
-
-The longer, more robust way would be to scrape not only the current players, but the *past* players as well this will capture the retirees. 
-
-So how do we replace values?
-
-
-
-
-```{r}
 
 dataset <- dataset %>%
   mutate(position = replace(position, which(is.na(position) & 
@@ -399,57 +248,12 @@ dataset <- dataset %>%
   
   mutate(position = replace(position, which(is.na(position) & 
                                               Player=="Adam Oxley"),"Defender"))
-
-```
-
-
-
-# Mitchells midfield impact. 
-
-[Max Laughton](https://twitter.com/maxlaughton) wrote a [piece](https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a) referencing stats provided from [HPN](https://twitter.com/HPNfooty) about Tom Mitchells impact 
-
->>Mitchell had 786 disposals over the 2018 home and away season; that was 9.4 per cent of Hawthorn’s team disposals total. Unsurprisingly, the next most reliant team was Carlton on Patrick Cripps; he had 652 disposals, 8.5 per cent of Carlton’s total disposal count.
-Cripps and Mitchell were the two most relied-upon midfielders in the AFL in 2018; Cripps had the largest proportion in the AFL of his team’s total contested possessions (13 per cent) and clearances (22.1 per cent), while Mitchell was second in those categories (11.3 and 21.5 per cent respectively)."
-
-But I was left thinking I wonder how does that stack up as a percentage of the midfield group and what about the other teams? Do most teams have a high reliance on one midfielder? Are Cripps and Mitchell outliers or is this just a general footy thing?
-
-You might also have an idea, maybe you don't want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in [fitzRoy](https://github.com/jimmyday12/fitzRoy).
-
-What I'm going to run through next, is just some [ggplot](https://ggplot2.tidyverse.org) visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max's article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision. 
-
-You might have other ideas and that's great hopefully you can take these scripts
-
-# Tom Mitchells contested possessions % as a midfield group
-
-```{r}
-  dataset%>%
-    filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
-    group_by(Team, Round)%>%
-    summarise(sumCP=sum(CP))%>%
-    group_by(Team)%>%
-    summarise(meanCP=mean(sumCP))%>%
-    arrange(desc(meanCP))
-
-```
-
-But how much does Tom Mitchell average by himself?
-
-```{r}
-dataset%>%
-    filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
-    group_by(Team, Round, Player)%>%
-    summarise(sumCP=sum(CP))%>%
-    group_by(Team, Player)%>%
-    summarise(meanCP=mean(sumCP))%>%
-    arrange(desc(meanCP))
-
-```
-
-Interestingly Tom Mitchell average the second most contested possessions per game on the team that averaged the least amount of contested possessions per week. Based on a first glance it seems pretty important. 
-
-But lets get back to what I wanted to look at earlier. That was specifically Tom Mitchells contribution as part of the midfield group. 
-
-```{r}
+  
+  
+  
+  
+  
+  
 teamstats<-dataset%>%
   
   filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
@@ -471,25 +275,11 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
 
 df%>%arrange(desc(pertcontribution))%>%head()  
 
-```
-
-Looking at it this way, what could be an interesting observation Tom Mitchell averages less contested possessions per game, but his percentage of them as part of Hawthorns midfield group is actually higher than Patrick Cripps. 
-
-Lets now have a quick look at this graphically. ;
-
-```{r}
-df%>%
-  ggplot(aes(x=meanCPTeam, y=pertcontribution))+
-  geom_point(aes(colour=Team)) 
-
-```
+df%>%ggplot(aes(x=meanCPTeam, y=pertcontribution))+geom_point(aes(colour=Team))
 
 
 
 
-# Tom Mitchells SC score %
-
-```{r}
 teamstats<-dataset%>%
   
   filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
@@ -514,11 +304,7 @@ df%>%arrange(desc(pertcontribution))%>%head()
 df%>%ggplot(aes(x=meanSClayer, y=pertcontribution))+geom_point(aes(colour=Team))
 
 
-```
 
-# Tom Mitchell Score involvements
-
-```{r}
 teamstats<-dataset%>%
   
   filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
@@ -540,15 +326,3 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
 
 df%>%arrange(desc(pertcontribution))
 df%>%ggplot(aes(x=meanSIlayer, y=pertcontribution))+geom_point(aes(colour=Team))
-
-```
-
-Tom Mitchell what a season.
-
-
-
-insert stuff here
-
-
-
-
