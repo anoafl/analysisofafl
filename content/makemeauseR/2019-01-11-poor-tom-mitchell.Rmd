@@ -247,3 +247,26 @@ You might also have an idea, maybe you don't want to know about the clearances a
 What I'm going to run through next, is just some [ggplot](https://ggplot2.tidyverse.org) visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max's article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision. 
 
 You might have other ideas and that's great hopefully you can take these scripts
+
+# Tom Mitchells SC score %
+
+```{r}
+
+
+```
+
+# Tom Mitchell Score involvements
+
+```{r}
+
+```
+
+# Small Multiples 
+
+```{r}
+
+```
+
+
+
+

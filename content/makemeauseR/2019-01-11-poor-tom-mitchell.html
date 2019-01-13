@@ -1,18 +1,3 @@
----
-title: Poor Tom Mitchell
-author: Robert Nguyen
-date: '2019-01-11'
-slug: poor-tom-mitchell
-categories:
-  - fitzRoy
-  - R
-tags:
-  - fantasy
-  - graphics
-  - Hawthorn
-description: 'Hawks lose one of the best'
----
-
 
 
 <p>Today unfortunetely one of the games best players and the current Bronwnlow Medalist Tom Mitchell <a href="https://www.abc.net.au/news/2019-01-11/hawthorn-star-brownlow-medallist-tom-mitchell-breaks-leg/10708464">has been injured</a> and will probably miss the whole 2019 AFL season. This is horrible news as he was just coming off arguably his <a href="https://www.abc.net.au/news/2018-09-24/tom-mitchell-wins-brownlow-medal-2018/10300390">best season</a> (winning the Brownlow Medal). He’s an incredibly gifted inside player who through the Hawks savvy recruiting have just gotten him some extra outside players to handball the ball too.</p>
@@ -91,7 +76,7 @@ summary(check$sumSC)  </code></pre>
     group_by(Season, Player)%&gt;%
     summarise(mean=100*mean(pertSC))%&gt;%
     ggplot(aes(x=mean))+geom_density() + geom_vline(xintercept = 3.89)</code></pre>
-<p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>But thats since 2010, what about just in the 2018 season?</p>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
         filter(Season==2018)%&gt;%
@@ -339,47 +324,17 @@ head(dataset)</code></pre>
 <p>I guess I should explain why I don’t think its an issue basically I have the feeling that if we look at Tom Mitchell is % of SC contribution as it were would be super high for midfielders i.e. Hawks don’t have much depth and hes the Brownlow Medalist so one of the best the league.</p>
 <p>So lets view the NAs see if there are any notable midfielders who have retired and if not move on. If there are we can ‘’hard code them’’.</p>
 <p>Usually we wouldn’t hard code them, I guess what we should do is go back to check how the page structure works but that would be for another time.</p>
-<pre class="r"><code>head(dataset)</code></pre>
-<pre><code>##         Date Season   Round Venue          Player     Team Opposition
-## 1 2018-03-22   2018 Round 1   MCG   Dustin Martin Richmond    Carlton
-## 2 2018-03-22   2018 Round 1   MCG   Trent Cotchin Richmond    Carlton
-## 3 2018-03-22   2018 Round 1   MCG      Josh Caddy Richmond    Carlton
-## 4 2018-03-22   2018 Round 1   MCG Kamdyn Mcintosh Richmond    Carlton
-## 5 2018-03-22   2018 Round 1   MCG   Jack Riewoldt Richmond    Carlton
-## 6 2018-03-22   2018 Round 1   MCG   Brandon Ellis Richmond    Carlton
-##   Status Match_id CP UP ED   DE CM GA MI5 One.Percenters BO TOG  K HB  D M
-## 1   Home     9514 17 15 23 71.9  2  2   2              1  0  87 20 12 32 5
-## 2   Home     9514 13 12 15 62.5  0  2   1              1  0  81 14 10 24 2
-## 3   Home     9514 11 10 14 73.7  1  0   2              0  1  80 13  6 19 5
-## 4   Home     9514  3 15 11 57.9  0  0   1              1  1  69 19  0 19 5
-## 5   Home     9514  5 14 12 66.7  1  2   5              1  0  96 12  6 18 7
-## 6   Home     9514  3 14 13 72.2  0  0   0              0  2  79 11  7 18 3
-##   G B T HO GA1 I50 CL CG R50 FF FA  AF  SC CCL SCL SI  MG TO ITC T5 number
-## 1 1 3 1  0   2   6  6  3   0  1  1 110 139   4   2 13 567  5   2  0   #4  
-## 2 0 0 4  0   2   5  7  2   0  2  0  86  94   2   5 10 293  5   3  1   #9  
-## 3 3 2 2  0   0   8  4  2   0  5  0  99  84   3   1  6 424  2   1  0  #22  
-## 4 0 1 1  0   0   8  1  5   3  0  1  74  50   1   0  7 644  5   4  0  #33  
-## 5 4 2 1  0   2   6  0  2   0  1  0 100 101   0   0 13 322  3   1  0   #8  
-## 6 0 1 3  0   0   4  0  5   2  0  0  69  51   0   0  6 417  5   5  0   #5  
-##   weight  height                        draft_position     club_drafted
-## 1  92kg   187cm   Round 1, Pick #3 2009 National Draft  Richmond Tigers
-## 2  85kg   185cm   Round 1, Pick #2 2007 National Draft  Richmond Tigers
-## 3  88kg   186cm   Round 1, Pick #7 2010 National Draft  Gold Coast Suns
-## 4  91kg   191cm  Round 2, Pick #31 2012 National Draft  Richmond Tigers
-## 5  92kg   193cm  Round 1, Pick #13 2006 National Draft  Richmond Tigers
-## 6  82kg   181cm  Round 1, Pick #15 2011 National Draft  Richmond Tigers
-##             position
-## 1           Midfield
-## 2           Midfield
-## 3  Midfield, Forward
-## 4 Defender, Midfield
-## 5            Forward
-## 6           Defender</code></pre>
-<pre class="r"><code>unique(footywire$club)</code></pre>
-<pre><code>##  [1] &quot;Richmond&quot;            &quot;Geelong&quot;             &quot;St Kilda&quot;           
-##  [4] &quot;Brisbane&quot;            &quot;Collingwood Magpies&quot; &quot;West Coast&quot;         
-##  [7] &quot;Gold Coast&quot;          &quot;North Melbourne&quot;     &quot;Sydney&quot;             
-## [10] &quot;Essendon&quot;            &quot;Port Adelaide&quot;       &quot;Adelaide&quot;           
-## [13] &quot;Melbourne&quot;           &quot;Fremantle&quot;           &quot;Hawthorn&quot;           
-## [16] &quot;GWS&quot;                 &quot;Western Bulldogs&quot;    &quot;Carlton&quot;</code></pre>
+</div>
+<div id="mitchells-midfield-impact." class="section level1">
+<h1>Mitchells midfield impact.</h1>
+<p><a href="https://twitter.com/maxlaughton">Max Laughton</a> wrote a <a href="https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a">piece</a> referencing stats provided from <a href="https://twitter.com/HPNfooty">HPN</a> about Tom Mitchells impact</p>
+<blockquote>
+<blockquote>
+<p>Mitchell had 786 disposals over the 2018 home and away season; that was 9.4 per cent of Hawthorn’s team disposals total. Unsurprisingly, the next most reliant team was Carlton on Patrick Cripps; he had 652 disposals, 8.5 per cent of Carlton’s total disposal count. Cripps and Mitchell were the two most relied-upon midfielders in the AFL in 2018; Cripps had the largest proportion in the AFL of his team’s total contested possessions (13 per cent) and clearances (22.1 per cent), while Mitchell was second in those categories (11.3 and 21.5 per cent respectively).&quot;</p>
+</blockquote>
+</blockquote>
+<p>But I was left thinking I wonder how does that stack up as a percentage of the midfield group and what about the other teams? Do most teams have a high reliance on one midfielder? Are Cripps and Mitchell outliers or is this just a general footy thing?</p>
+<p>You might also have an idea, maybe you don’t want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>.</p>
+<p>What I’m going to run through next, is just some <a href="https://ggplot2.tidyverse.org">ggplot</a> visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max’s article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision.</p>
+<p>You might have other ideas and that’s great hopefully you can take these scripts</p>
 </div>
