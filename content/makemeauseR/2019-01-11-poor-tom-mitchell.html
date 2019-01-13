@@ -21,12 +21,12 @@ description: 'Hawks lose one of the best'
 <h1>Contested Possession King</h1>
 <p>Tom Mitchell we know is a contested possession machine, just how much of a machine was he?</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
 <pre><code>## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
-## ✔ tibble  1.4.2     ✔ dplyr   0.7.8
+## ✔ tibble  2.0.1     ✔ dplyr   0.7.8
 ## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
 ## ✔ readr   1.3.1     ✔ forcats 0.3.0</code></pre>
-<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
@@ -34,20 +34,20 @@ description: 'Hawks lose one of the best'
   group_by(Player)%&gt;%
   summarise(meanCP=mean(CP))%&gt;%
   arrange(desc(meanCP))</code></pre>
-<pre><code>## # A tibble: 639 x 2
+<pre><code>## # A tibble: 657 x 2
 ##    Player              meanCP
 ##    &lt;chr&gt;                &lt;dbl&gt;
-##  1 Patrick Cripps        17.9
-##  2 Clayton Oliver        16.6
-##  3 Nathan Fyfe           16.4
-##  4 Tom Mitchell          16.1
-##  5 Ben Cunnington        16  
-##  6 Jarryd Lyons          14.1
-##  7 Patrick Dangerfield   14  
-##  8 Josh P. Kennedy       13.9
-##  9 Lachie Neale          13.9
+##  1 Patrick Cripps        17.6
+##  2 Tom Mitchell          16.2
+##  3 Clayton Oliver        16.2
+##  4 Nathan Fyfe           16.1
+##  5 Ben Cunnington        15.5
+##  6 Patrick Dangerfield   15  
+##  7 Lachie Neale          15.0
+##  8 Josh P. Kennedy       13.7
+##  9 Jarryd Lyons          13.6
 ## 10 Jack Viney            13.5
-## # ... with 629 more rows</code></pre>
+## # … with 647 more rows</code></pre>
 </div>
 <div id="supercoach-king" class="section level1">
 <h1>Supercoach King</h1>
@@ -69,7 +69,7 @@ summary(check$sumSC)  </code></pre>
     group_by(Season, Player)%&gt;%
     summarise(mean=100*mean(pertSC))%&gt;%
   arrange(desc(mean))</code></pre>
-<pre><code>## # A tibble: 5,833 x 3
+<pre><code>## # A tibble: 5,851 x 3
 ## # Groups:   Season [9]
 ##    Season Player               mean
 ##     &lt;dbl&gt; &lt;chr&gt;               &lt;dbl&gt;
@@ -79,11 +79,11 @@ summary(check$sumSC)  </code></pre>
 ##  4   2014 Tom Rockliff         4.00
 ##  5   2016 Patrick Dangerfield  4.00
 ##  6   2010 Brendon Goddard      3.97
-##  7   2018 Tom Mitchell         3.95
+##  7   2018 Brodie Grundy        3.95
 ##  8   2011 Scott Pendlebury     3.93
 ##  9   2013 Gary Jnr Ablett      3.91
-## 10   2010 Gary Jnr Ablett      3.89
-## # ... with 5,823 more rows</code></pre>
+## 10   2018 Tom Mitchell         3.90
+## # … with 5,841 more rows</code></pre>
 <p>But just how good are these top 10 years? Lets look at it graphically.</p>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
     group_by(Match_id)%&gt;%
@@ -100,21 +100,21 @@ summary(check$sumSC)  </code></pre>
     group_by(Season, Player)%&gt;%
     summarise(mean=100*mean(pertSC))%&gt;%
   arrange(desc(mean))</code></pre>
-<pre><code>## # A tibble: 639 x 3
+<pre><code>## # A tibble: 657 x 3
 ## # Groups:   Season [1]
 ##    Season Player               mean
 ##     &lt;dbl&gt; &lt;chr&gt;               &lt;dbl&gt;
-##  1   2018 Tom Mitchell         3.95
-##  2   2018 Brodie Grundy        3.84
-##  3   2018 Jackson Macrae       3.77
-##  4   2018 Max Gawn             3.77
-##  5   2018 Patrick Cripps       3.67
-##  6   2018 Nathan Fyfe          3.56
-##  7   2018 Patrick Dangerfield  3.47
-##  8   2018 Clayton Oliver       3.41
-##  9   2018 Rory Laird           3.31
-## 10   2018 Lachie Neale         3.26
-## # ... with 629 more rows</code></pre>
+##  1   2018 Brodie Grundy        3.95
+##  2   2018 Tom Mitchell         3.90
+##  3   2018 Jackson Macrae       3.85
+##  4   2018 Max Gawn             3.78
+##  5   2018 Patrick Dangerfield  3.63
+##  6   2018 Patrick Cripps       3.62
+##  7   2018 Nathan Fyfe          3.45
+##  8   2018 Clayton Oliver       3.44
+##  9   2018 Lachie Neale         3.39
+## 10   2018 Jake Lloyd           3.35
+## # … with 647 more rows</code></pre>
 <p>Lets now join on the player position data.</p>
 <pre class="r"><code>library(rvest)</code></pre>
 <pre><code>## Loading required package: xml2</code></pre>
@@ -204,7 +204,182 @@ player_info &lt;- function(x){
   # return(x)
   return(player_information)
 }
-footywire &lt;- purrr::map_df(url_players, player_info)
+footywire &lt;- purrr::map_df(url_players, player_info)</code></pre>
+<pre><code>## Warning: `as.tibble()` is deprecated, use `as_tibble()` (but mind the new semantics).
+## This warning is displayed once per session.</code></pre>
+<pre class="r"><code>names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;)
+head(footywire)</code></pre>
+<pre><code>## # A tibble: 6 x 8
+##   player  club   number weight height draft_position  club_drafted position
+##   &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;           &lt;chr&gt;        &lt;chr&gt;   
+## 1 Jake A… Richm… #39    &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;            &quot;&quot;           &quot;&quot;      
+## 2 Ryan A… Geelo… #45    &quot; 100… &quot; 200… Round 4, Pick … &quot; Geelong C… Ruck    
+## 3 Gary J… Geelo… #4     &quot; 87k… &quot; 182… Round 3, Pick … &quot; Geelong C… Midfield
+## 4 Blake … St Ki… #8     &quot; 92k… &quot; 190… Round 1, Pick … &quot; St Kilda … Midfiel…
+## 5 Marcus… Brisb… #24    &quot; 98k… &quot; 192… Round 2, Pick … &quot; Western B… Defender
+## 6 Taylor… Colli… #13    &quot; 83k… &quot; 181… Round 1, Pick … &quot; GWS Giant… Midfield</code></pre>
+<pre class="r"><code>df&lt;-fitzRoy::player_stats%&gt;%
+  filter(Season==2018)
 
-names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;)</code></pre>
+
+dataset&lt;-left_join(df, footywire, by=c(&quot;Player&quot;=&quot;player&quot;,&quot;Team&quot;=&quot;club&quot;))
+head(dataset)</code></pre>
+<pre><code>##         Date Season   Round Venue          Player     Team Opposition
+## 1 2018-03-22   2018 Round 1   MCG   Dustin Martin Richmond    Carlton
+## 2 2018-03-22   2018 Round 1   MCG   Trent Cotchin Richmond    Carlton
+## 3 2018-03-22   2018 Round 1   MCG      Josh Caddy Richmond    Carlton
+## 4 2018-03-22   2018 Round 1   MCG Kamdyn Mcintosh Richmond    Carlton
+## 5 2018-03-22   2018 Round 1   MCG   Jack Riewoldt Richmond    Carlton
+## 6 2018-03-22   2018 Round 1   MCG   Brandon Ellis Richmond    Carlton
+##   Status Match_id CP UP ED   DE CM GA MI5 One.Percenters BO TOG  K HB  D M
+## 1   Home     9514 17 15 23 71.9  2  2   2              1  0  87 20 12 32 5
+## 2   Home     9514 13 12 15 62.5  0  2   1              1  0  81 14 10 24 2
+## 3   Home     9514 11 10 14 73.7  1  0   2              0  1  80 13  6 19 5
+## 4   Home     9514  3 15 11 57.9  0  0   1              1  1  69 19  0 19 5
+## 5   Home     9514  5 14 12 66.7  1  2   5              1  0  96 12  6 18 7
+## 6   Home     9514  3 14 13 72.2  0  0   0              0  2  79 11  7 18 3
+##   G B T HO GA1 I50 CL CG R50 FF FA  AF  SC CCL SCL SI  MG TO ITC T5 number
+## 1 1 3 1  0   2   6  6  3   0  1  1 110 139   4   2 13 567  5   2  0   &lt;NA&gt;
+## 2 0 0 4  0   2   5  7  2   0  2  0  86  94   2   5 10 293  5   3  1   &lt;NA&gt;
+## 3 3 2 2  0   0   8  4  2   0  5  0  99  84   3   1  6 424  2   1  0   &lt;NA&gt;
+## 4 0 1 1  0   0   8  1  5   3  0  1  74  50   1   0  7 644  5   4  0   &lt;NA&gt;
+## 5 4 2 1  0   2   6  0  2   0  1  0 100 101   0   0 13 322  3   1  0   &lt;NA&gt;
+## 6 0 1 3  0   0   4  0  5   2  0  0  69  51   0   0  6 417  5   5  0   &lt;NA&gt;
+##   weight height draft_position club_drafted position
+## 1   &lt;NA&gt;   &lt;NA&gt;           &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;
+## 2   &lt;NA&gt;   &lt;NA&gt;           &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;
+## 3   &lt;NA&gt;   &lt;NA&gt;           &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;
+## 4   &lt;NA&gt;   &lt;NA&gt;           &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;
+## 5   &lt;NA&gt;   &lt;NA&gt;           &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;
+## 6   &lt;NA&gt;   &lt;NA&gt;           &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;</code></pre>
+<p>What we can see here is that the join didn’t work, this is because if we look at the pages we are getting the data from. Have different team names which we can see if we click <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720">here</a> and <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--luke-shuey">here</a> so lets fix this up.</p>
+<p>An altertive way to see if its different would be to check a few values that you are joining on like so.</p>
+<pre class="r"><code>unique(footywire$club)</code></pre>
+<pre><code>##  [1] &quot;Richmond Tigers&quot;           &quot;Geelong Cats&quot;             
+##  [3] &quot;St Kilda Saints&quot;           &quot;Brisbane Lions&quot;           
+##  [5] &quot;Collingwood Magpies&quot;       &quot;West Coast Eagles&quot;        
+##  [7] &quot;Gold Coast Suns&quot;           &quot;North Melbourne Kangaroos&quot;
+##  [9] &quot;Sydney Swans&quot;              &quot;Essendon Bombers&quot;         
+## [11] &quot;Port Adelaide Power&quot;       &quot;Adelaide Crows&quot;           
+## [13] &quot;Melbourne Demons&quot;          &quot;Fremantle Dockers&quot;        
+## [15] &quot;Hawthorn Hawks&quot;            &quot;GWS Giants&quot;               
+## [17] &quot;Western Bulldogs&quot;          &quot;Carlton Blues&quot;</code></pre>
+<pre class="r"><code>unique(fitzRoy::player_stats$Team)</code></pre>
+<pre><code>##  [1] &quot;Richmond&quot;         &quot;Carlton&quot;          &quot;Geelong&quot;         
+##  [4] &quot;Essendon&quot;         &quot;Melbourne&quot;        &quot;Hawthorn&quot;        
+##  [7] &quot;Brisbane&quot;         &quot;West Coast&quot;       &quot;Sydney&quot;          
+## [10] &quot;St Kilda&quot;         &quot;Port Adelaide&quot;    &quot;North Melbourne&quot; 
+## [13] &quot;Western Bulldogs&quot; &quot;Collingwood&quot;      &quot;Fremantle&quot;       
+## [16] &quot;Adelaide&quot;         &quot;Gold Coast&quot;       &quot;GWS&quot;</code></pre>
+<pre class="r"><code>footywire &lt;- footywire%&gt;%
+  mutate(club=replace(club, club==&quot;Richmond Tigers&quot;, &quot;Richmond&quot;) )%&gt;%
+  mutate(club=replace(club, club==&quot;Geelong Cats&quot;, &quot;Geelong&quot;))%&gt;%
+  mutate(club=replace(club, club== &quot;St Kilda Saints&quot;, &quot;St Kilda&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Brisbane Lions&quot;, &quot;Brisbane&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Collingwood Mapies&quot;, &quot;Collingwood&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;West Coast Eagles&quot;, &quot;West Coast&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Gold Coast Suns&quot;, &quot;Gold Coast&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;North Melbourne Kangaroos&quot;, &quot;North Melbourne&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Sydney Swans&quot;, &quot;Sydney&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Essendon Bombers&quot;, &quot;Essendon&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Port Adelaide Power&quot;, &quot;Port Adelaide&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Adelaide Crows&quot;, &quot;Adelaide&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Melbourne Demons&quot;, &quot;Melbourne&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Fremantle Dockers&quot;, &quot;Fremantle&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Hawthorn Hawks&quot;, &quot;Hawthorn&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;GWS Giants&quot;, &quot;GWS&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Carlton Blues&quot;, &quot;Carlton&quot;))%&gt;%as.data.frame()
+  
+  
+  df&lt;-fitzRoy::player_stats%&gt;%
+  filter(Season==2018)
+
+
+dataset&lt;-left_join(df, footywire, by=c(&quot;Player&quot;=&quot;player&quot;,&quot;Team&quot;=&quot;club&quot;))
+head(dataset)</code></pre>
+<pre><code>##         Date Season   Round Venue          Player     Team Opposition
+## 1 2018-03-22   2018 Round 1   MCG   Dustin Martin Richmond    Carlton
+## 2 2018-03-22   2018 Round 1   MCG   Trent Cotchin Richmond    Carlton
+## 3 2018-03-22   2018 Round 1   MCG      Josh Caddy Richmond    Carlton
+## 4 2018-03-22   2018 Round 1   MCG Kamdyn Mcintosh Richmond    Carlton
+## 5 2018-03-22   2018 Round 1   MCG   Jack Riewoldt Richmond    Carlton
+## 6 2018-03-22   2018 Round 1   MCG   Brandon Ellis Richmond    Carlton
+##   Status Match_id CP UP ED   DE CM GA MI5 One.Percenters BO TOG  K HB  D M
+## 1   Home     9514 17 15 23 71.9  2  2   2              1  0  87 20 12 32 5
+## 2   Home     9514 13 12 15 62.5  0  2   1              1  0  81 14 10 24 2
+## 3   Home     9514 11 10 14 73.7  1  0   2              0  1  80 13  6 19 5
+## 4   Home     9514  3 15 11 57.9  0  0   1              1  1  69 19  0 19 5
+## 5   Home     9514  5 14 12 66.7  1  2   5              1  0  96 12  6 18 7
+## 6   Home     9514  3 14 13 72.2  0  0   0              0  2  79 11  7 18 3
+##   G B T HO GA1 I50 CL CG R50 FF FA  AF  SC CCL SCL SI  MG TO ITC T5 number
+## 1 1 3 1  0   2   6  6  3   0  1  1 110 139   4   2 13 567  5   2  0   #4  
+## 2 0 0 4  0   2   5  7  2   0  2  0  86  94   2   5 10 293  5   3  1   #9  
+## 3 3 2 2  0   0   8  4  2   0  5  0  99  84   3   1  6 424  2   1  0  #22  
+## 4 0 1 1  0   0   8  1  5   3  0  1  74  50   1   0  7 644  5   4  0  #33  
+## 5 4 2 1  0   2   6  0  2   0  1  0 100 101   0   0 13 322  3   1  0   #8  
+## 6 0 1 3  0   0   4  0  5   2  0  0  69  51   0   0  6 417  5   5  0   #5  
+##   weight  height                        draft_position     club_drafted
+## 1  92kg   187cm   Round 1, Pick #3 2009 National Draft  Richmond Tigers
+## 2  85kg   185cm   Round 1, Pick #2 2007 National Draft  Richmond Tigers
+## 3  88kg   186cm   Round 1, Pick #7 2010 National Draft  Gold Coast Suns
+## 4  91kg   191cm  Round 2, Pick #31 2012 National Draft  Richmond Tigers
+## 5  92kg   193cm  Round 1, Pick #13 2006 National Draft  Richmond Tigers
+## 6  82kg   181cm  Round 1, Pick #15 2011 National Draft  Richmond Tigers
+##             position
+## 1           Midfield
+## 2           Midfield
+## 3  Midfield, Forward
+## 4 Defender, Midfield
+## 5            Forward
+## 6           Defender</code></pre>
+<p>Now that we have the dataset there are a few caveats</p>
+<ul>
+<li>the scrape was done in the off season, so it doesn’t take into account players who retired they won’t have a position. This is annoying I know, so what we can do is view the NA’s to see if this is much of an issue.</li>
+</ul>
+<p>I guess I should explain why I don’t think its an issue basically I have the feeling that if we look at Tom Mitchell is % of SC contribution as it were would be super high for midfielders i.e. Hawks don’t have much depth and hes the Brownlow Medalist so one of the best the league.</p>
+<p>So lets view the NAs see if there are any notable midfielders who have retired and if not move on. If there are we can ‘’hard code them’’.</p>
+<p>Usually we wouldn’t hard code them, I guess what we should do is go back to check how the page structure works but that would be for another time.</p>
+<pre class="r"><code>head(dataset)</code></pre>
+<pre><code>##         Date Season   Round Venue          Player     Team Opposition
+## 1 2018-03-22   2018 Round 1   MCG   Dustin Martin Richmond    Carlton
+## 2 2018-03-22   2018 Round 1   MCG   Trent Cotchin Richmond    Carlton
+## 3 2018-03-22   2018 Round 1   MCG      Josh Caddy Richmond    Carlton
+## 4 2018-03-22   2018 Round 1   MCG Kamdyn Mcintosh Richmond    Carlton
+## 5 2018-03-22   2018 Round 1   MCG   Jack Riewoldt Richmond    Carlton
+## 6 2018-03-22   2018 Round 1   MCG   Brandon Ellis Richmond    Carlton
+##   Status Match_id CP UP ED   DE CM GA MI5 One.Percenters BO TOG  K HB  D M
+## 1   Home     9514 17 15 23 71.9  2  2   2              1  0  87 20 12 32 5
+## 2   Home     9514 13 12 15 62.5  0  2   1              1  0  81 14 10 24 2
+## 3   Home     9514 11 10 14 73.7  1  0   2              0  1  80 13  6 19 5
+## 4   Home     9514  3 15 11 57.9  0  0   1              1  1  69 19  0 19 5
+## 5   Home     9514  5 14 12 66.7  1  2   5              1  0  96 12  6 18 7
+## 6   Home     9514  3 14 13 72.2  0  0   0              0  2  79 11  7 18 3
+##   G B T HO GA1 I50 CL CG R50 FF FA  AF  SC CCL SCL SI  MG TO ITC T5 number
+## 1 1 3 1  0   2   6  6  3   0  1  1 110 139   4   2 13 567  5   2  0   #4  
+## 2 0 0 4  0   2   5  7  2   0  2  0  86  94   2   5 10 293  5   3  1   #9  
+## 3 3 2 2  0   0   8  4  2   0  5  0  99  84   3   1  6 424  2   1  0  #22  
+## 4 0 1 1  0   0   8  1  5   3  0  1  74  50   1   0  7 644  5   4  0  #33  
+## 5 4 2 1  0   2   6  0  2   0  1  0 100 101   0   0 13 322  3   1  0   #8  
+## 6 0 1 3  0   0   4  0  5   2  0  0  69  51   0   0  6 417  5   5  0   #5  
+##   weight  height                        draft_position     club_drafted
+## 1  92kg   187cm   Round 1, Pick #3 2009 National Draft  Richmond Tigers
+## 2  85kg   185cm   Round 1, Pick #2 2007 National Draft  Richmond Tigers
+## 3  88kg   186cm   Round 1, Pick #7 2010 National Draft  Gold Coast Suns
+## 4  91kg   191cm  Round 2, Pick #31 2012 National Draft  Richmond Tigers
+## 5  92kg   193cm  Round 1, Pick #13 2006 National Draft  Richmond Tigers
+## 6  82kg   181cm  Round 1, Pick #15 2011 National Draft  Richmond Tigers
+##             position
+## 1           Midfield
+## 2           Midfield
+## 3  Midfield, Forward
+## 4 Defender, Midfield
+## 5            Forward
+## 6           Defender</code></pre>
+<pre class="r"><code>unique(footywire$club)</code></pre>
+<pre><code>##  [1] &quot;Richmond&quot;            &quot;Geelong&quot;             &quot;St Kilda&quot;           
+##  [4] &quot;Brisbane&quot;            &quot;Collingwood Magpies&quot; &quot;West Coast&quot;         
+##  [7] &quot;Gold Coast&quot;          &quot;North Melbourne&quot;     &quot;Sydney&quot;             
+## [10] &quot;Essendon&quot;            &quot;Port Adelaide&quot;       &quot;Adelaide&quot;           
+## [13] &quot;Melbourne&quot;           &quot;Fremantle&quot;           &quot;Hawthorn&quot;           
+## [16] &quot;GWS&quot;                 &quot;Western Bulldogs&quot;    &quot;Carlton&quot;</code></pre>
 </div>

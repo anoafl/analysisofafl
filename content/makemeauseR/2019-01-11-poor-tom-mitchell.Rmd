@@ -174,5 +174,76 @@ footywire <- purrr::map_df(url_players, player_info)
 names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position")
 head(footywire)
 
+df<-fitzRoy::player_stats%>%
+  filter(Season==2018)
+
+
+dataset<-left_join(df, footywire, by=c("Player"="player","Team"="club"))
+head(dataset)
+
 ```
-    
+What we can see here is that the join didn't work, this is because if we look at the pages we are getting the data from. Have different team names which we can see if we click [here](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720) and [here](https://www.footywire.com/afl/footy/pp-west-coast-eagles--luke-shuey) so lets fix this up.
+
+An altertive way to see if its different would be to check a few values that you are joining on like so.
+
+```{r}
+unique(footywire$club)
+unique(fitzRoy::player_stats$Team)
+
+
+```
+
+```{r}
+
+footywire <- footywire%>%
+  mutate(club=replace(club, club=="Richmond Tigers", "Richmond") )%>%
+  mutate(club=replace(club, club=="Geelong Cats", "Geelong"))%>%
+  mutate(club=replace(club, club== "St Kilda Saints", "St Kilda"))%>%
+  mutate(club=replace(club, club=="Brisbane Lions", "Brisbane"))%>%
+  mutate(club=replace(club, club=="Collingwood Mapies", "Collingwood"))%>%
+  mutate(club=replace(club, club=="West Coast Eagles", "West Coast"))%>%
+  mutate(club=replace(club, club=="Gold Coast Suns", "Gold Coast"))%>%
+  mutate(club=replace(club, club=="North Melbourne Kangaroos", "North Melbourne"))%>%
+  mutate(club=replace(club, club=="Sydney Swans", "Sydney"))%>%
+  mutate(club=replace(club, club=="Essendon Bombers", "Essendon"))%>%
+  mutate(club=replace(club, club=="Port Adelaide Power", "Port Adelaide"))%>%
+  mutate(club=replace(club, club=="Adelaide Crows", "Adelaide"))%>%
+  mutate(club=replace(club, club=="Melbourne Demons", "Melbourne"))%>%
+  mutate(club=replace(club, club=="Fremantle Dockers", "Fremantle"))%>%
+  mutate(club=replace(club, club=="Hawthorn Hawks", "Hawthorn"))%>%
+  mutate(club=replace(club, club=="GWS Giants", "GWS"))%>%
+  mutate(club=replace(club, club=="Carlton Blues", "Carlton"))%>%as.data.frame()
+  
+  
+  df<-fitzRoy::player_stats%>%
+  filter(Season==2018)
+
+
+dataset<-left_join(df, footywire, by=c("Player"="player","Team"="club"))
+head(dataset)
+```
+
+Now that we have the dataset there are a few caveats
+
+* the scrape was done in the off season, so it doesn't take into account players who retired they won't have a position. This is annoying I know, so what we can do is view the NA's to see if this is much of an issue. 
+
+I guess I should explain why I don't think its an issue basically I have the feeling that if we look at Tom Mitchell is % of SC contribution as it were would be super high for midfielders i.e. Hawks don't have much depth and hes the Brownlow Medalist so one of the best the league. 
+
+So lets view the NAs see if there are any notable midfielders who have retired and if not move on. If there are we can ''hard code them''. 
+
+Usually we wouldn't hard code them, I guess what we should do is go back to check how the page structure works but that would be for another time. 
+
+# Mitchells midfield impact. 
+
+[Max Laughton](https://twitter.com/maxlaughton) wrote a [piece](https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a) referencing stats provided from [HPN](https://twitter.com/HPNfooty) about Tom Mitchells impact 
+
+>>Mitchell had 786 disposals over the 2018 home and away season; that was 9.4 per cent of Hawthorn’s team disposals total. Unsurprisingly, the next most reliant team was Carlton on Patrick Cripps; he had 652 disposals, 8.5 per cent of Carlton’s total disposal count.
+Cripps and Mitchell were the two most relied-upon midfielders in the AFL in 2018; Cripps had the largest proportion in the AFL of his team’s total contested possessions (13 per cent) and clearances (22.1 per cent), while Mitchell was second in those categories (11.3 and 21.5 per cent respectively)."
+
+But I was left thinking I wonder how does that stack up as a percentage of the midfield group and what about the other teams? Do most teams have a high reliance on one midfielder? Are Cripps and Mitchell outliers or is this just a general footy thing?
+
+You might also have an idea, maybe you don't want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in [fitzRoy](https://github.com/jimmyday12/fitzRoy).
+
+What I'm going to run through next, is just some [ggplot](https://ggplot2.tidyverse.org) visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max's article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision. 
+
+You might have other ideas and that's great hopefully you can take these scripts
