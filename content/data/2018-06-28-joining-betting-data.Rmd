@@ -19,7 +19,13 @@ I will only be joining the 2017-onwards data because that's what squiggle has!
 ```{r}
 library(readxl)
 library(tidyverse)
-Copy_of_Weekly_AFL_Data_Dump_2017_YTD <- read_excel("C:/Users/rober/Downloads/Copy-of-Weekly-AFL-Data-Dump-2017-YTD.xlsx", 
+
+
+
+filetodownload <- "https://www.betfair.com.au/hub/wp-content/uploads/sites/2/2018/10/Copy-of-Weekly-AFL-Data-Dump-2017-YTD-2.xlsx"
+download.file(filetodownload,"aflodds.xlsx",mode="wb")
+
+Copy_of_Weekly_AFL_Data_Dump_2017_YTD <- read_excel("aflodds.xlsx", 
     col_types = c("date", "text", "numeric", 
          "text", "text", "text", "text", "numeric", 
         "text", "text", "text", "text", "text", 

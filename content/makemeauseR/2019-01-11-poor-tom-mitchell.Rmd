@@ -116,46 +116,46 @@ player_info <- function(x){
   page<-read_html(x)  
   player<-       page%>%
     html_nodes(".ldrow .hltitle")%>%
-    html_text() %>% as.tibble()
+    html_text() %>% as_tibble()
   playing.for<-  page%>%
     html_nodes(".ldrow a b")%>%
-    html_text() %>% as.tibble()
+    html_text() %>% as_tibble()
   number<-     page%>%
     html_nodes(".ldrow > b")%>%
-    html_text() %>% as.tibble()
+    html_text() %>% as_tibble()
   
   weight<-page%>%
     html_nodes("form tr:nth-child(4) .ldrow")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
-    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as_tibble()
   
   height<-page%>%
     html_nodes("form tr:nth-child(4) .ldrow")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
-    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as_tibble()
   
   draft_position <- page%>%
     html_nodes("tr:nth-child(5) .ldrow")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
-    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as_tibble()
   
   club_drafted <- page%>%
     html_nodes("tr:nth-child(5) .ldrow")%>%
     html_text()%>%str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
-    str_remove(".*by") %>% as.tibble()
+    str_remove(".*by") %>% as_tibble()
   position <-     page%>%
     html_nodes("form tr:nth-child(4) .ldrow")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_remove(".*Position: ")%>%
-    str_squish() %>% as.tibble()
+    str_squish() %>% as_tibble()
   
   
   
@@ -163,7 +163,7 @@ player_info <- function(x){
   #combine, name, and make it a tibble
   player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
   
-  player_information <- as.tibble(player_information)
+  player_information <- as_tibble(player_information)
   
   # print(x)
   # return(x)
@@ -231,6 +231,7 @@ Now that we have the dataset there are a few caveats
 new_DF <- dataset[is.na(dataset$position),]
 
 NA_Players<-unique(new_DF$Player)
+head(NA_Players)
 
 ```
 
@@ -242,15 +243,35 @@ My initial first thoughts are, scrape all the pages. But that would be pretty te
 
 So lets see if its mainly a problem due to our join i.e. trying to join on *both* player and team. 
 
+An easy way to check that would be to re-do our join, but this time only join on player.
+
 ```{r}
+dataset<-left_join(df, footywire, by=c("Player"="player"))
+
+new_DF <- dataset[is.na(dataset$position),]
+
+NA_Players<-unique(new_DF$Player)
+
 footywire%>%filter(player %in%NA_Players)%>%head()
 ```
 
-So we can see that we can match a few players 
+So we can see that we can match a few more players, there will still be a [Tom](https://www.footywire.com/afl/footy/pp-richmond-tigers--thomas-lynch) [Lynch](https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-lynch) issue but does this fix up most of our players? Well not really.....
 
-That has lowered our list, but on inspection we can see some interesting problems, lets take [Will Hoskin-Elliot](https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott) on his [footywire profile page](https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott) where we got his details from (position), his name is listed as Will-Hoskin Elliott, but if we were to look at his in game statistics such as the [afl grand final 2018](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720) we can see that his name is listed as Will-H Elliott. 
+Our list has been lowered, but on inspection we can see some interesting problems, lets take [Will Hoskin-Elliot](https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott) on his [footywire profile page](https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott) where we got his details from (position), his name is listed as Will-Hoskin Elliott, but if we were to look at his in game statistics such as the [afl grand final 2018](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720) we can see that his name is listed as Will-H Elliott. 
 
 Isn't that annoying!
+
+So this is where some domain knowledge comes in handy, I am going to go through the above list and just manually encode those players I know are midfielders. 
+
+* Obviously I will miss a few
+* I will probably misclassify a few too. 
+
+But I think for blogging purposes its good to see an example of a common problem like this and possible ways to fix it. 
+
+The longer, more robust way would be to scrape not only the current players, but the *past* players as well this will capture the retirees. 
+
+So how do we replace values?
+
 
 
 
