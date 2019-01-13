@@ -1,3 +1,18 @@
+---
+title: Poor Tom Mitchell
+author: Robert Nguyen
+date: '2019-01-11'
+slug: poor-tom-mitchell
+categories:
+  - fitzRoy
+  - R
+tags:
+  - fantasy
+  - graphics
+  - Hawthorn
+description: 'Hawks lose one of the best'
+---
+
 
 
 <p>Today unfortunetely one of the games best players and the current Bronwnlow Medalist Tom Mitchell <a href="https://www.abc.net.au/news/2019-01-11/hawthorn-star-brownlow-medallist-tom-mitchell-breaks-leg/10708464">has been injured</a> and will probably miss the whole 2019 AFL season. This is horrible news as he was just coming off arguably his <a href="https://www.abc.net.au/news/2018-09-24/tom-mitchell-wins-brownlow-medal-2018/10300390">best season</a> (winning the Brownlow Medal). He’s an incredibly gifted inside player who through the Hawks savvy recruiting have just gotten him some extra outside players to handball the ball too.</p>
@@ -6,12 +21,12 @@
 <h1>Contested Possession King</h1>
 <p>Tom Mitchell we know is a contested possession machine, just how much of a machine was he?</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
 <pre><code>## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
 ## ✔ tibble  2.0.1     ✔ dplyr   0.7.8
 ## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
 ## ✔ readr   1.3.1     ✔ forcats 0.3.0</code></pre>
-<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
@@ -76,7 +91,7 @@ summary(check$sumSC)  </code></pre>
     group_by(Season, Player)%&gt;%
     summarise(mean=100*mean(pertSC))%&gt;%
     ggplot(aes(x=mean))+geom_density() + geom_vline(xintercept = 3.89)</code></pre>
-<p><img src="2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>But thats since 2010, what about just in the 2018 season?</p>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
         filter(Season==2018)%&gt;%
@@ -118,17 +133,17 @@ url&lt;-&quot;https://www.footywire.com/afl/footy/ft_players&quot;
 
 
 link&lt;-read_html(url)%&gt;%
-html_nodes(&quot;br+ a , .lnormtop a:nth-child(1)&quot;)%&gt;%
+  html_nodes(&quot;br+ a , .lnormtop a:nth-child(1)&quot;)%&gt;%
   html_attr(&quot;href&quot;)
 
 url_players&lt;-str_c(&quot;https://www.footywire.com/afl/footy/&quot;,link)
 
 cbind.fill &lt;- function(...){
-    nm &lt;- list(...) 
-    nm &lt;- lapply(nm, as.matrix)
-    n &lt;- max(sapply(nm, nrow)) 
-    do.call(cbind, lapply(nm, function (x) 
-        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+  nm &lt;- list(...) 
+  nm &lt;- lapply(nm, as.matrix)
+  n &lt;- max(sapply(nm, nrow)) 
+  do.call(cbind, lapply(nm, function (x) 
+    rbind(x, matrix(, n-nrow(x), ncol(x))))) 
 }
 
 player_info &lt;- function(x){
@@ -184,7 +199,7 @@ player_info &lt;- function(x){
   player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
   
   player_information &lt;- as.tibble(player_information)
-
+  
   # print(x)
   # return(x)
   return(player_information)
@@ -321,9 +336,260 @@ head(dataset)</code></pre>
 <ul>
 <li>the scrape was done in the off season, so it doesn’t take into account players who retired they won’t have a position. This is annoying I know, so what we can do is view the NA’s to see if this is much of an issue.</li>
 </ul>
-<p>I guess I should explain why I don’t think its an issue basically I have the feeling that if we look at Tom Mitchell is % of SC contribution as it were would be super high for midfielders i.e. Hawks don’t have much depth and hes the Brownlow Medalist so one of the best the league.</p>
-<p>So lets view the NAs see if there are any notable midfielders who have retired and if not move on. If there are we can ‘’hard code them’’.</p>
-<p>Usually we wouldn’t hard code them, I guess what we should do is go back to check how the page structure works but that would be for another time.</p>
+<pre class="r"><code>new_DF &lt;- dataset[is.na(dataset$position),]
+
+NA_Players&lt;-unique(new_DF$Player)</code></pre>
+<p>So what we can see is that there are 114 players who have changed clubs or been delisted so aren’t in the intial scrape.</p>
+<p>So what should we do?</p>
+<p>My initial first thoughts are, scrape all the pages. But that would be pretty tedius/time consuming</p>
+<p>So lets see if its mainly a problem due to our join i.e. trying to join on <em>both</em> player and team.</p>
+<pre class="r"><code>footywire%&gt;%filter(player %in%NA_Players )</code></pre>
+<pre><code>##                 player                club number  weight  height
+## 1         Marcus Adams            Brisbane  #24     98kg   192cm 
+## 2         Taylor Adams Collingwood Magpies  #13     83kg   181cm 
+## 3           James Aish Collingwood Magpies  #14     80kg   183cm 
+## 4        Flynn Appleby Collingwood Magpies  #31     82kg   187cm 
+## 5          Dayne Beams Collingwood Magpies  #11     88kg   187cm 
+## 6    Timothy Broomhead Collingwood Magpies  #29     82kg   185cm 
+## 7         Callum Brown Collingwood Magpies  #17     77kg   178cm 
+## 8           Tomas Bugg             Carlton  #40     84kg   184cm 
+## 9          Ryan Burton       Port Adelaide   #3     90kg   191cm 
+## 10         Ryan Clarke              Sydney  #13     87kg   184cm 
+## 11       Travis Colyer           Fremantle  #33     79kg   175cm 
+## 12         Reece Conca           Fremantle   #6     83kg   181cm 
+## 13           Mason Cox Collingwood Magpies  #46    108kg   211cm 
+## 14          Jack Crisp Collingwood Magpies  #25     91kg   190cm 
+## 15         Ben Crocker Collingwood Magpies  #39     83kg   188cm 
+## 16       Luke Dahlhaus             Geelong   #6     77kg   179cm 
+## 17         Josh Daicos Collingwood Magpies  #26     77kg   178cm 
+## 18      Jordan De Goey Collingwood Magpies   #2     91kg   191cm 
+## 19         Lynden Dunn Collingwood Magpies  #15    102kg   192cm 
+## 20       Taylor Duryea    Western Bulldogs  #15     80kg   179cm 
+## 21         Corey Ellis          Gold Coast  #17     80kg   184cm 
+## 22         Alex Fasolo             Carlton  #32     84kg   181cm 
+## 23        Hugh Goddard             Carlton  #45     95kg   196cm 
+## 24      Tyson Goldsack Collingwood Magpies   #6     93kg   193cm 
+## 25      Levi Greenwood Collingwood Magpies  #19     87kg   181cm 
+## 26       Brodie Grundy Collingwood Magpies   #4    102kg   203cm 
+## 27          Aaron Hall     North Melbourne  #43     84kg   185cm 
+## 28    Daniel Hannebery            St Kilda  #10     79kg   181cm 
+## 29          Tom Hickey          West Coast   #1     99kg   201cm 
+## 30         Jesse Hogan           Fremantle  #11    100kg   195cm 
+## 31        Jack Hombsch          Gold Coast  #20     90kg   194cm 
+## 32         Jeremy Howe Collingwood Magpies  #38     88kg   190cm 
+## 33           Dean Kent            St Kilda  #16     86kg   179cm 
+## 34   Kade Kolodjashnij           Melbourne  #16     85kg   190cm 
+## 35         Tom Langdon Collingwood Magpies   #8     83kg   190cm 
+## 36           Sam Lloyd    Western Bulldogs  #22     83kg   180cm 
+## 37           Rory Lobb           Fremantle  #37    104kg   207cm 
+## 38        Scott Lycett       Port Adelaide  #29    101kg   203cm 
+## 39           Tom Lynch            Richmond  #19     98kg   199cm 
+## 40           Tom Lynch            Adelaide  #27     88kg   193cm 
+## 41        Jarryd Lyons            Brisbane  #17     82kg   184cm 
+## 42         Jack Madgen Collingwood Magpies  #44     92kg   192cm 
+## 43          Steven May           Melbourne   #1    102kg   193cm 
+## 44           Sam Mayes       Port Adelaide  #34     88kg   189cm 
+## 45     Brayden Maynard Collingwood Magpies  #37     90kg   189cm 
+## 46   Christopher Mayne Collingwood Magpies  #16     84kg   188cm 
+## 47    Lincoln McCarthy            Brisbane  #11     82kg   178cm 
+## 48      Mitch McGovern             Carlton  #11     89kg   190cm 
+## 49       Daniel Menzel              Sydney   #2     90kg   190cm 
+## 50       Brody Mihocek Collingwood Magpies  #41     94kg   192cm 
+## 51       Anthony Miles          Gold Coast   #2     80kg   180cm 
+## 52         Darcy Moore Collingwood Magpies  #30    102kg   203cm 
+## 53      Jordan Murdoch          Gold Coast  #31     87kg   190cm 
+## 54       Nathan Murphy Collingwood Magpies  #28     79kg   190cm 
+## 55       Samuel Murray Collingwood Magpies   #9     86kg   187cm 
+## 56        Lachie Neale            Brisbane   #9     82kg   177cm 
+## 57          Nic Newman             Carlton  #24     84kg   186cm 
+## 58    Scott Pendlebury Collingwood Magpies  #10     91kg   191cm 
+## 59        Tom Phillips Collingwood Magpies  #21     79kg   187cm 
+## 60      Jasper Pittard     North Melbourne  #17     81kg   186cm 
+## 61         Jared Polec     North Melbourne  #13     82kg   187cm 
+## 62            Ben Reid Collingwood Magpies  #20     98kg   196cm 
+## 63          Gary Rohan             Geelong  #16     92kg   189cm 
+## 64     Jordan Roughead Collingwood Magpies  #23    100kg   200cm 
+## 65 Matthew Scharenberg Collingwood Magpies  #12     90kg   191cm 
+## 66          Tom Scully            Hawthorn  #21     79kg   181cm 
+## 67     Thomas Sheridan                 GWS  #11     82kg   187cm 
+## 68         Dylan Shiel            Essendon   #9     82kg   182cm 
+## 69   Steele Sidebottom Collingwood Magpies  #22     86kg   184cm 
+## 70        Brayden Sier Collingwood Magpies  #36     88kg   191cm 
+## 71          Josh Smith          West Coast  #40     80kg   180cm 
+## 72   Jaidyn Stephenson Collingwood Magpies   #1     77kg   188cm 
+## 73         Josh Thomas Collingwood Magpies  #24     79kg   178cm 
+## 74     Jackson Thurlow              Sydney   #6     88kg   191cm 
+## 75        Adam Treloar Collingwood Magpies   #7     86kg   182cm 
+## 76           Dom Tyson     North Melbourne  #21     85kg   186cm 
+## 77       Travis Varcoe Collingwood Magpies  #18     83kg   180cm 
+## 78     Maverick Weller            Richmond  #44     85kg   182cm 
+## 79        Daniel Wells Collingwood Magpies   #3     84kg   181cm 
+## 80        Chad Wingard            Hawthorn  #20     82kg   183cm 
+##                            draft_position               club_drafted
+## 1   Round 2, Pick #35 2015 National Draft           Western Bulldogs
+## 2   Round 1, Pick #13 2011 National Draft                 GWS Giants
+## 3    Round 1, Pick #7 2013 National Draft             Brisbane Lions
+## 4      Round 1, Pick #6 2017 Rookie Draft        Collingwood Magpies
+## 5   Round 2, Pick #29 2008 National Draft        Collingwood Magpies
+## 6     Round 1, Pick #17 2018 Rookie Draft        Collingwood Magpies
+## 7   Round 2, Pick #35 2016 National Draft        Collingwood Magpies
+## 8     Round 2, Pick #19 2018 Rookie Draft              Carlton Blues
+## 9   Round 1, Pick #19 2015 National Draft             Hawthorn Hawks
+## 10  Round 2, Pick #31 2015 National Draft  North Melbourne Kangaroos
+## 11  Round 2, Pick #26 2009 National Draft           Essendon Bombers
+## 12   Round 1, Pick #6 2010 National Draft            Richmond Tigers
+## 13    Round 4, Pick #60 2014 Rookie Draft        Collingwood Magpies
+## 14  Round 5, Pick #86 2012 National Draft             Brisbane Lions
+## 15  Round 5, Pick #65 2015 National Draft        Collingwood Magpies
+## 16  Round 4, Pick #70 2011 National Draft           Western Bulldogs
+## 17  Round 4, Pick #57 2016 National Draft        Collingwood Magpies
+## 18   Round 1, Pick #5 2014 National Draft        Collingwood Magpies
+## 19  Round 1, Pick #15 2004 National Draft           Melbourne Demons
+## 20  Round 5, Pick #69 2009 National Draft             Hawthorn Hawks
+## 21  Round 1, Pick #12 2014 National Draft            Richmond Tigers
+## 22  Round 3, Pick #45 2010 National Draft        Collingwood Magpies
+## 23     Round 1, Pick #1 2018 Rookie Draft              Carlton Blues
+## 24  Round 4, Pick #63 2006 National Draft        Collingwood Magpies
+## 25  Round 2, Pick #32 2007 National Draft  North Melbourne Kangaroos
+## 26  Round 1, Pick #18 2012 National Draft        Collingwood Magpies
+## 27 Round 1, Pick #7 2011 Pre-Season Draft            Gold Coast Suns
+## 28  Round 2, Pick #30 2008 National Draft               Sydney Swans
+## 29                                   &lt;NA&gt;                           
+## 30       Round 1, Pick #2 2012 Mini Draft           Melbourne Demons
+## 31                                   &lt;NA&gt;                           
+## 32  Round 2, Pick #33 2010 National Draft           Melbourne Demons
+## 33  Round 3, Pick #48 2012 National Draft           Melbourne Demons
+## 34   Round 1, Pick #5 2013 National Draft            Gold Coast Suns
+## 35  Round 4, Pick #65 2013 National Draft        Collingwood Magpies
+## 36  Round 4, Pick #66 2013 National Draft            Richmond Tigers
+## 37  Round 2, Pick #29 2013 National Draft                 GWS Giants
+## 38  Round 2, Pick #29 2010 National Draft          West Coast Eagles
+## 39  Round 1, Pick #11 2010 National Draft            Gold Coast Suns
+## 40  Round 1, Pick #13 2008 National Draft            St Kilda Saints
+## 41  Round 4, Pick #61 2010 National Draft             Adelaide Crows
+## 42                                   &lt;NA&gt;                           
+## 43                                   &lt;NA&gt;                           
+## 44   Round 1, Pick #8 2012 National Draft             Brisbane Lions
+## 45  Round 2, Pick #30 2014 National Draft        Collingwood Magpies
+## 46  Round 3, Pick #40 2007 National Draft          Fremantle Dockers
+## 47  Round 3, Pick #66 2011 National Draft               Geelong Cats
+## 48  Round 3, Pick #43 2014 National Draft             Adelaide Crows
+## 49  Round 1, Pick #17 2009 National Draft               Geelong Cats
+## 50    Round 2, Pick #22 2017 Rookie Draft        Collingwood Magpies
+## 51    Round 2, Pick #27 2013 Rookie Draft            Richmond Tigers
+## 52   Round 1, Pick #9 2014 National Draft        Collingwood Magpies
+## 53  Round 2, Pick #48 2011 National Draft               Geelong Cats
+## 54  Round 3, Pick #39 2017 National Draft        Collingwood Magpies
+## 55    Round 2, Pick #33 2018 Rookie Draft        Collingwood Magpies
+## 56  Round 3, Pick #58 2011 National Draft          Fremantle Dockers
+## 57    Round 2, Pick #35 2014 Rookie Draft               Sydney Swans
+## 58   Round 1, Pick #5 2005 National Draft        Collingwood Magpies
+## 59  Round 4, Pick #58 2015 National Draft        Collingwood Magpies
+## 60  Round 1, Pick #16 2009 National Draft        Port Adelaide Power
+## 61   Round 1, Pick #5 2010 National Draft             Brisbane Lions
+## 62   Round 1, Pick #8 2006 National Draft        Collingwood Magpies
+## 63   Round 1, Pick #6 2009 National Draft               Sydney Swans
+## 64  Round 2, Pick #31 2008 National Draft           Western Bulldogs
+## 65   Round 1, Pick #6 2013 National Draft        Collingwood Magpies
+## 66   Priority Pick #1 2009 National Draft           Melbourne Demons
+## 67  Round 1, Pick #16 2011 National Draft          Fremantle Dockers
+## 68                                   &lt;NA&gt;                           
+## 69  Round 1, Pick #11 2008 National Draft        Collingwood Magpies
+## 70  Round 2, Pick #32 2015 National Draft        Collingwood Magpies
+## 71    Round 2, Pick #34 2018 Rookie Draft          West Coast Eagles
+## 72   Round 1, Pick #6 2017 National Draft        Collingwood Magpies
+## 73    Round 3, Pick #42 2015 Rookie Draft        Collingwood Magpies
+## 74  Round 1, Pick #16 2012 National Draft               Geelong Cats
+## 75                                   &lt;NA&gt;                           
+## 76   Round 1, Pick #3 2011 National Draft                 GWS Giants
+## 77  Round 1, Pick #15 2005 National Draft               Geelong Cats
+## 78    Round 2, Pick #20 2013 Rookie Draft            St Kilda Saints
+## 79   Round 1, Pick #2 2002 National Draft  North Melbourne Kangaroos
+## 80   Round 1, Pick #6 2011 National Draft        Port Adelaide Power
+##              position
+## 1            Defender
+## 2            Midfield
+## 3  Defender, Midfield
+## 4            Defender
+## 5            Midfield
+## 6            Midfield
+## 7   Midfield, Forward
+## 8             Forward
+## 9            Defender
+## 10           Defender
+## 11  Midfield, Forward
+## 12           Defender
+## 13      Forward, Ruck
+## 14           Defender
+## 15            Forward
+## 16  Midfield, Forward
+## 17  Midfield, Forward
+## 18  Midfield, Forward
+## 19           Defender
+## 20  Defender, Forward
+## 21 Defender, Midfield
+## 22            Forward
+## 23           Defender
+## 24           Defender
+## 25  Midfield, Forward
+## 26               Ruck
+## 27           Midfield
+## 28           Midfield
+## 29               Ruck
+## 30            Forward
+## 31           Defender
+## 32           Defender
+## 33            Forward
+## 34           Defender
+## 35           Defender
+## 36            Forward
+## 37      Forward, Ruck
+## 38               Ruck
+## 39            Forward
+## 40            Forward
+## 41           Midfield
+## 42           Midfield
+## 43           Defender
+## 44           Defender
+## 45           Defender
+## 46            Forward
+## 47            Forward
+## 48            Forward
+## 49            Forward
+## 50  Defender, Forward
+## 51           Midfield
+## 52            Forward
+## 53  Midfield, Forward
+## 54  Defender, Forward
+## 55           Defender
+## 56           Midfield
+## 57           Midfield
+## 58           Midfield
+## 59           Midfield
+## 60           Defender
+## 61           Midfield
+## 62  Defender, Forward
+## 63            Forward
+## 64               Ruck
+## 65           Defender
+## 66           Midfield
+## 67           Defender
+## 68           Midfield
+## 69           Midfield
+## 70           Midfield
+## 71           Defender
+## 72  Midfield, Forward
+## 73            Forward
+## 74 Defender, Midfield
+## 75           Midfield
+## 76           Midfield
+## 77  Defender, Forward
+## 78            Forward
+## 79  Midfield, Forward
+## 80  Midfield, Forward</code></pre>
+<p>So we can see that we can match a few players</p>
+<p>That has lowered our list, but on inspection we can see some interesting problems, lets take <a href="https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott">Will Hoskin-Elliot</a> on his <a href="https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott">footywire profile page</a> where we got his details from (position), his name is listed as Will-Hoskin Elliott, but if we were to look at his in game statistics such as the <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720">afl grand final 2018</a> we can see that his name is listed as Will-H Elliott.</p>
+<p>Isn’t that annoying!</p>
 </div>
 <div id="mitchells-midfield-impact." class="section level1">
 <h1>Mitchells midfield impact.</h1>
@@ -337,4 +603,16 @@ head(dataset)</code></pre>
 <p>You might also have an idea, maybe you don’t want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>.</p>
 <p>What I’m going to run through next, is just some <a href="https://ggplot2.tidyverse.org">ggplot</a> visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max’s article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision.</p>
 <p>You might have other ideas and that’s great hopefully you can take these scripts</p>
+</div>
+<div id="tom-mitchells-sc-score" class="section level1">
+<h1>Tom Mitchells SC score %</h1>
+<p>insert stuff here</p>
+</div>
+<div id="tom-mitchell-score-involvements" class="section level1">
+<h1>Tom Mitchell Score involvements</h1>
+<p>insert stuff here</p>
+</div>
+<div id="small-multiples" class="section level1">
+<h1>Small Multiples</h1>
+<p>insert stuff here</p>
 </div>
