@@ -22,12 +22,12 @@ description: 'Hawks lose one of the best'
 <p>Tom Mitchell we know is a contested possession machine, just how much of a machine was he?</p>
 <p>One quick way would be just to see what is the average amount of contested possessions he got per game and where did that rank in terms of all the AFL players this year.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ── Attaching packages ───────────────── tidyverse 1.2.1 ──</code></pre>
 <pre><code>## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
 ## ✔ tibble  2.0.1     ✔ dplyr   0.7.8
 ## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
 ## ✔ readr   1.3.1     ✔ forcats 0.3.0</code></pre>
-<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+<pre><code>## ── Conflicts ──────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
@@ -512,9 +512,11 @@ footywire%&gt;%filter(player %in%NA_Players)%&gt;%head()</code></pre>
   
   mutate(position = replace(position, which(is.na(position) &amp; 
                                               Player==&quot;Adam Oxley&quot;),&quot;Defender&quot;))</code></pre>
+<p>Now we have most of the players positions filled out, so now lets look at Tom Mitchells percentages as part of the midfield group.</p>
 </div>
 <div id="tom-mitchells-contested-possessions-as-a-midfield-group" class="section level1">
 <h1>Tom Mitchells contested possessions % as a midfield group</h1>
+<p>So I will define and this is of course up for debate as midfield group as plays in one of the following listed footywire positions. * Midfield * Midfield, Forward * Defender, Midfield, * Ruck, * Forward, Ruck</p>
 <pre class="r"><code>  dataset%&gt;%
     filter(position %in% c(&quot;Midfield, Forward&quot;, &quot;Midfield&quot;,&quot;Defender, Midfield&quot;, &quot;Ruck&quot;, &quot;Forward, Ruck&quot;))%&gt;%
     group_by(Team, Round)%&gt;%
@@ -566,7 +568,7 @@ footywire%&gt;%filter(player %in%NA_Players)%&gt;%head()</code></pre>
 ##  9 Gold Coast      Jarryd Lyons          13.6
 ## 10 Melbourne       Jack Viney            13.5
 ## # … with 291 more rows</code></pre>
-<p>Interestingly Tom Mitchell average the second most contested possessions per game on the team that averaged the least amount of contested possessions per week. Based on a first glance it seems pretty important.</p>
+<p>Interestingly Tom Mitchell average the <em>second most contested possessions per game</em> on the <em>team that averaged the least amount of contested possessions per week</em>. Based on a first glance it seems pretty important.</p>
 <p>But lets get back to what I wanted to look at earlier. That was specifically Tom Mitchells contribution as part of the midfield group.</p>
 <pre class="r"><code>teamstats&lt;-dataset%&gt;%
   
@@ -598,10 +600,10 @@ df%&gt;%arrange(desc(pertcontribution))%&gt;%head()  </code></pre>
 ## 4 North Melbourne Ben Cunnington         15.5       84.2            0.184
 ## 5 Fremantle       Lachie Neale           15.0       86.6            0.173
 ## 6 Sydney          Josh P. Kennedy        13.7       79.3            0.172</code></pre>
-<p>Looking at it this way, what could be an interesting observation Tom Mitchell averages less contested possessions per game, but his percentage of them as part of Hawthorns midfield group is actually higher than Patrick Cripps.</p>
+<p>Looking at it this way, what could be an interesting observation Tom Mitchell averages less contested possessions per game, and less of a proportion of his teams contested possessions when <a href="https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a">comparing him vs Patrick Cripps</a>. But if we were to just look as part of the teams midfield group. Tom Mitchell leads the league in terms of proportion of contested possessions won as part of the teams midfield.</p>
 <p>Lets now have a quick look at this graphically. ;</p>
 <pre class="r"><code>df%&gt;%
-  ggplot(aes(x=meanCPTeam, y=pertcontribution))+
+  ggplot(aes(x=as.factor(Team), y=pertcontribution))+
   geom_point(aes(colour=Team)) </code></pre>
 <p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 </div>

@@ -501,7 +501,7 @@ Lets now have a quick look at this graphically. ;
 
 ```{r}
 df%>%
-  ggplot(aes(x=Team, y=pertcontribution))+
+  ggplot(aes(x=as.factor(Team), y=pertcontribution))+
   geom_point(aes(colour=Team)) 
 
 ```
@@ -533,7 +533,7 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
 
 df%>%arrange(desc(pertcontribution))%>%head()  
 
-df%>%ggplot(aes(x=meanSClayer, y=pertcontribution))+geom_point(aes(colour=Team))
+df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))
 
 
 ```
@@ -561,15 +561,11 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
   mutate(pertcontribution=meanSIlayer/meanSITeam)
 
 df%>%arrange(desc(pertcontribution))
-df%>%ggplot(aes(x=meanSIlayer, y=pertcontribution))+geom_point(aes(colour=Team))
+df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))
 
 ```
 
 Tom Mitchell what a season.
-
-
-
-insert stuff here
 
 
 
