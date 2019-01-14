@@ -20,6 +20,7 @@ description: 'Hawks lose one of the best'
 <div id="contested-possession-king" class="section level1">
 <h1>Contested Possession King</h1>
 <p>Tom Mitchell we know is a contested possession machine, just how much of a machine was he?</p>
+<p>One quick way would be just to see what is the average amount of contested possessions he got per game and where did that rank in terms of all the AFL players this year.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
 <pre><code>## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
@@ -48,6 +49,7 @@ description: 'Hawks lose one of the best'
 ##  9 Jarryd Lyons          13.6
 ## 10 Jack Viney            13.5
 ## # … with 647 more rows</code></pre>
+<p>So we can see here that he <a href="https://www.footywire.com/afl/footy/ft_player_rankings">actually ranked second</a> behind <a href="https://www.footywire.com/afl/footy/pp-carlton-blues--patrick-cripps">Patrick Cripps</a>, but does that tell the whole story?</p>
 </div>
 <div id="supercoach-king" class="section level1">
 <h1>Supercoach King</h1>
@@ -90,7 +92,7 @@ summary(check$sumSC)  </code></pre>
     mutate(pertSC=SC/sum(SC))%&gt;%
     group_by(Season, Player)%&gt;%
     summarise(mean=100*mean(pertSC))%&gt;%
-    ggplot(aes(x=mean))+geom_density() + geom_vline(xintercept = 3.89)</code></pre>
+    ggplot(aes(x=mean))+geom_density() + geom_vline(xintercept = 3.90)</code></pre>
 <p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>But thats since 2010, what about just in the 2018 season?</p>
 <pre class="r"><code>fitzRoy::player_stats%&gt;%
@@ -115,6 +117,20 @@ summary(check$sumSC)  </code></pre>
 ##  9   2018 Lachie Neale         3.39
 ## 10   2018 Jake Lloyd           3.35
 ## # … with 647 more rows</code></pre>
+<p>Here we can see Tom Mitchell ranks second, just behind Brodie Grundy.</p>
+</div>
+<div id="mitchells-midfield-impact" class="section level1">
+<h1>Mitchells <strong>midfield</strong> impact</h1>
+<p><a href="https://twitter.com/maxlaughton">Max Laughton</a> wrote a <a href="https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a">piece</a> referencing stats provided from <a href="https://twitter.com/HPNfooty">HPN</a> about Tom Mitchells impact</p>
+<blockquote>
+<blockquote>
+<p>Mitchell had 786 disposals over the 2018 home and away season; that was 9.4 per cent of Hawthorn’s team disposals total. Unsurprisingly, the next most reliant team was Carlton on Patrick Cripps; he had 652 disposals, 8.5 per cent of Carlton’s total disposal count. Cripps and Mitchell were the two most relied-upon midfielders in the AFL in 2018; Cripps had the largest proportion in the AFL of his team’s total contested possessions (13 per cent) and clearances (22.1 per cent), while Mitchell was second in those categories (11.3 and 21.5 per cent respectively).&quot;</p>
+</blockquote>
+</blockquote>
+<p>But I was left thinking I wonder how does that stack up as a percentage of the midfield group and what about the other teams? Do most teams have a high reliance on one midfielder? Are Cripps and Mitchell outliers or is this just a general footy thing?</p>
+<p>You might also have an idea, maybe you don’t want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>.</p>
+<p>What I’m going to run through next, is just some <a href="https://ggplot2.tidyverse.org">ggplot</a> visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max’s article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision.</p>
+<p>You might have other ideas and that’s great hopefully you can take these scripts.</p>
 <p>Lets now join on the player position data.</p>
 <pre class="r"><code>library(rvest)</code></pre>
 <pre><code>## Loading required package: xml2</code></pre>
@@ -334,16 +350,20 @@ head(dataset)</code></pre>
 ## 4 Defender, Midfield
 ## 5            Forward
 ## 6           Defender</code></pre>
+<p>Why this happens is we can look at two players <a href="https://www.footywire.com/afl/footy/pp-kangaroos--jarrad-waite">one retired</a> and <a href="https://www.footywire.com/afl/footy/pp-richmond-tigers--dustin-martin">one current</a> and if we look to where the team name sits, we can see the page structure is slightly different.</p>
 <p>Now that we have the dataset there are a few caveats</p>
 <ul>
-<li>the scrape was done in the off season, so it doesn’t take into account players who retired they won’t have a position. This is annoying I know, so what we can do is view the NA’s to see if this is much of an issue.</li>
+<li>the scrape was done in the off season, so it doesn’t take into account players who retired they won’t have a position. Secondly players who have changed teams in the off season are already on their new teams page, so this won’t align.</li>
 </ul>
+<p>This is annoying I know, so what we can do is view the NA’s to see if this is much of an issue.</p>
 <pre class="r"><code>new_DF &lt;- dataset[is.na(dataset$position),]
 
 NA_Players&lt;-unique(new_DF$Player)
 head(NA_Players)</code></pre>
 <pre><code>## [1] &quot;Reece Conca&quot;    &quot;Corey Ellis&quot;    &quot;Jed Lamb&quot;       &quot;Aaron Mullett&quot; 
 ## [5] &quot;Sam P-Seton&quot;    &quot;Matthew Wright&quot;</code></pre>
+<pre class="r"><code>dim(NA_Players)</code></pre>
+<pre><code>## NULL</code></pre>
 <p>So what we can see is that there are 114 players who have changed clubs or been delisted so aren’t in the intial scrape.</p>
 <p>So what should we do?</p>
 <p>My initial first thoughts are, scrape all the pages. But that would be pretty tedius/time consuming</p>
@@ -492,19 +512,6 @@ footywire%&gt;%filter(player %in%NA_Players)%&gt;%head()</code></pre>
   
   mutate(position = replace(position, which(is.na(position) &amp; 
                                               Player==&quot;Adam Oxley&quot;),&quot;Defender&quot;))</code></pre>
-</div>
-<div id="mitchells-midfield-impact." class="section level1">
-<h1>Mitchells midfield impact.</h1>
-<p><a href="https://twitter.com/maxlaughton">Max Laughton</a> wrote a <a href="https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a">piece</a> referencing stats provided from <a href="https://twitter.com/HPNfooty">HPN</a> about Tom Mitchells impact</p>
-<blockquote>
-<blockquote>
-<p>Mitchell had 786 disposals over the 2018 home and away season; that was 9.4 per cent of Hawthorn’s team disposals total. Unsurprisingly, the next most reliant team was Carlton on Patrick Cripps; he had 652 disposals, 8.5 per cent of Carlton’s total disposal count. Cripps and Mitchell were the two most relied-upon midfielders in the AFL in 2018; Cripps had the largest proportion in the AFL of his team’s total contested possessions (13 per cent) and clearances (22.1 per cent), while Mitchell was second in those categories (11.3 and 21.5 per cent respectively).&quot;</p>
-</blockquote>
-</blockquote>
-<p>But I was left thinking I wonder how does that stack up as a percentage of the midfield group and what about the other teams? Do most teams have a high reliance on one midfielder? Are Cripps and Mitchell outliers or is this just a general footy thing?</p>
-<p>You might also have an idea, maybe you don’t want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>.</p>
-<p>What I’m going to run through next, is just some <a href="https://ggplot2.tidyverse.org">ggplot</a> visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max’s article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision.</p>
-<p>You might have other ideas and that’s great hopefully you can take these scripts</p>
 </div>
 <div id="tom-mitchells-contested-possessions-as-a-midfield-group" class="section level1">
 <h1>Tom Mitchells contested possessions % as a midfield group</h1>

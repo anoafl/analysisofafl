@@ -21,6 +21,8 @@ To put in perspective just how good of a season hes had, I thought I'd share som
 
 Tom Mitchell we know is a contested possession machine, just how much of a machine was he? 
 
+One quick way would be just to see what is the average amount of contested possessions he got per game and where did that rank in terms of all the AFL players this year. 
+
 ```{r}
 library(tidyverse)
 fitzRoy::player_stats%>%
@@ -31,6 +33,8 @@ fitzRoy::player_stats%>%
 
 
 ```
+
+So we can see here that he [actually ranked second](https://www.footywire.com/afl/footy/ft_player_rankings) behind [Patrick Cripps](https://www.footywire.com/afl/footy/pp-carlton-blues--patrick-cripps), but does that tell the whole story?
 
 # Supercoach King
 
@@ -71,11 +75,11 @@ fitzRoy::player_stats%>%
     mutate(pertSC=SC/sum(SC))%>%
     group_by(Season, Player)%>%
     summarise(mean=100*mean(pertSC))%>%
-    ggplot(aes(x=mean))+geom_density() + geom_vline(xintercept = 3.89)
+    ggplot(aes(x=mean))+geom_density() + geom_vline(xintercept = 3.90)
 
 ```
 
-But thats since 2010, what about just in the 2018 season?
+But thats since 2010, what about just in the 2018 season? 
 
 ```{r}
 fitzRoy::player_stats%>%
@@ -86,6 +90,24 @@ fitzRoy::player_stats%>%
     summarise(mean=100*mean(pertSC))%>%
   arrange(desc(mean))
 ```
+
+Here we can see Tom Mitchell ranks second, just behind Brodie Grundy.
+
+# Mitchells **midfield** impact
+
+[Max Laughton](https://twitter.com/maxlaughton) wrote a [piece](https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a) referencing stats provided from [HPN](https://twitter.com/HPNfooty) about Tom Mitchells impact 
+
+>>Mitchell had 786 disposals over the 2018 home and away season; that was 9.4 per cent of Hawthorn’s team disposals total. Unsurprisingly, the next most reliant team was Carlton on Patrick Cripps; he had 652 disposals, 8.5 per cent of Carlton’s total disposal count.
+Cripps and Mitchell were the two most relied-upon midfielders in the AFL in 2018; Cripps had the largest proportion in the AFL of his team’s total contested possessions (13 per cent) and clearances (22.1 per cent), while Mitchell was second in those categories (11.3 and 21.5 per cent respectively)."
+
+But I was left thinking I wonder how does that stack up as a percentage of the midfield group and what about the other teams? Do most teams have a high reliance on one midfielder? Are Cripps and Mitchell outliers or is this just a general footy thing?
+
+You might also have an idea, maybe you don't want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in [fitzRoy](https://github.com/jimmyday12/fitzRoy).
+
+What I'm going to run through next, is just some [ggplot](https://ggplot2.tidyverse.org) visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max's article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision. 
+
+You might have other ideas and that's great hopefully you can take these scripts.
+
 
 Lets now join on the player position data. 
 
@@ -223,15 +245,22 @@ dataset<-left_join(df, footywire, by=c("Player"="player","Team"="club"))
 head(dataset)
 ```
 
+Why this happens is we can look at two players [one retired ](https://www.footywire.com/afl/footy/pp-kangaroos--jarrad-waite) and [one current](https://www.footywire.com/afl/footy/pp-richmond-tigers--dustin-martin) and if we look to where the team name sits, we can see the page structure is slightly different.
+
 Now that we have the dataset there are a few caveats
 
-* the scrape was done in the off season, so it doesn't take into account players who retired they won't have a position. This is annoying I know, so what we can do is view the NA's to see if this is much of an issue. 
+* the scrape was done in the off season, so it doesn't take into account players who retired they won't have a position. Secondly players who have changed teams in the off season are already on their new teams page, so this won't align. 
+
+This is annoying I know, so what we can do is view the NA's to see if this is much of an issue.
+
+
 
 ```{r}
 new_DF <- dataset[is.na(dataset$position),]
 
 NA_Players<-unique(new_DF$Player)
 head(NA_Players)
+dim(NA_Players)
 
 ```
 
@@ -402,24 +431,17 @@ dataset <- dataset %>%
 
 ```
 
+Now we have most of the players positions filled out, so now lets look at Tom Mitchells percentages as part of the midfield group.
 
-
-# Mitchells midfield impact. 
-
-[Max Laughton](https://twitter.com/maxlaughton) wrote a [piece](https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a) referencing stats provided from [HPN](https://twitter.com/HPNfooty) about Tom Mitchells impact 
-
->>Mitchell had 786 disposals over the 2018 home and away season; that was 9.4 per cent of Hawthorn’s team disposals total. Unsurprisingly, the next most reliant team was Carlton on Patrick Cripps; he had 652 disposals, 8.5 per cent of Carlton’s total disposal count.
-Cripps and Mitchell were the two most relied-upon midfielders in the AFL in 2018; Cripps had the largest proportion in the AFL of his team’s total contested possessions (13 per cent) and clearances (22.1 per cent), while Mitchell was second in those categories (11.3 and 21.5 per cent respectively)."
-
-But I was left thinking I wonder how does that stack up as a percentage of the midfield group and what about the other teams? Do most teams have a high reliance on one midfielder? Are Cripps and Mitchell outliers or is this just a general footy thing?
-
-You might also have an idea, maybe you don't want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in [fitzRoy](https://github.com/jimmyday12/fitzRoy).
-
-What I'm going to run through next, is just some [ggplot](https://ggplot2.tidyverse.org) visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max's article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision. 
-
-You might have other ideas and that's great hopefully you can take these scripts
 
 # Tom Mitchells contested possessions % as a midfield group
+
+So I will define and this is of course up for debate as midfield group as plays in one of the following listed footywire positions. 
+* Midfield
+* Midfield, Forward
+* Defender, Midfield, 
+* Ruck, 
+* Forward, Ruck
 
 ```{r}
   dataset%>%
@@ -445,7 +467,7 @@ dataset%>%
 
 ```
 
-Interestingly Tom Mitchell average the second most contested possessions per game on the team that averaged the least amount of contested possessions per week. Based on a first glance it seems pretty important. 
+Interestingly Tom Mitchell average the *second most contested possessions per game* on the *team that averaged the least amount of contested possessions per week*. Based on a first glance it seems pretty important. 
 
 But lets get back to what I wanted to look at earlier. That was specifically Tom Mitchells contribution as part of the midfield group. 
 
@@ -473,13 +495,13 @@ df%>%arrange(desc(pertcontribution))%>%head()
 
 ```
 
-Looking at it this way, what could be an interesting observation Tom Mitchell averages less contested possessions per game, but his percentage of them as part of Hawthorns midfield group is actually higher than Patrick Cripps. 
+Looking at it this way, what could be an interesting observation Tom Mitchell averages less contested possessions per game, and less of a proportion of his teams contested possessions when [comparing him vs Patrick Cripps](https://www.foxsports.com.au/afl/afl-2019-how-tom-mitchells-broken-leg-impacts-2019-season-and-brownlow-medal-market/news-story/687b108237a981e106d7f34b39ac4e9a). But if we were to just look as part of the teams midfield group. Tom Mitchell leads the league in terms of proportion of contested possessions won as part of the teams midfield.
 
 Lets now have a quick look at this graphically. ;
 
 ```{r}
 df%>%
-  ggplot(aes(x=meanCPTeam, y=pertcontribution))+
+  ggplot(aes(x=Team, y=pertcontribution))+
   geom_point(aes(colour=Team)) 
 
 ```
