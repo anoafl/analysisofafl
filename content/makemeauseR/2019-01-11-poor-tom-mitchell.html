@@ -604,7 +604,7 @@ df%&gt;%arrange(desc(pertcontribution))%&gt;%head()  </code></pre>
 <p>Lets now have a quick look at this graphically. ;</p>
 <pre class="r"><code>df%&gt;%
   ggplot(aes(x=as.factor(Team), y=pertcontribution))+
-  geom_point(aes(colour=Team)) </code></pre>
+  geom_point(aes(colour=Team)) + theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
 <p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 </div>
 <div id="tom-mitchells-sc-score" class="section level1">
@@ -639,7 +639,7 @@ df%&gt;%arrange(desc(pertcontribution))%&gt;%head()  </code></pre>
 ## 4 Sydney     Luke Parker           102.       744.            0.137
 ## 5 West Coast Andrew Gaff           108.       791.            0.137
 ## 6 Hawthorn   Ben McEvoy            101.       744.            0.136</code></pre>
-<pre class="r"><code>df%&gt;%ggplot(aes(x=meanSClayer, y=pertcontribution))+geom_point(aes(colour=Team))</code></pre>
+<pre class="r"><code>df%&gt;%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
 <p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
 </div>
 <div id="tom-mitchell-score-involvements" class="section level1">
@@ -679,8 +679,7 @@ df%&gt;%arrange(desc(pertcontribution))</code></pre>
 ##  9 Carlton         Patrick Cripps        5.41       38.7            0.140
 ## 10 West Coast      Luke Shuey            6.25       45.6            0.137
 ## # … with 291 more rows</code></pre>
-<pre class="r"><code>df%&gt;%ggplot(aes(x=meanSIlayer, y=pertcontribution))+geom_point(aes(colour=Team))</code></pre>
+<pre class="r"><code>df%&gt;%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
 <p><img src="/makemeauseR/2019-01-11-poor-tom-mitchell_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 <p>Tom Mitchell what a season.</p>
-<p>insert stuff here</p>
 </div>

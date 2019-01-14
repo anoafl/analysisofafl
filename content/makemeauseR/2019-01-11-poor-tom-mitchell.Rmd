@@ -502,7 +502,7 @@ Lets now have a quick look at this graphically. ;
 ```{r}
 df%>%
   ggplot(aes(x=as.factor(Team), y=pertcontribution))+
-  geom_point(aes(colour=Team)) 
+  geom_point(aes(colour=Team)) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
 
@@ -533,7 +533,7 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
 
 df%>%arrange(desc(pertcontribution))%>%head()  
 
-df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))
+df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
 ```
@@ -561,7 +561,7 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
   mutate(pertcontribution=meanSIlayer/meanSITeam)
 
 df%>%arrange(desc(pertcontribution))
-df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))
+df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
 
