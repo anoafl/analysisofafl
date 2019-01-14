@@ -111,7 +111,7 @@ What I'm going to run through next, is just some [ggplot](https://ggplot2.tidyve
 You might have other ideas and that's great hopefully you can take these scripts.
 
 
-Lets now join on the player position data. 
+Lets now join on the player position data. There will be positional in data in [fitzRoy](https://github.com/jimmyday12/fitzRoy) it is on my to-do list I swear!
 
 ```{r}
 library(rvest)
@@ -468,7 +468,51 @@ dataset%>%
 
 ```
 
-Interestingly Tom Mitchell average the *second most contested possessions per game* on the *team that averaged the least amount of contested possessions per week*. Based on a first glance it seems pretty important. 
+
+
+Interestingly Tom Mitchell averaged the *second most contested possessions per game* on the *team that averaged in the bottom half of contested possessions (13) per week*. Based on a first glance it seems pretty important. 
+
+To check the above statement we can use the script below
+
+```{r}
+library(tidyverse)
+fitzRoy::player_stats%>%
+  filter(Season==2018)%>%
+  group_by(Player, Team)%>%
+  summarise(meanCP=mean(CP))%>%
+  arrange(desc(meanCP))
+
+```
+
+```{r}
+fitzRoy::player_stats%>%
+  filter(Season==2018)%>%
+  group_by(Team, Round)%>%
+  summarise(sumCP=sum(CP))%>%
+  group_by(Team)%>%
+  summarise(meanCP=mean(sumCP))%>%
+  arrange(desc(meanCP))
+
+
+
+```
+
+We can then break that up a bit futher and look at just the teams midfield groups, this is where Tom Mitchells contribution becomes more obvious, Hawthorn actually are last in their midfields average contested possessions. Again we can verify that with the script below.
+
+
+```{r}
+teamstats<-dataset%>%
+  
+  filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
+  group_by(Team, Round)%>%
+  summarise(sumCP=sum(CP))%>%
+  group_by(Team)%>%
+  summarise(meanCPTeam=mean(sumCP))
+
+teamstats%>%arrange(desc(meanCPTeam))
+```
+
+So that Tom Mitchell, he ranks second in terms of average contested possessions per game in the midfield that gets the least amount of contested possessions per game.
 
 But lets get back to what I wanted to look at earlier. That was specifically Tom Mitchells contribution as part of the midfield group. 
 
