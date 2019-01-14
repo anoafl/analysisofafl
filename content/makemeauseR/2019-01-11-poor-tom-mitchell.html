@@ -362,8 +362,6 @@ NA_Players&lt;-unique(new_DF$Player)
 head(NA_Players)</code></pre>
 <pre><code>## [1] &quot;Reece Conca&quot;    &quot;Corey Ellis&quot;    &quot;Jed Lamb&quot;       &quot;Aaron Mullett&quot; 
 ## [5] &quot;Sam P-Seton&quot;    &quot;Matthew Wright&quot;</code></pre>
-<pre class="r"><code>dim(NA_Players)</code></pre>
-<pre><code>## NULL</code></pre>
 <p>So what we can see is that there are 114 players who have changed clubs or been delisted so aren’t in the intial scrape.</p>
 <p>So what should we do?</p>
 <p>My initial first thoughts are, scrape all the pages. But that would be pretty tedius/time consuming</p>
@@ -373,12 +371,7 @@ head(NA_Players)</code></pre>
 
 new_DF &lt;- dataset[is.na(dataset$position),]
 
-NA_Players&lt;-unique(new_DF$Player)
-
-footywire%&gt;%filter(player %in%NA_Players)%&gt;%head()</code></pre>
-<pre><code>## [1] player         club           number         weight        
-## [5] height         draft_position club_drafted   position      
-## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
+NA_Players&lt;-unique(new_DF$Player)</code></pre>
 <p>So we can see that we can match a few more players, there will still be a <a href="https://www.footywire.com/afl/footy/pp-richmond-tigers--thomas-lynch">Tom</a> <a href="https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-lynch">Lynch</a> (but thankfully they are both forwards) issue but does this fix up most of our players? Well not really…..</p>
 <p>Our list has been lowered, but on inspection we can see some interesting problems, lets take <a href="https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott">Will Hoskin-Elliot</a> on his <a href="https://www.footywire.com/afl/footy/pp-collingwood-magpies--will-hoskin-elliott">footywire profile page</a> where we got his details from (position), his name is listed as Will-Hoskin Elliott, but if we were to look at his in game statistics such as the <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9720">afl grand final 2018</a> we can see that his name is listed as Will-H Elliott.</p>
 <p>Isn’t that annoying!</p>

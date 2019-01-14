@@ -262,7 +262,7 @@ new_DF <- dataset[is.na(dataset$position),]
 
 NA_Players<-unique(new_DF$Player)
 head(NA_Players)
-dim(NA_Players)
+
 
 ```
 
@@ -283,7 +283,6 @@ new_DF <- dataset[is.na(dataset$position),]
 
 NA_Players<-unique(new_DF$Player)
 
-footywire%>%filter(player %in%NA_Players)%>%head()
 ```
 
 So we can see that we can match a few more players, there will still be a [Tom](https://www.footywire.com/afl/footy/pp-richmond-tigers--thomas-lynch) [Lynch](https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-lynch) (but thankfully they are both forwards) issue but does this fix up most of our players? Well not really.....
