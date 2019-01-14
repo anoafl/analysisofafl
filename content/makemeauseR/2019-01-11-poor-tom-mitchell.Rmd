@@ -505,7 +505,7 @@ Lets now have a quick look at this graphically. ;
 df%>%
   ggplot(aes(x=as.factor(Team), y=pertcontribution))+
   geom_point(aes(colour=Team)) + theme(axis.text.x = 
-                                         element_text(angle = 90, hjust = 1)) +xlab("Team") +ylab("Proportion of Teams Midfield Groups Contested Posessions")
+                                         element_text(angle = 90, hjust = 1)) +xlab("Team") +ylab("Proportion of Teams Midfield Groups Contested Posessions") + theme(legend.position="none")
 
 ```
 
@@ -536,7 +536,7 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
 
 df%>%arrange(desc(pertcontribution))%>%head()  
 
-df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+xlab("Team")
+df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+xlab("Team") + theme(legend.position="none")
 
 
 ```
@@ -564,7 +564,7 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
   mutate(pertcontribution=meanSIlayer/meanSITeam)
 
 df%>%arrange(desc(pertcontribution))
-df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1)) +xlab("Team")
+df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1)) +xlab("Team") + theme(legend.position="none")
 
 ```
 
