@@ -104,7 +104,9 @@ But I was left thinking I wonder how does that stack up as a percentage of the m
 
 You might also have an idea, maybe you don't want to know about the clearances and the contested possessions and disposals. Perhaps you are interested in the % of score involvements, or club proportion of Brownlow Votes. These stats and a many others are in [fitzRoy](https://github.com/jimmyday12/fitzRoy).
 
-What I'm going to run through next, is just some [ggplot](https://ggplot2.tidyverse.org) visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max's article. Specially looking at SC and score involvements. But also looking at clearances, disposals and contested possessions but league wide midfield groups and not just a Cripps/Mitchell club comparision. 
+What I'm going to run through next, is just some [ggplot](https://ggplot2.tidyverse.org) visualisations of Tom Mitchells %s of Hawthorns midfield group with respect to a few things that were not covered in Max's article. Specially looking at SC and score involvements. But we could also look at clearances, disposals and contested possessions because the data is there within [fitzRoy](https://github.com/jimmyday12/fitzRoy).
+
+
 
 You might have other ideas and that's great hopefully you can take these scripts.
 
@@ -502,7 +504,8 @@ Lets now have a quick look at this graphically. ;
 ```{r}
 df%>%
   ggplot(aes(x=as.factor(Team), y=pertcontribution))+
-  geom_point(aes(colour=Team)) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  geom_point(aes(colour=Team)) + theme(axis.text.x = 
+                                         element_text(angle = 90, hjust = 1)) +xlab("Team") +ylab("Proportion of Teams Midfield Groups Contested Posessions")
 
 ```
 
@@ -533,7 +536,7 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
 
 df%>%arrange(desc(pertcontribution))%>%head()  
 
-df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))
+df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+xlab("Team")
 
 
 ```
@@ -561,9 +564,18 @@ df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
   mutate(pertcontribution=meanSIlayer/meanSITeam)
 
 df%>%arrange(desc(pertcontribution))
-df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))
+df%>%ggplot(aes(x=as.factor(Team), y=pertcontribution))+geom_point(aes(colour=Team))+ theme(axis.text.x = element_text(angle = 90, hjust = 1)) +xlab("Team")
 
 ```
+
+The score involvements is pretty interesting. 
+
+If we were to just look at average score involvements per game where do you think Tom Mitchell would rank?
+
+Not even in the top 50, but his proportion of score involvements as a proportion of the Hawthorns midfield group is top 4.
+
+So hopefully reading this has given you the itch to do some of your *own* analysis and putting your thoughts/ideas down and seeing if they come out in the data. 
+
 
 Tom Mitchell what a season.
 
