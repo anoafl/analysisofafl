@@ -262,6 +262,20 @@ teamstats<-dataset%>%
   group_by(Team)%>%
   summarise(meanCPTeam=mean(sumCP))
  
+gamesfyfenealeplayedtogether<-fitzRoy::player_stats%>%
+  filter(Season==2015)%>%
+  group_by(Match_id)%>%
+  filter(Player %in% c("Nathan Fyfe", "Lachie Neale"))%>%
+  
+
+   
+
+select(Match_id)%>%
+  distinct()
+# filter(Player %in% c("Nathan Fyfe", "Lachie Neale"))%>%
+  # ggplot(aes(x=Player, y=CPPM))+geom_boxplot()
+
+
 
 playerstats<-dataset%>%
   filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
@@ -272,8 +286,13 @@ playerstats<-dataset%>%
 
 df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
   mutate(pertcontribution=meanCPlayer/meanCPTeam)
+library(reldist)
+  df%>%
+    group_by(Team)%>%
+    summarise(mygini=gini(pertcontribution))%>%
+    arrange(desc(mygini))
 
-df%>%arrange(desc(pertcontribution))%>%head()  
+df%>%filter(Team=="Fremantle")%>%arrange(desc(pertcontribution))%>%View()
 
 df%>%ggplot(aes(x=meanCPTeam, y=pertcontribution))+geom_point(aes(colour=Team))
 
@@ -283,23 +302,28 @@ df%>%ggplot(aes(x=meanCPTeam, y=pertcontribution))+geom_point(aes(colour=Team))
 teamstats<-dataset%>%
   
   filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
-  group_by(Team, Round)%>%
-  summarise(sumSC=sum(SC))%>%
+  library(tidyverse)
+
+  teamstats<-fitzRoy::player_stats%>%filter(Season==2015)%>%
+  
+   group_by(Team, Round)%>%
+  summarise(sumCP=sum(CP))%>%
   group_by(Team)%>%
-  summarise(meanSCTeam=mean(sumSC))
+  summarise(meanCPTeam=mean(sumCP))
 
 
-playerstats<-dataset%>%
-  filter(position %in% c("Midfield, Forward", "Midfield","Defender, Midfield", "Ruck", "Forward, Ruck"))%>%
+playerstats<-fitzRoy::player_stats%>%filter(Season==2015)%>%
   group_by(Team, Round, Player)%>%
-  summarise(sumSC=sum(SC))%>%
+  summarise(sumCP=sum(CP))%>%
   group_by(Team, Player)%>%
-  summarise(meanSClayer=mean(sumSC))
+  summarise(meanCPlayer=mean(sumCP))
 
 df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
-  mutate(pertcontribution=meanSClayer/meanSCTeam)
+  mutate(pertcontribution=meanCPlayer/meanCPTeam)
 
-df%>%arrange(desc(pertcontribution))%>%head()  
+df%>%
+  filter(Team=="Fremantle")%>%
+  arrange(desc(pertcontribution)) %>%View("dockers 2015")
 
 df%>%ggplot(aes(x=meanSClayer, y=pertcontribution))+geom_point(aes(colour=Team))
 
@@ -324,5 +348,5 @@ playerstats<-dataset%>%
 df<-left_join(playerstats,teamstats , by=c("Team","Team"))%>%
   mutate(pertcontribution=meanSIlayer/meanSITeam)
 
-df%>%arrange(desc(pertcontribution))
+df%>%filter(Team=="Fremantle")%>%arrange(desc(pertcontribution))%>%View()
 df%>%ggplot(aes(x=meanSIlayer, y=pertcontribution))+geom_point(aes(colour=Team))

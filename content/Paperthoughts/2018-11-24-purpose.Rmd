@@ -25,3 +25,6 @@ With the hopes of
 If I have written about your paper and you would like it taken down from my blog, feel free to send an email. 
 
 If you like this part of the blog or have requests consider buying me a [beer](https://patreon.com/roberto_boberto?utm_medium=social&utm_source=twitter&utm_campaign=creatorshare) or [coffee](https://patreon.com/roberto_boberto?utm_medium=social&utm_source=twitter&utm_campaign=creatorshare) or sending an email through.
+
+
+For more great R related content please see [R Bloggers](https://www.r-bloggers.com)
