@@ -1,0 +1,223 @@
+---
+title: PlayerIds
+author: Robert Nguyen
+date: '2019-02-12'
+slug: playerids
+categories:
+  - AFL Modelling
+  - fitzRoy
+  - R
+tags: []
+description: 'data cleaning'
+---
+
+Something that has been talked a bit about recently on [twitter is the the use of unique playerIDs](https://twitter.com/MatterOfStats/status/1095290277848178688) so that fan analysts, punters and bloggers can track players through time. 
+
+There are some things that need to be thought about when creating unique playerIDS for analysis. 
+
+* Do you want your IDS to be unique across datasets or do you need them to work across datasets. 
+
+Lets say you are a user of [#fitzRoy](https://github.com/jimmyday12/fitzRoy) we have essential two datasets for AFL mens one from footywire (without player IDS) and one from afltables with playerIDS. 
+
+# The quick way without wanting to join datasets. 
+
+Lets say you are using footywire data only, the quickest way would be to simply rely on domain knowledge give all unique players+club combination a unique ID and then manually change the players that have changed clubs. 
+
+Let me give a running example.
+
+## Step one - concatentate together player and team
+
+The obvious issue here is that if we have a players like [Adam Treloar](https://www.footywire.com/afl/footy/pp-collingwood-magpies--adam-treloar) who have played for multiple teams
+
+The other obvious issue is that we have players that have the same name like [Jack Trengove](https://twitter.com/RankingSw/status/1095260427464765440)
+
+So when coming up with a playerID for the first time we have to think about what is our quickest solution for use. 
+
+If we were only interested within year, we could just create a quick playerID based on joining together player names and teams.
+
+Which we can do below. 
+
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+
+df<-fitzRoy::player_stats 
+df$player_id_step1<-paste(df$Player, df$Team)
+
+```
+
+However the issue with that is we can't track a player like  [Adam Treloar](https://www.footywire.com/afl/footy/pp-collingwood-magpies--adam-treloar) through the dataset as he will have two IDS one for when he was at Collingwood and one from this time at GWS. 
+
+So instead of that we might want to use names instead. This has the issue that if players have the same name but played on different teams they will be given the same ID. 
+
+To find out how big of an issue this would be we could summarise the name count by unique teams within an AFL season. 
+
+```{r}
+check<-df%>%distinct(Season, Player, Team)%>%
+  group_by(Season, Player)%>%
+  summarise(player_counts=n())%>%
+  arrange(desc(player_counts))
+head(check)
+```
+
+What this means is that in 2010 we had 2 players named Scott Tompson and they played for different teams. 
+
+But we have to manually recode this, so to find out how many players we would have to do this for we can do this by just filtering out player_counts>1 i.e. when there are multiple in the same year but for different teams. 
+
+```{r}
+df%>%distinct(Season, Player, Team)%>%
+    group_by(Season, Player)%>%
+    summarise(player_counts=n())%>%
+    arrange(desc(player_counts))%>%filter(player_counts>1)
+```
+
+So that doesn't seem too bad if we just coded each player name with a unique ID, our next step would be to then manually change any players who need to get a new ID, this would rely on domain knowledge done this way. 
+
+# Using player and team as an ID 
+
+This wouldnt be the best if we were tracking players across years. Perhaps we are looking at age effects or we want to visualise the cummulative count of a players stats. 
+
+To get a feel for why that is a bit more tedius than the above, lets just look at the amount of players who played for different clubs (these would all have to be manually recoded)
+
+```{r}
+
+df1<-df%>%distinct(Player)
+id <- rownames(df1)
+df2<-cbind(df1,id)
+
+df_check<-df%>%left_join(df2,by ="Player")
+
+df_check%>%
+  distinct(Player, id, Team, Season)%>%
+  arrange(Player)%>%
+  distinct(Player, id, Team)%>%
+  group_by(Player, id)%>%
+  summarise(count_player=n())%>%
+  arrange(desc(count_player))%>%
+  filter(count_player>1)
+```
+
+So we can see that's actually quite a bit of players we'd have to go through manually. 
+
+So what we need to do is essentially have two lists ready to go for our unique playerIDs. We need one for our dataset that we know will have errors (Scott Thompsons having the same ID), consider this our original dataset from within [#fitzRoy](https://github.com/jimmyday12/fitzRoy)
+
+The second list we would keep is the one that contains players that share names, this will form the basis of our recoding of the IDS so that everyone has a unique one. 
+
+
+
+```{r}
+df<-fitzRoy::player_stats 
+df1<-df%>%distinct(Player)
+id <- rownames(df1)
+length(id)
+df2<-cbind(df1,id)
+
+```
+
+
+So here we have df2, which contains the player names with the ids, this is our second list.
+
+Now lets join on the IDS to the dataset of [footywire](https://www.footywire.com/) data in [fitzRoy](https://github.com/jimmyday12/fitzRoy)
+
+To do this we can left_join our data. 
+
+```{r}
+df_id<-df%>%left_join(df2,by ="Player")
+df_id$id<-as.numeric_version(df_id$id)
+
+
+```
+
+So df_id as it stands now will give players that share names like Scott Thompson the same ID even though they are different players. 
+
+```{r}
+df_id%>%
+  select(Season, Team, Player, id)%>%
+  filter(Player %in% c("Scott Thompson"))%>%
+  distinct(Season, Team, Player, as.factor(id))
+
+```
+
+Lets replace as an example [Scott Thompson for the Crows](https://www.footywire.com/afl/footy/pp-adelaide-crows--scott-thompson) with a different id from 263 which will be[ Scott Thompsons id who played for the Kangaroos](https://www.footywire.com/afl/footy/pp-kangaroos--scott-thompson-1)
+
+So to come up with the new id for Scott thompson for the Crows, we need to make sure we don't reuse a number. A simple solution would just be to take the maximum the dataset and give Scott Thompson max+1 as an ID.
+
+```{r}
+max(df_id$id)
+
+```
+
+So lets replace the 263 with 1392 +1 
+
+```{r}
+df_id$id[df_id$Player =="Scott Thompson" & df_id$Team=="Adelaide"] = 1393
+
+```
+
+We can then check it as follows.
+
+```{r}
+df_id%>%
+  select(Season, Team, Player, id)%>%
+  filter(Player %in% c("Scott Thompson"))%>%
+  distinct(Season, Team, Player, as.factor(id))
+
+```
+
+Looking at this it seems to have worked. 
+
+Now we just have to do this for all the players that have the same name in our dataset.
+
+So lets get our list of players that share the same name. 
+
+```{r}
+players_share_name<-df%>%
+  distinct(Season, Player, Team)%>%
+    group_by(Season, Player)%>%
+    summarise(player_counts=n())%>%
+    arrange(desc(player_counts))%>%filter(player_counts>1)%>%
+  select(Player)
+
+
+df%>%filter(Player %in% players_share_name$Player)%>%
+  distinct(Season, Player, Team)%>%
+  arrange(Player)
+
+
+```
+
+So what we can see here that within the fitzRoy dataset that contains footywire data, we just have to make the following replacements.
+
+* Replace the ID for Scott Thompson at [Adelaide](https://www.footywire.com/afl/footy/pp-adelaide-crows--scott-thompson) vs [North Melbourne](https://www.footywire.com/afl/footy/pp-kangaroos--scott-thompson-1)
+
+* Replace the ID for Tom Lynch at [Adelaide](https://www.footywire.com/afl/footy/pp-adelaide-crows--tom-lynch) and [Gold Coast now at Richmond](https://www.footywire.com/afl/footy/pp-richmond-tigers--thomas-lynch)
+
+* Replace the ID for Mitchell Brown who [played at Geelong and Essendon](https://www.footywire.com/afl/footy/pc-essendon-bombers--mitchell-brown-1) vs Mitchell Brown at [West Coast](https://www.footywire.com/afl/footy/pp-west-coast-eagles--mitchell-brown)
+
+So lets make those replacements!
+
+
+```{r}
+df_id$id[df_id$Player =="Scott Thompson" & df_id$Team=="Adelaide"] = 1393
+
+
+df_id$id[df_id$Player =="Mitchell Brown" & df_id$Team=="West Coast"] = 1394
+
+df_id$id[df_id$Player =="Tom Lynch" & df_id$Team=="Adelaide"] = 1395
+
+```
+Check to see it all worked
+
+```{r}
+
+df_id%>%filter(Player %in% c("Tom Lynch", "Scott Thompson", "Mitchell Brown"))%>%
+  distinct(Player, Team, Season, as.factor(id))
+
+
+```
+
+* Now you should be able to track a players history throughout fitzRoy. 
+* Now you should be able to check that all of afltables ids as contained within fitzRoy are unique
+* hopefully enough is there so you can join the datasets together (afltables and footywire)
+
