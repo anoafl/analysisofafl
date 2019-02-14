@@ -117,7 +117,9 @@ df_check%&gt;%
 ##  9 Kyle Cheney      540              3
 ## 10 Matthew Spangher 360              3
 ## # … with 310 more rows</code></pre>
-<p>So we can see that’s actually quite a bit of players we’d have to go through manually.</p>
+<p>So we can see that’s actually quite a bit of players we’d have to go through manually. To make sure they have the same name.</p>
+<p>For example Andrejs Everitt, if we were to use Player-Team as a unique ID he would get 3ids when really we just want him to have the one.</p>
+<p>So it would seem as though least for this dataset the quickest solution would be to use players names</p>
 <p>So what we need to do is essentially have two lists ready to go for our unique playerIDs. We need one for our dataset that we know will have errors (Scott Thompsons having the same ID), consider this our original dataset from within <a href="https://github.com/jimmyday12/fitzRoy">#fitzRoy</a></p>
 <p>The second list we would keep is the one that contains players that share names, this will form the basis of our recoding of the IDS so that everyone has a unique one.</p>
 <pre class="r"><code>df&lt;-fitzRoy::player_stats 

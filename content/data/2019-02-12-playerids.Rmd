@@ -98,7 +98,11 @@ df_check%>%
   filter(count_player>1)
 ```
 
-So we can see that's actually quite a bit of players we'd have to go through manually. 
+So we can see that's actually quite a bit of players we'd have to go through manually. To make sure they have the same name. 
+
+For example Andrejs Everitt, if we were to use Player-Team as a unique ID he would get 3ids when really we just want him to have the one. 
+
+So it would seem as though least for this dataset the quickest solution would be to use players names
 
 So what we need to do is essentially have two lists ready to go for our unique playerIDs. We need one for our dataset that we know will have errors (Scott Thompsons having the same ID), consider this our original dataset from within [#fitzRoy](https://github.com/jimmyday12/fitzRoy)
 
