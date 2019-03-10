@@ -1,0 +1,243 @@
+---
+title: Fantasy Tips From the Fantasy King
+author: Robert Nguyen
+date: '2019-03-10'
+slug: fantasy-tips-from-the-fantasy-king
+categories:
+  - fantasy
+tags:
+  - fantasy
+description: ' podcast link https://player.whooshkaa.com/episode?id=342604'
+---
+
+[Selby Lee Steere](https://www.abc.net.au/news/2018-03-21/afl-fantasy-football-winner-kicking-charity-goals/9568554) has won [AFL fantasy](https://fantasy.afl.com.au/) two years in a row. He is the coach of [Moreiras Magic](https://twitter.com/MoreirasMagic?lang=en) and through selling his fantasy guide donates a lot of money to the [Starlight foundation](https://t.co/YSeAf2shmg). I was lucky enough to do an [interview with him](https://player.whooshkaa.com/episode?id=342604) talking about his strategies in winning fantasy. 
+
+
+AFL fantasy scores as opposed to supercoach scores are able to be fully derived from the [box-score statistics](https://fantasy.afl.com.au/classic/help/game-guidelines#sec-8). Why this is good it means if we wanted to, and I guess we do for the purposes of this post lets do a few things
+
+1. Lets get the fantasy scores for all players as far back as we can go
+2. Now that we have fantasy scores going back years and years, lets compare players. In the podcast, it was pointed out that maybe [Brayshaw](https://afltables.com/afl/stats/players/A/Andrew_Brayshaw.html) will see an increase in useage because [Neale](https://afltables.com/afl/stats/players/L/Lachie_Neale.html) has left, are their stats similar in their first years? Can they be similar in their second. 
+3. Maybe like [Kane Cornes](https://twitter.com/kanecornes) you [believe](http://aflnation.com.au/2018/03/14/could-powell-pepper-be-the-next-dustin-martin/) that [Powell-Pepper](https://afltables.com/afl/stats/players/S/Sam_Powell-Pepper.html) can be the next [Dusty Martin](https://afltables.com/afl/stats/players/D/Dustin_Martin.html), so lets compare the pair. 
+4. Another one of Selby fantastic tips was to think about points per minute, we can actually calculate this too!
+
+# Step one Get the data!
+
+```{r}
+library(tidyverse)
+dataframe<-fitzRoy::get_afltables_stats(start_date = "1897-01-01",end_date = "2018-10-10")
+
+```
+
+# Step two data checks
+
+One of the things about AFL data is that statistics are being collected from different points in time, no one was recording the meters gained back in the 1960s. 
+
+A quick way to check when a statistic is first being collected would be to do a search or hopefully there is a data dictionary. 
+
+But in this case, lets use R and the [tidyverse](https://www.tidyverse.org/learn/) to do it. 
+
+```{r}
+library(tidyverse)
+dataframe%>%
+  group_by(Season)%>%
+  summarise(meantime=mean(Time.on.Ground..))%>%
+  filter(meantime>0)
+
+```
+
+So what we can see from this, is that time on ground was first being collected in 2003. So if we were to work out points per minute we could only start in 2003. 
+
+# Come up with a column of fantasy scores
+
+We know that AFL fantasy scores are worked out as follows: 
+
+```{r}
+df<-data.frame(stringsAsFactors=FALSE,
+           Match.Stat = c("Kick", "Handball", "Mark", "Tackle", "Free Kick For",
+                          "Free Kick Against", "Hitout", "Goal", "Behind"),
+       Fantasy.Points = c("3 Points", "2 Points", "3 Points", "4 Points",
+                          "1 Point", "-3 Points", "1 Point", "6 Points",
+                          "1 Point")
+    )
+df
+
+```
+
+Now all we have to do is create a new column using the above as a formula so we can work out the fantasy scores going backwards, we can use [mutate](https://dplyr.tidyverse.org/reference/mutate.html) to do this.
+
+```{r}
+dataframe%>%
+    mutate(fantasy_score=
+               3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+               3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+    group_by(Season)%>%
+    summarise(meanfantasy=mean(fantasy_score))%>%
+  ggplot(aes(x=Season, y=meanfantasy))+geom_line()
+```
+Looking at the graph, what we can see here is that roughly in the 60s there was a sudden jump in the statistics being collected that went on to be used to derive the AFL fantasy scores. 
+
+To find out when the statistics are first being collected we might want to do this graphically. What I am thinking what if we just had a heap of lines with each line representing one of the statistics. When it comes to plotting multiple lines on a graph its a good idea to practice the use of [gather](https://tidyr.tidyverse.org/reference/gather.html)  from the [tidyverse](https://www.tidyverse.org)
+
+```{r}
+dataframe%>%
+  mutate(fantasy_score=
+           3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+           3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+  group_by(Season)%>%
+  summarise(meanfantasy=mean(fantasy_score), 
+            meankicks=mean(Kicks),
+            meanhandballs=mean(Handballs),
+            meanmarks=mean(Marks),
+            meantackles=mean(Tackles),
+            meanfreesfor=mean(Frees.For),
+            meansfreesagainst=mean(Frees.Against),
+            meanhitouts=mean(Hit.Outs),
+            meangoals=mean(Goals),
+            meanbehinds=mean(Behinds))%>%
+ gather("variable", "value",-Season) %>%
+  ggplot(aes(x=Season, y=value, group=variable, colour=variable))+geom_line()
+
+```
+
+Looking at this graph, it would seem as though if we used 2000 as a cut off, that would be fine as all our data is being collected then. What we don't want there to be an example of, is a statistic like meters gained that was only started to be [tracked in 2007](https://twitter.com/championdata/status/472174368059957248).
+
+Next what we want to do now that we have the fantasy scores and a rough timeline of when it makes sense that all our data is being collected lets see the average fantasy scores by player and year. 
+
+```{r}
+dataframe%>%
+  mutate(fantasy_score=
+           3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+           3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+  group_by(Season, First.name, Surname, ID)%>%
+  summarise(meanFS=mean(fantasy_score))%>%
+  filter(Season>2000)
+
+```
+
+But! We know that with AFL fantasy we don't want to include finals that's because finals aren't included in the competition so lets exclude finals. 
+
+```{r}
+
+dataframe%>%
+  mutate(fantasy_score=
+           3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+           3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+  filter(!(Round %in% c("EF", "PF", "SF","GF","QF")))%>%
+  group_by(Season, First.name, Surname, ID)%>%
+  summarise(meanFS=mean(fantasy_score))%>%
+  filter(Season>2000)%>%arrange(desc(meanFS))
+
+
+```
+
+So what did we originally want to do, we wanted to see how Neale did in his second year to get a sense of his improvement and is that comparable to Brayshaw?
+
+To do this we want to find the player IDS, this makes it easier to filter out the players, secondly we want to add the count of games played in season. I think the second point is important because we don't want to be misled by a small number of games played.
+
+```{r}
+
+dataframe%>%
+  mutate(fantasy_score=
+           3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+           3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+  filter(!(Round %in% c("EF", "PF", "SF","GF","QF")))%>%
+  group_by(Season, First.name, Surname, ID)%>%
+  summarise(meanFS=mean(fantasy_score), 
+            count=n())%>%
+  filter(Season>2000)%>%arrange(desc(Season))%>%
+  filter(ID %in%c("12055","12589"))
+```
+
+So looking at the Neale vs Brayshaw comparision, Neale actually averaged less fantasy points in his first AFL season, but he picked it up to 77.1 in his second year and a slight imporvement to 82.3 in his third.
+
+But as Selby pointed out, he's looking at points per minute as his metric. So lets add that in. 
+
+```{r}
+dataframe%>%
+  mutate(fantasy_score=
+           3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+           3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+  filter(!(Round %in% c("EF", "PF", "SF","GF","QF")))%>%
+  group_by(Season, First.name, Surname, ID)%>%
+  summarise(meanFS=mean(fantasy_score),
+            meantimeonground=mean(Time.on.Ground..),
+            count=n())%>%
+  filter(Season>2000)%>%arrange(desc(Season))%>%
+  filter(ID %in%c("12055","12589"))
+
+```
+
+What we can see here, is that Brayshaw average time on ground was 66.7, Neale when he was getting just a little bit more game time (68.8 and 73.9) was getting an extra 10+ fantasy points on average. But what we can see is that his mean fantasy score and his mean time on ground is virtually one to one. 
+
+Lets see Brayshaw on a scatter plot for his debut season
+
+```{r}
+dataframe%>%
+    mutate(fantasy_score=
+               3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+               3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+    filter(!(Round %in% c("EF", "PF", "SF","GF","QF")))%>%
+    filter(ID =="12589")%>%
+    ggplot(aes(x=Time.on.Ground..,y=fantasy_score))+geom_point()+geom_abline(intercept = 0)+ylim(0,100)+xlim(0,100)
+```
+
+Lets now look at Sam Powell Pepper vs Dustin Martin comparisons. 
+
+First lets find their player Ids
+
+```{r}
+
+dataframe%>%
+    mutate(fantasy_score=
+               3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+               3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+    filter(!(Round %in% c("EF", "PF", "SF","GF","QF")))%>%
+    filter(Surname =="Powell-Pepper")%>%select(ID)
+
+dataframe%>%
+    mutate(fantasy_score=
+               3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+               3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+    filter(!(Round %in% c("EF", "PF", "SF","GF","QF")))%>%
+    filter(Surname =="Martin", First.name=="Dustin")%>%select(ID)
+
+
+```
+
+Now lets do the same comparisions as we were doing for Brayshaw and Neale
+
+```{r}
+dataframe%>%
+  mutate(fantasy_score=
+           3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+           3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+  filter(!(Round %in% c("EF", "PF", "SF","GF","QF")))%>%
+  group_by(Season, First.name, Surname, ID)%>%
+  summarise(meanFS=mean(fantasy_score),
+            meantimeonground=mean(Time.on.Ground..),
+            count=n())%>%
+  filter(Season>2000)%>%arrange(desc(Season))%>%
+  filter(ID %in%c("11794","12494"))
+
+```
+
+Lets now look at a similar scatter plot.
+
+```{r}
+dataframe%>%
+  mutate(fantasy_score=
+           3*Kicks +2*Handballs+ 3*Marks +4*Tackles+Frees.For -
+           3*Frees.Against+Hit.Outs+6*Goals+Behinds)%>%
+  filter(!(Round %in% c("EF", "PF", "SF","GF","QF")))%>%
+  group_by(Season, First.name, Surname, ID)%>%
+  summarise(meanFS=mean(fantasy_score),
+            meantimeonground=mean(Time.on.Ground..),
+            count=n())%>%
+  filter(Season>2000)%>%arrange(desc(Season))%>%
+  filter(ID %in%c("11794","12494"))%>%
+  ggplot(aes(x=meantimeonground, y=meanFS))+geom_point(aes(colour=as.factor(ID)))+geom_abline(intercept = 0)+ylim(0,140)+xlim(0,140)
+
+```
+
+So hopefully now what you have is a rough framework in place so you can easily filter out players you think are similar, track their careers and use 2 time afl fantasy winners tips by looking at time on ground as well!
+
