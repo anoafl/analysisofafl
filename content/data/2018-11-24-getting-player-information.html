@@ -473,4 +473,5 @@ player_information &lt;- as.tibble(player_information)
 footywire &lt;- purrr::map_df(url_players, player_info)
 
 names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;,&quot;sc_price&quot;, &quot;af_price&quot;)</code></pre>
+<p>Some of you might notice that this post has been updated and that the script has changed. That is because footywire has changed structure. Luckily, thanks to selecter gadget all I had to change was what was in <span class="math inline">\(html_nodes()\)</span>.</p>
 </div>

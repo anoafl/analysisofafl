@@ -153,7 +153,7 @@ What happens if we don't use `str_replace_all` and `str_squish`
 
 ```{r}
 page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_nodes("#playerProfileData2")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     # str_squish()%>%
@@ -164,7 +164,7 @@ page%>%
 
 ```{r}
 page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_nodes("#playerProfileData2")%>%
     html_text()%>%
     str_extract(pattern =("(?<=Weight:).*(?=Position:)"))
 
@@ -473,3 +473,5 @@ names(footywire) <- c("player", "club", "number","weight","height",  "draft_posi
 ```
 
 Some of you might notice that this post has been updated and that the script has changed. That is because footywire has changed structure. Luckily, thanks to selecter gadget all I had to change was what was in $html_nodes()$.
+
+
