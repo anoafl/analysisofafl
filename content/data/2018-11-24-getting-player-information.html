@@ -178,18 +178,20 @@ af_price</code></pre>
 <p>We first use this to get the weight of the player.</p>
 <p>What happens if we don’t use <code>str_replace_all</code> and <code>str_squish</code></p>
 <pre class="r"><code>page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
     html_text()%&gt;%
     str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
     # str_squish()%&gt;%
     str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()</code></pre>
-<pre><code>## # A tibble: 0 x 1
-## # … with 1 variable: value &lt;chr&gt;</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value      
+##   &lt;chr&gt;      
+## 1 &quot; 87kg    &quot;</code></pre>
 <pre class="r"><code>page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
     html_text()%&gt;%
     str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))</code></pre>
-<pre><code>## character(0)</code></pre>
+<pre><code>## [1] NA</code></pre>
 <p>We get an NA even though we are using str_extract trying to get the text between <code>Weight:</code> and <code>Position:</code></p>
 <p>So the next step would be to do some investigation.</p>
 <p>One of the best things about <code>%&gt;%</code> is that we can run bits of code piecewise and easily see what it returns.</p>
