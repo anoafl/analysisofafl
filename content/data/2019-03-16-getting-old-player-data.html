@@ -1,0 +1,308 @@
+---
+title: Scraping old player data
+author: Robert Nguyen
+date: '2019-03-16'
+slug: getting-old-player-data
+categories:
+  - AFL Modelling
+tags:
+  - Web scraping
+  - open science
+description: 'Getting retired players from footywire'
+---
+
+
+
+<p>As its been pointed out to me on that it would be handy if within <a href="https://jimmyday12.github.io/fitzRoy/">fitzRoy</a> that it should contain past players data from footywire.</p>
+<p>So here is roughly how to do that.</p>
+<div id="step-1---get-all-the-packages-you-need" class="section level1">
+<h1>Step 1 - get all the packages you need</h1>
+<pre class="r"><code>library(rvest)</code></pre>
+<pre><code>## Loading required package: xml2</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ──────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.1.0       ✔ purrr   0.3.0  
+## ✔ tibble  2.0.1       ✔ dplyr   0.8.0.1
+## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
+## ✔ readr   1.3.1       ✔ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ─────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter()         masks stats::filter()
+## ✖ readr::guess_encoding() masks rvest::guess_encoding()
+## ✖ dplyr::lag()            masks stats::lag()
+## ✖ purrr::pluck()          masks rvest::pluck()</code></pre>
+<pre class="r"><code>library(naniar)</code></pre>
+<p><a href="https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html">naniar</a> isn’t something I have used on the blog before but I find its pretty handy. What we are doing here is we are web-scraping and we have an issue in our scrape. Basically the row in which we pluck our height, weight and position from sometimes contains height and weight but not position.</p>
+<p>In that case when we make our data tidy, when we go to find a ‘’position’’ for a player who doesn’t have one, we get the whole row. Hopefully this will be a bit more clear with the screenshots and alike below.</p>
+</div>
+<div id="step-2---pick-a-team-to-scrape-this-case-im-going-to-do-west-coast" class="section level1">
+<h1>Step 2 - Pick a team to scrape (this case I’m going to do <a href="https://www.footywire.com/afl/footy/ti-west-coast-eagles">West Coast</a>)</h1>
+<p>Keeping in mind we want to scrape the webpages lets just look at a few eagles players and see how their pages are structured. To do this I don’t think we need to really dig into the html but lets just look at the pages.</p>
+<p>First player I decided to click on was <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--john-annear">John Annear</a> we can see we can get his date of birth, his height and weight.</p>
+<div class="figure">
+<img src="/img/Screen%20Shot%202019-03-17%20at%2012.10.53%20am.png" alt="John Annear screenshot footywire" />
+<p class="caption">John Annear screenshot footywire</p>
+</div>
+<p>Second player I decided to look at was <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--corey-adamson">Corey Adamson</a> here we can see we can get his date of birth, his height, his weight, his position and his draft position.</p>
+<div class="figure">
+<img src="/img/Screen%20Shot%202019-03-17%20at%2012.17.26%20am.png" alt="Corey Adamson screenshot footywire" />
+<p class="caption">Corey Adamson screenshot footywire</p>
+</div>
+<p>Thirdy player I decided to look at was <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras">Mark Lecras</a></p>
+<p>Here we can see we get his date of birth, games played, height, weight, position and draft position.</p>
+<div class="figure">
+<img src="/img/Screen%20Shot%202019-03-17%20at%2012.25.49%20am.png" alt="Mark Lecras screenshot footywire" />
+<p class="caption">Mark Lecras screenshot footywire</p>
+</div>
+<p>Then after randomly clicking on a few other players I am reasonble confident that these 3 cover the variety of different bits of information provided for all past players.</p>
+<p>So now lets get scraping</p>
+</div>
+<div id="step-3---scrape-a-single-player" class="section level1">
+<h1>Step 3 - Scrape a single player</h1>
+<p>For this example lets do <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras">Mark Lecras</a>, the reason is he has the most amount of information for past players on his page.</p>
+<pre class="r"><code>cbind.fill &lt;- function(...){
+  nm &lt;- list(...) 
+  nm &lt;- lapply(nm, as.matrix)
+  n &lt;- max(sapply(nm, nrow)) 
+  do.call(cbind, lapply(nm, function (x) 
+    rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+page&lt;-read_html(&quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras&quot;)
+  
+  player&lt;- page%&gt;%
+    html_nodes(&quot;#playerProfileName&quot;)%&gt;%
+    html_text()
+  player</code></pre>
+<pre><code>## [1] &quot;Mark Lecras&quot;</code></pre>
+<pre class="r"><code>  playing.for&lt;-  page%&gt;%
+    html_nodes(&quot;#playerProfileTeamDiv a b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()</code></pre>
+<pre><code>## Warning: `as.tibble()` is deprecated, use `as_tibble()` (but mind the new semantics).
+## This warning is displayed once per session.</code></pre>
+<pre class="r"><code>  playing.for</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value            
+##   &lt;chr&gt;            
+## 1 West Coast Eagles</code></pre>
+<pre class="r"><code>  games&lt;-page%&gt;%
+    html_nodes(&quot;#playerProfileData1&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Games: ).*(?=Born:)&quot;))%&gt;%as.tibble()
+  games</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value 
+##   &lt;chr&gt; 
+## 1 &quot;219 &quot;</code></pre>
+<pre class="r"><code>  born&lt;-     page%&gt;%
+    html_nodes(&quot;#playerProfileData1&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Born: &quot;)%&gt;%
+    str_squish() %&gt;%  as.tibble()
+  born</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value          
+##   &lt;chr&gt;          
+## 1 August 30, 1986</code></pre>
+<pre class="r"><code>  weight&lt;-page%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=kg)&quot;))%&gt;%as.tibble()
+  weight</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value
+##   &lt;chr&gt;
+## 1 &quot; 82&quot;</code></pre>
+<pre class="r"><code>  height&lt;-page%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=cm)&quot;))%&gt;%as.tibble()
+  height</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value 
+##   &lt;chr&gt; 
+## 1 &quot; 184&quot;</code></pre>
+<pre class="r"><code>  draft_position &lt;- page%&gt;%
+    html_nodes(&quot;#playerProfileDraftInfo&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+  draft_position</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value                                
+##   &lt;chr&gt;                                
+## 1 Round 3, Pick #37 2004 National Draft</code></pre>
+<pre class="r"><code>  club_drafted &lt;- page%&gt;%
+    html_nodes(&quot;#playerProfileDraftInfo a+ a&quot;)%&gt;%
+    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+  club_drafted</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value            
+##   &lt;chr&gt;            
+## 1 West Coast Eagles</code></pre>
+<pre class="r"><code>  position &lt;-     page%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Position: &quot;)%&gt;%
+    str_squish() %&gt;% as.tibble()
+  position</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value  
+##   &lt;chr&gt;  
+## 1 Forward</code></pre>
+<pre class="r"><code>player_information &lt;- cbind.fill(player, playing.for, games,born, weight, height,draft_position, club_drafted, position)
+  
+  player_information &lt;- as.tibble(player_information)
+  player_information</code></pre>
+<pre><code>## # A tibble: 1 x 9
+##   V1      value     V3     V4      V5    V6    V7            V8       V9   
+##   &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;chr&gt;    &lt;chr&gt;
+## 1 Mark L… West Coa… &quot;219 &quot; August… &quot; 82&quot; &quot; 18… Round 3, Pic… West Co… Forw…</code></pre>
+<p>Selecter gadget is doing a great job, but what we can notice here is that the html_nodes do not change for height, weight, position. So in our earlier case with <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--john-annear">John Annear</a> what this means is that in his position column it will contain the whole row as we were not able to remove words post ‘position’ like we did for <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras">Mark Lecras</a>.</p>
+<p>This is where <a href="https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html">naniar</a> will come in handy, for all those rows that do not have a valid position (duplicated text values we have already in other columns) we can just use naniar and specifically its <code>replace_with_na</code> function to make those specific data entries <code>na</code></p>
+<p>Lets see how this would work below.</p>
+</div>
+<div id="step-4---scrape-a-whole-retired-team-list." class="section level1">
+<h1>Step 4 - Scrape a whole retired team list.</h1>
+<pre class="r"><code>url&lt;-&quot;https://www.footywire.com/afl/footy/ti-west-coast-eagles&quot;
+
+
+link&lt;-read_html(url)%&gt;%
+  html_nodes(&quot;.lnormtop a&quot;)%&gt;%
+  html_attr(&quot;href&quot;)
+# david-brown #nwws or ewmocw
+
+url_players&lt;-str_c(&quot;https://www.footywire.com/afl/footy/&quot;,link)
+# url_players&lt;-head(url_players,19)
+#need to get rid of david brown
+# url_players&lt;-url_players[-21]
+player_info &lt;- function(x){
+  # page &lt;- read_html(x)
+  page&lt;-read_html(x)
+  
+  player&lt;- page%&gt;%
+    html_nodes(&quot;#playerProfileName&quot;)%&gt;%
+    html_text()
+  player
+  
+  playing.for&lt;-  page%&gt;%
+    html_nodes(&quot;#playerProfileTeamDiv a b&quot;)%&gt;%
+    html_text() %&gt;% as.tibble()
+  playing.for
+  games&lt;-page%&gt;%
+    html_nodes(&quot;#playerProfileData1&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Games: ).*(?=Born:)&quot;))%&gt;%as.tibble()
+  games
+  born&lt;-page%&gt;%
+    html_nodes(&quot;#playerProfileData1&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Born: &quot;)%&gt;%
+    str_squish() %&gt;%  as.tibble()
+  born
+  
+  weight&lt;-page%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=kg)&quot;))%&gt;%as.tibble()
+  weight
+  
+  height&lt;-page%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=cm)&quot;))%&gt;%as.tibble()
+  height
+  
+  draft_position &lt;- page%&gt;%
+    html_nodes(&quot;#playerProfileDraftInfo&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+  draft_position
+  club_drafted &lt;- page%&gt;%
+    html_nodes(&quot;#playerProfileDraftInfo a+ a&quot;)%&gt;%
+    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_squish()%&gt;%
+    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+  club_drafted
+  position &lt;-     page%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+    html_text()%&gt;%
+    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+    str_remove(&quot;.*Position: &quot;)%&gt;%
+    str_squish() %&gt;% as.tibble()
+  position
+  
+  
+  
+  
+  
+  
+  
+  #combine, name, and make it a tibble
+  player_information &lt;- cbind.fill(player, playing.for, games,born, weight, height,draft_position, club_drafted, position)
+  
+  player_information &lt;- as.tibble(player_information)
+  
+  # print(x)
+  # return(x)
+  return(player_information)
+}
+footywire &lt;- purrr::map_df(url_players, player_info)
+footywire</code></pre>
+<pre><code>## # A tibble: 238 x 9
+##    V1      value   V3     V4      V5    V6    V7         V8      V9        
+##    &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;   &lt;chr&gt;     
+##  1 Corey … West C… &lt;NA&gt;   Februa… &quot; 86&quot; &quot; 18… Round 2, … West C… Defender,…
+##  2 Damien… West C… &quot;54 &quot;  March … &quot; 75&quot; &quot; 18… Round 4, … Collin… Midfield  
+##  3 John A… West C… &lt;NA&gt;   June 1… &quot; 80&quot; &quot; 17… &lt;NA&gt;       &lt;NA&gt;    Playing H…
+##  4 David … West C… &quot;3 &quot;   June 1… &quot; 93&quot; &quot; 19… Round 3, … West C… Playing H…
+##  5 Steven… West C… &quot;79 &quot;  Januar… &quot; 83&quot; &quot; 18… Round 1, … West C… Forward   
+##  6 Ashley… West C… &lt;NA&gt;   April … &quot; 86&quot; &quot; 18… Round 2, … West C… Midfield  
+##  7 Jason … Sydney… &quot;193 &quot; Novemb… &quot; 10… &quot; 20… Pick #1 1… West C… Ruck      
+##  8 Drew B… West C… &quot;265 &quot; Februa… &quot; 89&quot; &quot; 18… Pick #1 1… West C… Defender,…
+##  9 Adrian… West C… &lt;NA&gt;   Decemb… &quot; 85&quot; &quot; 17… &lt;NA&gt;       &lt;NA&gt;    Playing H…
+## 10 Glen B… West C… &lt;NA&gt;   June 1… &quot; 95&quot; &quot; 19… &lt;NA&gt;       &lt;NA&gt;    Playing H…
+## # … with 228 more rows</code></pre>
+<pre class="r"><code>names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;games&quot;,&quot;born&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;)
+df_replace&lt;-footywire%&gt;%filter(!position %in% c(&quot;Midfield&quot;, &quot;Defender&quot;, &quot;Defender, Forward&quot;, &quot;Defender, Midfield&quot;, 
+                                                &quot;Forward&quot;, &quot;Forward, Ruck&quot;, &quot;Midfield, Forward&quot;, &quot;Ruck&quot;))%&gt;%
+  select(position)
+
+
+footywire_eagles&lt;-footywire%&gt;%naniar::replace_with_na(replace=list(position=df_replace))
+footywire_eagles</code></pre>
+<pre><code>## # A tibble: 238 x 9
+##    player club  games born  weight height draft_position club_drafted
+##    &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;          &lt;chr&gt;       
+##  1 Corey… West… &lt;NA&gt;  Febr… &quot; 86&quot;  &quot; 185&quot; Round 2, Pick… West Coast …
+##  2 Damie… West… &quot;54 &quot; Marc… &quot; 75&quot;  &quot; 181&quot; Round 4, Pick… Collingwood…
+##  3 John … West… &lt;NA&gt;  June… &quot; 80&quot;  &quot; 178&quot; &lt;NA&gt;           &lt;NA&gt;        
+##  4 David… West… &quot;3 &quot;  June… &quot; 93&quot;  &quot; 194&quot; Round 3, Pick… West Coast …
+##  5 Steve… West… &quot;79 &quot; Janu… &quot; 83&quot;  &quot; 180&quot; Round 1, Pick… West Coast …
+##  6 Ashle… West… &lt;NA&gt;  Apri… &quot; 86&quot;  &quot; 188&quot; Round 2, Pick… West Coast …
+##  7 Jason… Sydn… &quot;193… Nove… &quot; 104&quot; &quot; 201&quot; Pick #1 1991 … West Coast …
+##  8 Drew … West… &quot;265… Febr… &quot; 89&quot;  &quot; 184&quot; Pick #1 1992 … West Coast …
+##  9 Adria… West… &lt;NA&gt;  Dece… &quot; 85&quot;  &quot; 177&quot; &lt;NA&gt;           &lt;NA&gt;        
+## 10 Glen … West… &lt;NA&gt;  June… &quot; 95&quot;  &quot; 195&quot; &lt;NA&gt;           &lt;NA&gt;        
+## # … with 228 more rows, and 1 more variable: position &lt;chr&gt;</code></pre>
+<p>Bingo there you have it, how to scrape a whole teams worth of data.</p>
+</div>

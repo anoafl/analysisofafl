@@ -1,0 +1,255 @@
+---
+title: Scraping old player data
+author: Robert Nguyen
+date: '2019-03-16'
+slug: getting-old-player-data
+categories:
+  - AFL Modelling
+tags:
+  - Web scraping
+  - open science
+description: 'Getting retired players from footywire'
+---
+
+As its been pointed out to me on that it would be handy if within [fitzRoy](https://jimmyday12.github.io/fitzRoy/) that it should contain past players data from footywire. 
+
+So here is roughly how to do that. 
+
+# Step 1 - get all the packages you need
+
+```{r}
+library(rvest)
+library(tidyverse)
+library(naniar)
+```
+
+[naniar](https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html) isn't something I have used on the blog before but I find its pretty handy. What we are doing here is we are web-scraping and we have an issue in our scrape. Basically the row in which we pluck our height, weight and position from sometimes contains height and weight but not position.
+
+In that case when we make our data tidy, when we go to find a ''position'' for a player who doesn't have one, we get the whole row. Hopefully this will be a bit more clear with the screenshots and alike below. 
+
+# Step 2 - Pick a team to scrape (this case I'm going to do [West Coast](https://www.footywire.com/afl/footy/ti-west-coast-eagles))
+
+Keeping in mind we want to scrape the webpages lets just look at a few eagles players and see how their pages are structured. 
+To do this I don't think we need to really dig into the html but lets just look at the pages. 
+
+First player I decided to click on was [John Annear](https://www.footywire.com/afl/footy/pp-west-coast-eagles--john-annear) we can see we can get his date of birth, his height and weight. 
+
+![John Annear screenshot footywire](/img/Screen Shot 2019-03-17 at 12.10.53 am.png)
+
+Second player I decided to look at was [Corey Adamson](https://www.footywire.com/afl/footy/pp-west-coast-eagles--corey-adamson) here we can see we can get his date of birth, his height, his weight, his position and his draft position. 
+
+![Corey Adamson screenshot footywire](/img/Screen Shot 2019-03-17 at 12.17.26 am.png)
+
+Thirdy player I decided to look at was [Mark Lecras](https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras)
+
+Here we can see we get his date of birth, games played, height, weight, position and draft position. 
+
+![Mark Lecras screenshot footywire](/img/Screen Shot 2019-03-17 at 12.25.49 am.png)
+
+Then after randomly clicking on a few other players I am reasonble confident that these 3 cover the variety of different bits of information provided for all past players. 
+
+So now lets get scraping
+
+# Step 3 - Scrape a single player
+
+For this example lets do [Mark Lecras](https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras), the reason is he has the most amount of information for past players on his page. 
+
+```{r}
+
+cbind.fill <- function(...){
+  nm <- list(...) 
+  nm <- lapply(nm, as.matrix)
+  n <- max(sapply(nm, nrow)) 
+  do.call(cbind, lapply(nm, function (x) 
+    rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+page<-read_html("https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras")
+  
+  player<- page%>%
+    html_nodes("#playerProfileName")%>%
+    html_text()
+  player
+  
+  playing.for<-  page%>%
+    html_nodes("#playerProfileTeamDiv a b")%>%
+    html_text() %>% as.tibble()
+  playing.for
+  games<-page%>%
+    html_nodes("#playerProfileData1")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Games: ).*(?=Born:)"))%>%as.tibble()
+  games
+  born<-     page%>%
+    html_nodes("#playerProfileData1")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Born: ")%>%
+    str_squish() %>%  as.tibble()
+  born
+  
+  weight<-page%>%
+    html_nodes("#playerProfileData2")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=kg)"))%>%as.tibble()
+  weight
+  
+  height<-page%>%
+    html_nodes("#playerProfileData2")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Height:).*(?=cm)"))%>%as.tibble()
+  height
+  
+  draft_position <- page%>%
+    html_nodes("#playerProfileDraftInfo")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+  draft_position
+  club_drafted <- page%>%
+    html_nodes("#playerProfileDraftInfo a+ a")%>%
+    html_text()%>%str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_remove(".*by") %>% as.tibble()
+  club_drafted
+  position <-     page%>%
+    html_nodes("#playerProfileData2")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Position: ")%>%
+    str_squish() %>% as.tibble()
+  position
+
+player_information <- cbind.fill(player, playing.for, games,born, weight, height,draft_position, club_drafted, position)
+  
+  player_information <- as.tibble(player_information)
+  player_information
+    
+  
+```
+
+Selecter gadget is doing a great job, but what we can notice here is that the html_nodes do not change for height, weight, position. So in our earlier case with [John Annear](https://www.footywire.com/afl/footy/pp-west-coast-eagles--john-annear) what this means is that in his position column it will contain the whole row as we were not able to remove words post 'position' like we did for  [Mark Lecras](https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras). 
+
+This is where [naniar](https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html) will come in handy, for all those rows that do not have a valid position (duplicated text values we have already in other columns) we can just use naniar and specifically its `replace_with_na` function to make those specific data entries `na`
+
+Lets see how this would work below.
+
+# Step 4 - Scrape a whole retired team list.
+
+```{r}
+
+url<-"https://www.footywire.com/afl/footy/ti-west-coast-eagles"
+
+
+link<-read_html(url)%>%
+  html_nodes(".lnormtop a")%>%
+  html_attr("href")
+# david-brown #nwws or ewmocw
+
+url_players<-str_c("https://www.footywire.com/afl/footy/",link)
+# url_players<-head(url_players,19)
+#need to get rid of david brown
+# url_players<-url_players[-21]
+player_info <- function(x){
+  # page <- read_html(x)
+  page<-read_html(x)
+  
+  player<- page%>%
+    html_nodes("#playerProfileName")%>%
+    html_text()
+  player
+  
+  playing.for<-  page%>%
+    html_nodes("#playerProfileTeamDiv a b")%>%
+    html_text() %>% as.tibble()
+  playing.for
+  games<-page%>%
+    html_nodes("#playerProfileData1")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Games: ).*(?=Born:)"))%>%as.tibble()
+  games
+  born<-page%>%
+    html_nodes("#playerProfileData1")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Born: ")%>%
+    str_squish() %>%  as.tibble()
+  born
+  
+  weight<-page%>%
+    html_nodes("#playerProfileData2")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Weight:).*(?=kg)"))%>%as.tibble()
+  weight
+  
+  height<-page%>%
+    html_nodes("#playerProfileData2")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Height:).*(?=cm)"))%>%as.tibble()
+  height
+  
+  draft_position <- page%>%
+    html_nodes("#playerProfileDraftInfo")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+  draft_position
+  club_drafted <- page%>%
+    html_nodes("#playerProfileDraftInfo a+ a")%>%
+    html_text()%>%str_replace_all("[\r\n]" , "")%>%
+    str_squish()%>%
+    str_remove(".*by") %>% as.tibble()
+  club_drafted
+  position <-     page%>%
+    html_nodes("#playerProfileData2")%>%
+    html_text()%>%
+    str_replace_all("[\r\n]" , "")%>%
+    str_remove(".*Position: ")%>%
+    str_squish() %>% as.tibble()
+  position
+  
+  
+  
+  
+  
+  
+  
+  #combine, name, and make it a tibble
+  player_information <- cbind.fill(player, playing.for, games,born, weight, height,draft_position, club_drafted, position)
+  
+  player_information <- as.tibble(player_information)
+  
+  # print(x)
+  # return(x)
+  return(player_information)
+}
+footywire <- purrr::map_df(url_players, player_info)
+footywire
+names(footywire) <- c("player", "club", "games","born","weight","height",  "draft_position", "club_drafted", "position")
+df_replace<-footywire%>%filter(!position %in% c("Midfield", "Defender", "Defender, Forward", "Defender, Midfield", 
+                                                "Forward", "Forward, Ruck", "Midfield, Forward", "Ruck"))%>%
+  select(position)
+
+
+footywire_eagles<-footywire%>%naniar::replace_with_na(replace=list(position=df_replace))
+footywire_eagles
+
+```
+
+Bingo there you have it, how to scrape a whole teams worth of data. 
+
+

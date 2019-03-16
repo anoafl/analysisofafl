@@ -472,6 +472,6 @@ names(footywire) <- c("player", "club", "number","weight","height",  "draft_posi
 
 ```
 
-Some of you might notice that this post has been updated and that the script has changed. That is because footywire has changed structure. Luckily, thanks to selecter gadget all I had to change was what was in $html_nodes()$.
+Some of you might notice that this post has been updated and that the script has changed. That is because footywire has changed structure. Luckily, thanks to selecter gadget all I had to change was what was in `html_nodes()`.
 
 
