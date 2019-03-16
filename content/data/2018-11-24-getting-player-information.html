@@ -28,20 +28,14 @@ tags : ["fitzRoy", "scraping","R","open science"]
 <h1>Step 2</h1>
 <p>Install the R packages that we need.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## -- Attaching packages ----------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
-## v tibble  1.4.2     v dplyr   0.7.7
-## v tidyr   0.8.1     v stringr 1.3.1
-## v readr   1.1.1     v forcats 0.3.0</code></pre>
-<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## Warning: package &#39;stringr&#39; was built under R version 3.5.1</code></pre>
-<pre><code>## -- Conflicts -------------------------------------- tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.1.0       ✔ purrr   0.3.0  
+## ✔ tibble  2.0.1       ✔ dplyr   0.8.0.1
+## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
+## ✔ readr   1.3.1       ✔ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(rvest)</code></pre>
 <pre><code>## Loading required package: xml2</code></pre>
 <pre><code>## 
@@ -78,55 +72,106 @@ page</code></pre>
 </div>
 <div id="step-3b-get-the-player-name" class="section level2">
 <h2>Step 3b Get the player name</h2>
-<pre class="r"><code> player&lt;- page%&gt;%
-          html_nodes(&quot;.ldrow .hltitle&quot;)%&gt;%
-          html_text()
+<pre class="r"><code>player&lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileName&quot;)%&gt;%
+  html_text()
 player</code></pre>
 <pre><code>## [1] &quot;Dominic Sheed&quot;</code></pre>
 <p>We take the html of the page and we find the information we want to extact into our table using html_nodes and html_text.</p>
-<p>While it looks a little weird the <code>html_nodes(&quot;.ldrow .hltitle&quot;)</code> its fairly simple to do using <a href="https://selectorgadget.com/">selector gadget</a></p>
+<p>While it looks a little weird the <code>html_nodes(&quot;#playerProfileName&quot;)</code> its fairly simple to do using <a href="https://selectorgadget.com/">selector gadget</a></p>
 </div>
 <div id="step-3c-get-the-rest-of-the-information" class="section level2">
 <h2>Step 3c Get the rest of the information</h2>
 <pre class="r"><code>playing.for&lt;-  page%&gt;%
-    html_nodes(&quot;.ldrow a b&quot;)%&gt;%
-    html_text() %&gt;% as.tibble()
-  number&lt;-     page%&gt;%
-    html_nodes(&quot;.ldrow &gt; b&quot;)%&gt;%
-    html_text() %&gt;% as.tibble()
-  
-  weight&lt;-page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
-  
-  height&lt;-page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
-  
-  draft_position &lt;- page%&gt;%
-    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
-  
-  club_drafted &lt;- page%&gt;%
-    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
-  position &lt;-     page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_remove(&quot;.*Position: &quot;)%&gt;%
-    str_squish() %&gt;% as.tibble()</code></pre>
+  html_nodes(&quot;#playerProfileTeamDiv a b&quot;)%&gt;%
+  html_text() %&gt;% as.tibble()</code></pre>
+<pre><code>## Warning: `as.tibble()` is deprecated, use `as_tibble()` (but mind the new semantics).
+## This warning is displayed once per session.</code></pre>
+<pre class="r"><code>playing.for</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value            
+##   &lt;chr&gt;            
+## 1 West Coast Eagles</code></pre>
+<pre class="r"><code>number&lt;-     page%&gt;%
+  html_nodes(&quot;#playerProfileTeamDiv &gt; b&quot;)%&gt;%
+  html_text() %&gt;% as.tibble()
+number</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value
+##   &lt;chr&gt;
+## 1 #4  </code></pre>
+<pre class="r"><code>weight&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
+weight</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value   
+##   &lt;chr&gt;   
+## 1 &quot; 87kg &quot;</code></pre>
+<pre class="r"><code>height&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
+height</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value    
+##   &lt;chr&gt;    
+## 1 &quot; 185cm &quot;</code></pre>
+<pre class="r"><code>draft_position &lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileDraftInfo&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+draft_position</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value                                
+##   &lt;chr&gt;                                
+## 1 Round 1, Pick #11 2013 National Draft</code></pre>
+<pre class="r"><code>club_drafted &lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileDraftInfo a+ a&quot;)%&gt;%
+  html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+club_drafted</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value            
+##   &lt;chr&gt;            
+## 1 West Coast Eagles</code></pre>
+<pre class="r"><code>position &lt;-     page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_remove(&quot;.*Position: &quot;)%&gt;%
+  str_squish() %&gt;% as.tibble()
+
+sc_price&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileSupercoach&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Price:).*(?=Supercoach Profile)&quot;))%&gt;%as.tibble()
+sc_price</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value       
+##   &lt;chr&gt;       
+## 1 &quot; $394,100 &quot;</code></pre>
+<pre class="r"><code>af_price&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileDreamteam&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Price:).*(?=AFL Fantasy Profile)&quot;))%&gt;%as.tibble()
+af_price</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value       
+##   &lt;chr&gt;       
+## 1 &quot; $539,000 &quot;</code></pre>
 <p>This step has a few tricky steps usually revolving around how to deal with text data that isn’t neat.</p>
 <p>So lets go through some of them with some additional commentary.</p>
 <p><code>str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)</code> and <code>str_squish</code> Why did we have to use this?</p>
@@ -138,25 +183,23 @@ player</code></pre>
     str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
     # str_squish()%&gt;%
     str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()</code></pre>
-<pre><code>## # A tibble: 1 x 1
-##   value      
-##   &lt;chr&gt;      
-## 1 &quot; 87kg    &quot;</code></pre>
+<pre><code>## # A tibble: 0 x 1
+## # … with 1 variable: value &lt;chr&gt;</code></pre>
 <pre class="r"><code>page%&gt;%
     html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
     html_text()%&gt;%
     str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))</code></pre>
-<pre><code>## [1] NA</code></pre>
+<pre><code>## character(0)</code></pre>
 <p>We get an NA even though we are using str_extract trying to get the text between <code>Weight:</code> and <code>Position:</code></p>
 <p>So the next step would be to do some investigation.</p>
 <p>One of the best things about <code>%&gt;%</code> is that we can run bits of code piecewise and easily see what it returns.</p>
 <pre class="r"><code>page%&gt;%
-        html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+        html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
         html_text()</code></pre>
 <pre><code>## [1] &quot;\nHeight: 185cm    \nWeight: 87kg    \nPosition:\n            Midfield\n      &quot;</code></pre>
 <p>So what we can see is that we have these <code>\n</code> and long spaces between things we want. So this is why we use <code>str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)</code> and <code>str_squish</code> to get something a lot nicer like follows.</p>
 <pre class="r"><code>page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
     html_text()%&gt;%
     str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
     str_squish()%&gt;%
@@ -175,7 +218,7 @@ player</code></pre>
 </ol>
 <p>Lets use as our example the scrape we have just done</p>
 <pre class="r"><code>page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
     html_text()%&gt;%
     str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
      str_squish()</code></pre>
@@ -187,7 +230,7 @@ player</code></pre>
 </ol>
 <p>If we wanted only height, which we do we would extract all the text up until the word Weight.</p>
 <pre class="r"><code>page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
     html_text()%&gt;%
     str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
     str_squish()%&gt;%
@@ -200,7 +243,7 @@ player</code></pre>
 <p>The next part of the example is, lets say you don’t want the word height, but instead you wanted what was inbetween the words Height: and Weight: i.e. the actually measurement.</p>
 <p>You can do that as follows.</p>
 <pre class="r"><code>page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
     html_text()%&gt;%
     str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
     str_squish()%&gt;%
@@ -214,7 +257,7 @@ player</code></pre>
 <p>What we want now is the position of the player, which thankfully always appears after the string <code>Position:</code></p>
 <p>So lets think about it we want to get the string <code>.*</code> after <code>Position:</code></p>
 <pre class="r"><code>page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
+    html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
     html_text()%&gt;%
     str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
     str_remove(&quot;.*Position: &quot;)%&gt;%
@@ -228,50 +271,99 @@ player</code></pre>
 <pre class="r"><code>page&lt;-read_html(x=&quot;https://www.footywire.com/afl/footy/pp-west-coast-eagles--dominic-sheed&quot;)
 
 player&lt;- page%&gt;%
-          html_nodes(&quot;.ldrow .hltitle&quot;)%&gt;%
-          html_text()
+  html_nodes(&quot;#playerProfileName&quot;)%&gt;%
+  html_text()
+player</code></pre>
+<pre><code>## [1] &quot;Dominic Sheed&quot;</code></pre>
+<pre class="r"><code>playing.for&lt;-  page%&gt;%
+  html_nodes(&quot;#playerProfileTeamDiv a b&quot;)%&gt;%
+  html_text() %&gt;% as.tibble()
+playing.for</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value            
+##   &lt;chr&gt;            
+## 1 West Coast Eagles</code></pre>
+<pre class="r"><code>number&lt;-     page%&gt;%
+  html_nodes(&quot;#playerProfileTeamDiv &gt; b&quot;)%&gt;%
+  html_text() %&gt;% as.tibble()
+number</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value
+##   &lt;chr&gt;
+## 1 #4  </code></pre>
+<pre class="r"><code>weight&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
+weight</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value   
+##   &lt;chr&gt;   
+## 1 &quot; 87kg &quot;</code></pre>
+<pre class="r"><code>height&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
+height</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value    
+##   &lt;chr&gt;    
+## 1 &quot; 185cm &quot;</code></pre>
+<pre class="r"><code>draft_position &lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileDraftInfo&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+draft_position</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value                                
+##   &lt;chr&gt;                                
+## 1 Round 1, Pick #11 2013 National Draft</code></pre>
+<pre class="r"><code>club_drafted &lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileDraftInfo a+ a&quot;)%&gt;%
+  html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+club_drafted</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value            
+##   &lt;chr&gt;            
+## 1 West Coast Eagles</code></pre>
+<pre class="r"><code>position &lt;-     page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_remove(&quot;.*Position: &quot;)%&gt;%
+  str_squish() %&gt;% as.tibble()
 
-playing.for&lt;-  page%&gt;%
-    html_nodes(&quot;.ldrow a b&quot;)%&gt;%
-    html_text() %&gt;% as.tibble()
-  number&lt;-     page%&gt;%
-    html_nodes(&quot;.ldrow &gt; b&quot;)%&gt;%
-    html_text() %&gt;% as.tibble()
-  
-  weight&lt;-page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
-  
-  height&lt;-page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
-  
-  draft_position &lt;- page%&gt;%
-    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
-  
-  club_drafted &lt;- page%&gt;%
-    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
-  position &lt;-     page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_remove(&quot;.*Position: &quot;)%&gt;%
-    str_squish() %&gt;% as.tibble()
-  
-  player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+sc_price&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileSupercoach&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Price:).*(?=Supercoach Profile)&quot;))%&gt;%as.tibble()
+sc_price</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value       
+##   &lt;chr&gt;       
+## 1 &quot; $394,100 &quot;</code></pre>
+<pre class="r"><code>af_price&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileDreamteam&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Price:).*(?=AFL Fantasy Profile)&quot;))%&gt;%as.tibble()
+af_price</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   value       
+##   &lt;chr&gt;       
+## 1 &quot; $539,000 &quot;</code></pre>
+<pre class="r"><code>  player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
   
   player_information &lt;- as.tibble(player_information)</code></pre>
 <p>So that’s great it has all the information we want, the information we are after is in the same spot across pages so all we need to do is go to each individual page and run the same script and we we get all the tables to join.</p>
@@ -296,55 +388,81 @@ cbind.fill &lt;- function(...){
 
 player_info &lt;- function(x){
   # page &lt;- read_html(x)
-  page&lt;-read_html(x)  
-  player&lt;-       page%&gt;%
-    html_nodes(&quot;.ldrow .hltitle&quot;)%&gt;%
-    html_text() %&gt;% as.tibble()
-  playing.for&lt;-  page%&gt;%
-    html_nodes(&quot;.ldrow a b&quot;)%&gt;%
-    html_text() %&gt;% as.tibble()
-  number&lt;-     page%&gt;%
-    html_nodes(&quot;.ldrow &gt; b&quot;)%&gt;%
-    html_text() %&gt;% as.tibble()
-  
-  weight&lt;-page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
-  
-  height&lt;-page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
-  
-  draft_position &lt;- page%&gt;%
-    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
-  
-  club_drafted &lt;- page%&gt;%
-    html_nodes(&quot;tr:nth-child(5) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_squish()%&gt;%
-    str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
-  position &lt;-     page%&gt;%
-    html_nodes(&quot;form tr:nth-child(4) .ldrow&quot;)%&gt;%
-    html_text()%&gt;%
-    str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
-    str_remove(&quot;.*Position: &quot;)%&gt;%
-    str_squish() %&gt;% as.tibble()
+  page&lt;-read_html(x)
+
+player&lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileName&quot;)%&gt;%
+  html_text()
+# player
+
+playing.for&lt;-  page%&gt;%
+  html_nodes(&quot;#playerProfileTeamDiv a b&quot;)%&gt;%
+  html_text() %&gt;% as.tibble()
+# playing.for
+number&lt;-     page%&gt;%
+  html_nodes(&quot;#playerProfileTeamDiv &gt; b&quot;)%&gt;%
+  html_text() %&gt;% as.tibble()
+# number
+weight&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
+# weight
+
+height&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
+# height
+draft_position &lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileDraftInfo&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+# draft_position
+club_drafted &lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileDraftInfo a+ a&quot;)%&gt;%
+  html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+# club_drafted
+position &lt;-     page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_remove(&quot;.*Position: &quot;)%&gt;%
+  str_squish() %&gt;% as.tibble()
+
+sc_price&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileSupercoach&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Price:).*(?=Supercoach Profile)&quot;))%&gt;%as.tibble()
+# sc_price
+
+af_price&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileDreamteam&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Price:).*(?=AFL Fantasy Profile)&quot;))%&gt;%as.tibble()
+# af_price
+
+player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
+
+player_information &lt;- as.tibble(player_information)
   
   
   
   
   #combine, name, and make it a tibble
-  player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+  player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
   
   player_information &lt;- as.tibble(player_information)
 
@@ -354,5 +472,5 @@ player_info &lt;- function(x){
 }
 footywire &lt;- purrr::map_df(url_players, player_info)
 
-names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;)</code></pre>
+names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;,&quot;sc_price&quot;, &quot;af_price&quot;)</code></pre>
 </div>

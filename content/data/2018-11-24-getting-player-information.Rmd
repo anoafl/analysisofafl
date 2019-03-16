@@ -64,15 +64,15 @@ So now we have the content of our page, we essentially have to filter out the in
 ## Step 3b Get the player name
 
 ```{r}
- player<- page%>%
-          html_nodes(".ldrow .hltitle")%>%
-          html_text()
+player<- page%>%
+  html_nodes("#playerProfileName")%>%
+  html_text()
 player
 ```
 
 We take the html of the page and we find the information we want to extact into our table using html_nodes and html_text.
 
-While it looks a little weird the `html_nodes(".ldrow .hltitle")` its fairly simple to do using [selector gadget](https://selectorgadget.com/) 
+While it looks a little weird the `html_nodes("#playerProfileName")` its fairly simple to do using [selector gadget](https://selectorgadget.com/) 
 
 ## Step 3c Get the rest of the information
 
@@ -80,46 +80,64 @@ While it looks a little weird the `html_nodes(".ldrow .hltitle")` its fairly sim
 
 
 playing.for<-  page%>%
-    html_nodes(".ldrow a b")%>%
-    html_text() %>% as.tibble()
-  number<-     page%>%
-    html_nodes(".ldrow > b")%>%
-    html_text() %>% as.tibble()
-  
-  weight<-page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
-  
-  height<-page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
-  
-  draft_position <- page%>%
-    html_nodes("tr:nth-child(5) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
-  
-  club_drafted <- page%>%
-    html_nodes("tr:nth-child(5) .ldrow")%>%
-    html_text()%>%str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_remove(".*by") %>% as.tibble()
-  position <-     page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_remove(".*Position: ")%>%
-    str_squish() %>% as.tibble()
-  
-  
+  html_nodes("#playerProfileTeamDiv a b")%>%
+  html_text() %>% as.tibble()
+playing.for
+number<-     page%>%
+  html_nodes("#playerProfileTeamDiv > b")%>%
+  html_text() %>% as.tibble()
+number
+weight<-page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+weight
+
+height<-page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+height
+draft_position <- page%>%
+  html_nodes("#playerProfileDraftInfo")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+draft_position
+club_drafted <- page%>%
+  html_nodes("#playerProfileDraftInfo a+ a")%>%
+  html_text()%>%str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_remove(".*by") %>% as.tibble()
+club_drafted
+position <-     page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_remove(".*Position: ")%>%
+  str_squish() %>% as.tibble()
+
+sc_price<-page%>%
+  html_nodes("#playerProfileSupercoach")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Price:).*(?=Supercoach Profile)"))%>%as.tibble()
+sc_price
+
+af_price<-page%>%
+  html_nodes("#playerProfileDreamteam")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Price:).*(?=AFL Fantasy Profile)"))%>%as.tibble()
+af_price
+
 
 ```
 
@@ -161,7 +179,7 @@ One of the best things about `%>%` is that we can run bits of code piecewise and
 
 ```{r}
 page%>%
-        html_nodes("form tr:nth-child(4) .ldrow")%>%
+        html_nodes("#playerProfileData2")%>%
         html_text()
 
 ```
@@ -170,7 +188,7 @@ So what we can see is that we have these `\n` and long spaces between things we 
 
 ```{r}
 page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_nodes("#playerProfileData2")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
@@ -194,7 +212,7 @@ Lets use as our example the scrape we have just done
 ```{r}
 
 page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_nodes("#playerProfileData2")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
      str_squish()
@@ -212,7 +230,7 @@ If we wanted only height, which we do we would extract all the text up until the
 
 ```{r}
 page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_nodes("#playerProfileData2")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
@@ -229,7 +247,7 @@ You can do that as follows.
 
 ```{r}
 page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_nodes("#playerProfileData2")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_squish()%>%
@@ -249,7 +267,7 @@ So lets think about it we want to get the string `.*` after `Position:`
 
 ```{r}
 page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
+    html_nodes("#playerProfileData2")%>%
     html_text()%>%
     str_replace_all("[\r\n]" , "")%>%
     str_remove(".*Position: ")%>%
@@ -265,50 +283,70 @@ If we were to just do Dom Sheed alone, our script would look something like this
 page<-read_html(x="https://www.footywire.com/afl/footy/pp-west-coast-eagles--dominic-sheed")
 
 player<- page%>%
-          html_nodes(".ldrow .hltitle")%>%
-          html_text()
+  html_nodes("#playerProfileName")%>%
+  html_text()
+player
 
 playing.for<-  page%>%
-    html_nodes(".ldrow a b")%>%
-    html_text() %>% as.tibble()
-  number<-     page%>%
-    html_nodes(".ldrow > b")%>%
-    html_text() %>% as.tibble()
+  html_nodes("#playerProfileTeamDiv a b")%>%
+  html_text() %>% as.tibble()
+playing.for
+number<-     page%>%
+  html_nodes("#playerProfileTeamDiv > b")%>%
+  html_text() %>% as.tibble()
+number
+weight<-page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+weight
+
+height<-page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+height
+draft_position <- page%>%
+  html_nodes("#playerProfileDraftInfo")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+draft_position
+club_drafted <- page%>%
+  html_nodes("#playerProfileDraftInfo a+ a")%>%
+  html_text()%>%str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_remove(".*by") %>% as.tibble()
+club_drafted
+position <-     page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_remove(".*Position: ")%>%
+  str_squish() %>% as.tibble()
+
+sc_price<-page%>%
+  html_nodes("#playerProfileSupercoach")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Price:).*(?=Supercoach Profile)"))%>%as.tibble()
+sc_price
+
+af_price<-page%>%
+  html_nodes("#playerProfileDreamteam")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Price:).*(?=AFL Fantasy Profile)"))%>%as.tibble()
+af_price
   
-  weight<-page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
-  
-  height<-page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
-  
-  draft_position <- page%>%
-    html_nodes("tr:nth-child(5) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
-  
-  club_drafted <- page%>%
-    html_nodes("tr:nth-child(5) .ldrow")%>%
-    html_text()%>%str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_remove(".*by") %>% as.tibble()
-  position <-     page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_remove(".*Position: ")%>%
-    str_squish() %>% as.tibble()
-  
-  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
   
   player_information <- as.tibble(player_information)
   
@@ -345,55 +383,81 @@ cbind.fill <- function(...){
 
 player_info <- function(x){
   # page <- read_html(x)
-  page<-read_html(x)  
-  player<-       page%>%
-    html_nodes(".ldrow .hltitle")%>%
-    html_text() %>% as.tibble()
-  playing.for<-  page%>%
-    html_nodes(".ldrow a b")%>%
-    html_text() %>% as.tibble()
-  number<-     page%>%
-    html_nodes(".ldrow > b")%>%
-    html_text() %>% as.tibble()
-  
-  weight<-page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
-  
-  height<-page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
-  
-  draft_position <- page%>%
-    html_nodes("tr:nth-child(5) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
-  
-  club_drafted <- page%>%
-    html_nodes("tr:nth-child(5) .ldrow")%>%
-    html_text()%>%str_replace_all("[\r\n]" , "")%>%
-    str_squish()%>%
-    str_remove(".*by") %>% as.tibble()
-  position <-     page%>%
-    html_nodes("form tr:nth-child(4) .ldrow")%>%
-    html_text()%>%
-    str_replace_all("[\r\n]" , "")%>%
-    str_remove(".*Position: ")%>%
-    str_squish() %>% as.tibble()
+  page<-read_html(x)
+
+player<- page%>%
+  html_nodes("#playerProfileName")%>%
+  html_text()
+# player
+
+playing.for<-  page%>%
+  html_nodes("#playerProfileTeamDiv a b")%>%
+  html_text() %>% as.tibble()
+# playing.for
+number<-     page%>%
+  html_nodes("#playerProfileTeamDiv > b")%>%
+  html_text() %>% as.tibble()
+# number
+weight<-page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+# weight
+
+height<-page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+# height
+draft_position <- page%>%
+  html_nodes("#playerProfileDraftInfo")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+# draft_position
+club_drafted <- page%>%
+  html_nodes("#playerProfileDraftInfo a+ a")%>%
+  html_text()%>%str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_remove(".*by") %>% as.tibble()
+# club_drafted
+position <-     page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_remove(".*Position: ")%>%
+  str_squish() %>% as.tibble()
+
+sc_price<-page%>%
+  html_nodes("#playerProfileSupercoach")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Price:).*(?=Supercoach Profile)"))%>%as.tibble()
+# sc_price
+
+af_price<-page%>%
+  html_nodes("#playerProfileDreamteam")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Price:).*(?=AFL Fantasy Profile)"))%>%as.tibble()
+# af_price
+
+player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
+
+player_information <- as.tibble(player_information)
   
   
   
   
   #combine, name, and make it a tibble
-  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position)
+  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
   
   player_information <- as.tibble(player_information)
 
@@ -403,7 +467,9 @@ player_info <- function(x){
 }
 footywire <- purrr::map_df(url_players, player_info)
 
-names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position")
+names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position","sc_price", "af_price")
 
 
 ```
+
+Some of you might notice that this post has been updated and that the script has changed. That is because footywire has changed structure. Luckily, thanks to selecter gadget all I had to change was what was in $html_nodes()$.
