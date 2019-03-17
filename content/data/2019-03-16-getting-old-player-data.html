@@ -168,8 +168,8 @@ page&lt;-read_html(&quot;https://www.footywire.com/afl/footy/pp-west-coast-eagle
 ##   V1      value     V3     V4      V5    V6    V7            V8       V9   
 ##   &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;chr&gt;    &lt;chr&gt;
 ## 1 Mark L… West Coa… &quot;219 &quot; August… &quot; 82&quot; &quot; 18… Round 3, Pic… West Co… Forw…</code></pre>
-<p>Selecter gadget is doing a great job, but what we can notice here is that the html_nodes do not change for height, weight, position. So in our earlier case with <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--john-annear">John Annear</a> what this means is that in his position column it will contain the whole row as we were not able to remove words post ‘position’ like we did for <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras">Mark Lecras</a>.</p>
-<p>This is where <a href="https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html">naniar</a> will come in handy, for all those rows that do not have a valid position (duplicated text values we have already in other columns) we can just use naniar and specifically its <code>replace_with_na</code> function to make those specific data entries <code>na</code></p>
+<p><a href="https://selectorgadget.com/">Selecter gadget</a> is doing a great job, but what we can notice here is that the html_nodes do not change for height, weight, position. So in our earlier case with <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--john-annear">John Annear</a> what this means is that in his position column it will contain the whole row as we were not able to remove words post ‘position’ like we did for <a href="https://www.footywire.com/afl/footy/pp-west-coast-eagles--mark-lecras">Mark Lecras</a>.</p>
+<p>This is where <a href="https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html">naniar</a> will come in handy, for all those rows that do not have a valid position (duplicated text values we have already in other columns) in this example it would be John Annears Height and Weight appearing in his position column. We can just use naniar and specifically its <code>replace_with_na</code> function to make those specific data entries <code>na</code></p>
 <p>Lets see how this would work below.</p>
 </div>
 <div id="step-4---scrape-a-whole-retired-team-list." class="section level1">
@@ -180,14 +180,12 @@ page&lt;-read_html(&quot;https://www.footywire.com/afl/footy/pp-west-coast-eagle
 link&lt;-read_html(url)%&gt;%
   html_nodes(&quot;.lnormtop a&quot;)%&gt;%
   html_attr(&quot;href&quot;)
-# david-brown #nwws or ewmocw
+
 
 url_players&lt;-str_c(&quot;https://www.footywire.com/afl/footy/&quot;,link)
-# url_players&lt;-head(url_players,19)
-#need to get rid of david brown
-# url_players&lt;-url_players[-21]
+
 player_info &lt;- function(x){
-  # page &lt;- read_html(x)
+
   page&lt;-read_html(x)
   
   player&lt;- page%&gt;%
@@ -262,8 +260,7 @@ player_info &lt;- function(x){
   
   player_information &lt;- as.tibble(player_information)
   
-  # print(x)
-  # return(x)
+
   return(player_information)
 }
 footywire &lt;- purrr::map_df(url_players, player_info)
