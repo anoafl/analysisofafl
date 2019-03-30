@@ -1,0 +1,35 @@
+---
+title: Quick Control Charts for AFL
+author: 'Robert Nguyen'
+date: '2019-03-30'
+slug: quick-control-charts-for-afl
+categories: []
+tags:
+- fitzRoy
+- betting
+- graphics
+description: 'Using control charts for AFL'
+---
+
+Who doesn't like a wikipedia entry [control chart](https://en.wikipedia.org/wiki/Control_chart) `If analysis of the control chart indicates that the process is currently under control (i.e., is stable, with variation only coming from sources common to the process), then no corrections or changes to process control parameters are needed or desired ` I mean gee whiz this sure could relate to something like I don't know AFL total game scores?
+
+There seems to always be talk about the scores in AFLM see [AFL website](https://www.afl.com.au/news/2019-03-25/lowscoring-round-one-makes-unwanted-history), [foxsports](https://www.foxsports.com.au/afl/scorings-kickin-the-behind-proof-the-intention-behind-new-afl-rule-has-backfired-writes-brenton-speed/news-story/6aaf82e638044a8c42382d918cd5d3f1) just to name a couple. Of course you could find [more](https://myaccount.news.com.au/sites/cairnspost/subscribe.html?sourceCode=CPWEB_WRE170_a_GGN&mode=premium&dest=https://www.cairnspost.com.au/sport/afl/afl-daily-live-rolling-footy-news-from-around-australia-for-march-25-2019/live-coverage/7133f310052bc440fc77a24fec1ba888&memtype=anonymous) if you searched out for it as well. 
+
+Let's use [fitzRoy](https://github.com/jimmyday12/fitzRoy) and the good people over at [statsinsder](https://www.statsinsider.com.au) who have kindly provided me with the expected score data you can get from the herald sun. 
+
+First thing, lets use [fitzRoy](https://github.com/jimmyday12/fitzRoy)
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+library(ggQC)
+fitzRoy::match_results%>%
+  mutate(total=Home.Points+Away.Points)%>%
+  group_by(Season,Round)%>%
+  summarise(meantotal=mean(total))%>%
+filter(Season>1989 &  Round=="R1")%>%
+ggplot(aes(x=Season,y=meantotal))+geom_point()+geom_line()+stat_QC(method="XmR")+ylab("Mean Round 1 Total for Each Game") +ggtitle("Stop Freaking OUT over ONE ROUND")
+```
+
+
+
