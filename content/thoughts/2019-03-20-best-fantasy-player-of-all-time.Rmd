@@ -1,0 +1,148 @@
+---
+title: "Best Fantasy Player of All Time"
+author: "Robert Nguyen"
+date: '2019-03-20'
+output: pdf_document
+description: Well least since the data was available
+slug: best-fantasy-player-of-all-time
+tags:
+- DFS
+- fantasy
+categories: fantasy
+---
+
+One of the things I have always wondered about AFL fantasy is just who is the best fantasy player of all time? Not the [fan who wins the most](https://player.whooshkaa.com/episode/342604) but who is the best player. 
+
+So one possible idea would be to work out the fantasy scores of players going back for all the time that is possible (YAY [fitzRoy!](https://github.com/jimmyday12/fitzRoy)). From there, lets look at the z-score of players in the individual year look at a plot for all years we have fantasy available and do some exploration. 
+
+
+# Step One - Work out Fantasy Scores 
+
+```{r}
+library(tidyverse)
+df<-fitzRoy::get_afltables_stats(start_date="1987-01-01", end_date = "2018-10-10")%>%
+  mutate(AF=3*Kicks + 2*Handballs + 3*Marks +
+           4*Tackles+ Frees.For -
+           3*Frees.Against +Hit.Outs+
+           6*Goals +Behinds)
+  
+
+```
+
+Once we have worked out the fantasy scores we need to come up with our filters and our groups with of course sensible checks and balances. 
+
+We know that tackles first started getting recorded in 1987, so lets filter our dataset by `Season> 1986` 
+
+
+```{r}
+df%>%
+  
+  filter(Season>1986)
+```
+Our next stage, we are going to add a count of the games each player played in during the Season, we make this decision because we want to have a look at players who had the best season, not just the best games and 10 seems like a reasonable cut off
+```{r}
+df%>%
+  filter(Season>1986)%>%
+  group_by(Season, ID)%>%
+  mutate(countgames=n())
+
+```
+Our next stage is that we want to work out the z-scores of the fantasy players per game by by season
+
+```{r}
+df%>%
+  filter(Season>1986)%>%
+  group_by(Season, ID)%>%
+  mutate(countgames=n())%>%
+  group_by(Season)%>%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))
+
+```
+
+After finding the `Z_score`, we can do a check. What we want to see is that for each season our `Z_score` column has a mean of 0 and a variance of 1. We can also produce the summaries of the other variables by `Season` to check our other created columns like `countgames` make sense
+
+```{r, eval=FALSE}
+df%>%
+  filter(Season>1986)%>%
+  group_by(Season, ID)%>%
+  mutate(countgames=n())%>%
+  group_by(Season)%>%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%>%
+  split(.$Season)%>%map(summary)
+
+```
+Then the last thing is to filter out the players who didn't play more than 10 games in a season and to find each players meanZ_score by year.
+
+```{r}
+df%>%
+  filter(Season>1986 & Time.on.Ground..> 60)%>%
+  group_by(Season, ID)%>%
+  mutate(countgames=n())%>%
+  group_by(Season)%>%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%>%
+  group_by(Season, ID, First.name, Surname)%>%
+filter(countgames>10)%>%
+  summarise(meanZ_score=mean(Z_score))%>%
+  arrange(desc(meanZ_score))
+```
+
+But this would probably looks best as a graph as noted earlier. 
+
+```{r}
+df%>%
+  filter(Season>1986)%>%
+  group_by(Season, ID)%>%
+  mutate(countgames=n())%>%
+  group_by(Season)%>%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%>%
+  group_by(Season, ID, First.name, Surname)%>%
+filter(countgames>10)%>%
+  summarise(meanZ_score=mean(Z_score))%>%
+  ggplot(aes(x=meanZ_score, y=Season))+geom_point()
+
+```
+
+Then you probably would want to label our top 10 list so lets do that. 
+
+```{r}
+df%>%
+  filter(Season>1986)%>%
+  group_by(Season, ID)%>%
+  mutate(countgames=n())%>%
+  group_by(Season)%>%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%>%
+  group_by(Season, ID, First.name, Surname)%>%
+filter(countgames>10)%>%
+  summarise(meanZ_score=mean(Z_score))%>%
+  ggplot(aes(x=meanZ_score, y=Season))+
+  geom_point()+
+  geom_text(aes(label=ifelse(meanZ_score>1.9, as.character(Surname),"")), vjust=2, size=2, colour="blue")+
+  ggtitle("AFL Fantasy Z-Score by Season")
+
+```
+
+So what we can see here is that [Nathan Buckley](https://twitter.com/ncb_cfc?lang=en) in his day, had some of the best fantasy seasons of AFL that we have statistics for. In fact, he has 3 out of the top 10 all time fantasy seasons. 
+
+It's just a shame that fantasy wasn't around back when he was around. 
+
+What about top 10 finishes? 
+
+```{r}
+df%>%
+  filter(Season>1986)%>%
+  group_by(Season, ID)%>%
+  mutate(countgames=n())%>%
+  group_by(Season)%>%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%>%
+  group_by(Season, ID, First.name, Surname)%>%
+filter(countgames>10 & AF>30)%>%
+  summarise(meanZ_score=mean(Z_score))%>%
+   group_by(Season) %>%
+  arrange(desc(meanZ_score))%>% 
+  mutate(id = row_number())%>%
+  filter(id<11)%>%
+  group_by(ID, First.name, Surname)%>%summarise(top10=n())%>%
+  arrange(desc(top10))
+
+```
+Yes there you have it, not only does he have some of the best seasons of fantasy relative to the other players in his season group. But he also has the most number of top10 fantasy finishes in "possible" fantasy history( if we started when tackles first started getting recorded).

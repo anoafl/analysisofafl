@@ -1,0 +1,240 @@
+---
+title: "Best Fantasy Player of All Time"
+author: "Robert Nguyen"
+date: '2019-03-20'
+output: pdf_document
+description: Well least since the data was available
+slug: best-fantasy-player-of-all-time
+tags:
+- DFS
+- fantasy
+categories: fantasy
+---
+
+
+
+<p>One of the things I have always wondered about AFL fantasy is just who is the best fantasy player of all time? Not the <a href="https://player.whooshkaa.com/episode/342604">fan who wins the most</a> but who is the best player.</p>
+<p>So one possible idea would be to work out the fantasy scores of players going back for all the time that is possible (YAY <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy!</a>). From there, lets look at the z-score of players in the individual year look at a plot for all years we have fantasy available and do some exploration.</p>
+<div id="step-one---work-out-fantasy-scores" class="section level1">
+<h1>Step One - Work out Fantasy Scores</h1>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.1.0       ✔ purrr   0.3.2  
+## ✔ tibble  2.1.1       ✔ dplyr   0.8.0.1
+## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
+## ✔ readr   1.3.1       ✔ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>df&lt;-fitzRoy::get_afltables_stats(start_date=&quot;1987-01-01&quot;, end_date = &quot;2018-10-10&quot;)%&gt;%
+  mutate(AF=3*Kicks + 2*Handballs + 3*Marks +
+           4*Tackles+ Frees.For -
+           3*Frees.Against +Hit.Outs+
+           6*Goals +Behinds)</code></pre>
+<pre><code>## Returning data from 1987-01-01 to 2018-10-10</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Warning: Detecting old grouped_df format, replacing `vars` attribute by
+## `groups`</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<p>Once we have worked out the fantasy scores we need to come up with our filters and our groups with of course sensible checks and balances.</p>
+<p>We know that tackles first started getting recorded in 1987, so lets filter our dataset by <code>Season&gt; 1986</code></p>
+<pre class="r"><code>df%&gt;%
+  
+  filter(Season&gt;1986)</code></pre>
+<pre><code>## # A tibble: 254,507 x 60
+##    Season Round Date       Local.start.time Venue Attendance Home.team
+##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;                &lt;int&gt; &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;    
+##  1   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  2   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  3   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  4   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  5   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  6   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  7   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  8   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  9   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+## 10   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+## # … with 254,497 more rows, and 53 more variables: HQ1G &lt;int&gt;, HQ1B &lt;int&gt;,
+## #   HQ2G &lt;int&gt;, HQ2B &lt;int&gt;, HQ3G &lt;int&gt;, HQ3B &lt;int&gt;, HQ4G &lt;int&gt;,
+## #   HQ4B &lt;int&gt;, Home.score &lt;int&gt;, Away.team &lt;chr&gt;, AQ1G &lt;int&gt;, AQ1B &lt;int&gt;,
+## #   AQ2G &lt;int&gt;, AQ2B &lt;int&gt;, AQ3G &lt;int&gt;, AQ3B &lt;int&gt;, AQ4G &lt;int&gt;,
+## #   AQ4B &lt;int&gt;, Away.score &lt;int&gt;, First.name &lt;chr&gt;, Surname &lt;chr&gt;,
+## #   ID &lt;dbl&gt;, Jumper.No. &lt;dbl&gt;, Playing.for &lt;chr&gt;, Kicks &lt;dbl&gt;,
+## #   Marks &lt;dbl&gt;, Handballs &lt;dbl&gt;, Goals &lt;dbl&gt;, Behinds &lt;dbl&gt;,
+## #   Hit.Outs &lt;dbl&gt;, Tackles &lt;dbl&gt;, Rebounds &lt;dbl&gt;, Inside.50s &lt;dbl&gt;,
+## #   Clearances &lt;dbl&gt;, Clangers &lt;dbl&gt;, Frees.For &lt;dbl&gt;,
+## #   Frees.Against &lt;dbl&gt;, Brownlow.Votes &lt;dbl&gt;,
+## #   Contested.Possessions &lt;dbl&gt;, Uncontested.Possessions &lt;dbl&gt;,
+## #   Contested.Marks &lt;dbl&gt;, Marks.Inside.50 &lt;dbl&gt;, One.Percenters &lt;dbl&gt;,
+## #   Bounces &lt;dbl&gt;, Goal.Assists &lt;dbl&gt;, Time.on.Ground.. &lt;int&gt;,
+## #   Substitute &lt;int&gt;, Umpire.1 &lt;chr&gt;, Umpire.2 &lt;chr&gt;, Umpire.3 &lt;chr&gt;,
+## #   Umpire.4 &lt;chr&gt;, group_id &lt;int&gt;, AF &lt;dbl&gt;</code></pre>
+<p>Our next stage, we are going to add a count of the games each player played in during the Season, we make this decision because we want to have a look at players who had the best season, not just the best games and 10 seems like a reasonable cut off</p>
+<pre class="r"><code>df%&gt;%
+  filter(Season&gt;1986)%&gt;%
+  group_by(Season, ID)%&gt;%
+  mutate(countgames=n())</code></pre>
+<pre><code>## # A tibble: 254,507 x 61
+## # Groups:   Season, ID [18,678]
+##    Season Round Date       Local.start.time Venue Attendance Home.team
+##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;                &lt;int&gt; &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;    
+##  1   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  2   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  3   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  4   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  5   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  6   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  7   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  8   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  9   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+## 10   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+## # … with 254,497 more rows, and 54 more variables: HQ1G &lt;int&gt;, HQ1B &lt;int&gt;,
+## #   HQ2G &lt;int&gt;, HQ2B &lt;int&gt;, HQ3G &lt;int&gt;, HQ3B &lt;int&gt;, HQ4G &lt;int&gt;,
+## #   HQ4B &lt;int&gt;, Home.score &lt;int&gt;, Away.team &lt;chr&gt;, AQ1G &lt;int&gt;, AQ1B &lt;int&gt;,
+## #   AQ2G &lt;int&gt;, AQ2B &lt;int&gt;, AQ3G &lt;int&gt;, AQ3B &lt;int&gt;, AQ4G &lt;int&gt;,
+## #   AQ4B &lt;int&gt;, Away.score &lt;int&gt;, First.name &lt;chr&gt;, Surname &lt;chr&gt;,
+## #   ID &lt;dbl&gt;, Jumper.No. &lt;dbl&gt;, Playing.for &lt;chr&gt;, Kicks &lt;dbl&gt;,
+## #   Marks &lt;dbl&gt;, Handballs &lt;dbl&gt;, Goals &lt;dbl&gt;, Behinds &lt;dbl&gt;,
+## #   Hit.Outs &lt;dbl&gt;, Tackles &lt;dbl&gt;, Rebounds &lt;dbl&gt;, Inside.50s &lt;dbl&gt;,
+## #   Clearances &lt;dbl&gt;, Clangers &lt;dbl&gt;, Frees.For &lt;dbl&gt;,
+## #   Frees.Against &lt;dbl&gt;, Brownlow.Votes &lt;dbl&gt;,
+## #   Contested.Possessions &lt;dbl&gt;, Uncontested.Possessions &lt;dbl&gt;,
+## #   Contested.Marks &lt;dbl&gt;, Marks.Inside.50 &lt;dbl&gt;, One.Percenters &lt;dbl&gt;,
+## #   Bounces &lt;dbl&gt;, Goal.Assists &lt;dbl&gt;, Time.on.Ground.. &lt;int&gt;,
+## #   Substitute &lt;int&gt;, Umpire.1 &lt;chr&gt;, Umpire.2 &lt;chr&gt;, Umpire.3 &lt;chr&gt;,
+## #   Umpire.4 &lt;chr&gt;, group_id &lt;int&gt;, AF &lt;dbl&gt;, countgames &lt;int&gt;</code></pre>
+<p>Our next stage is that we want to work out the z-scores of the fantasy players per game by by season</p>
+<pre class="r"><code>df%&gt;%
+  filter(Season&gt;1986)%&gt;%
+  group_by(Season, ID)%&gt;%
+  mutate(countgames=n())%&gt;%
+  group_by(Season)%&gt;%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))</code></pre>
+<pre><code>## # A tibble: 254,507 x 62
+## # Groups:   Season [32]
+##    Season Round Date       Local.start.time Venue Attendance Home.team
+##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;                &lt;int&gt; &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;    
+##  1   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  2   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  3   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  4   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  5   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  6   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  7   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  8   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+##  9   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+## 10   1991 1     1991-03-22             1940 Foot…      44902 Adelaide 
+## # … with 254,497 more rows, and 55 more variables: HQ1G &lt;int&gt;, HQ1B &lt;int&gt;,
+## #   HQ2G &lt;int&gt;, HQ2B &lt;int&gt;, HQ3G &lt;int&gt;, HQ3B &lt;int&gt;, HQ4G &lt;int&gt;,
+## #   HQ4B &lt;int&gt;, Home.score &lt;int&gt;, Away.team &lt;chr&gt;, AQ1G &lt;int&gt;, AQ1B &lt;int&gt;,
+## #   AQ2G &lt;int&gt;, AQ2B &lt;int&gt;, AQ3G &lt;int&gt;, AQ3B &lt;int&gt;, AQ4G &lt;int&gt;,
+## #   AQ4B &lt;int&gt;, Away.score &lt;int&gt;, First.name &lt;chr&gt;, Surname &lt;chr&gt;,
+## #   ID &lt;dbl&gt;, Jumper.No. &lt;dbl&gt;, Playing.for &lt;chr&gt;, Kicks &lt;dbl&gt;,
+## #   Marks &lt;dbl&gt;, Handballs &lt;dbl&gt;, Goals &lt;dbl&gt;, Behinds &lt;dbl&gt;,
+## #   Hit.Outs &lt;dbl&gt;, Tackles &lt;dbl&gt;, Rebounds &lt;dbl&gt;, Inside.50s &lt;dbl&gt;,
+## #   Clearances &lt;dbl&gt;, Clangers &lt;dbl&gt;, Frees.For &lt;dbl&gt;,
+## #   Frees.Against &lt;dbl&gt;, Brownlow.Votes &lt;dbl&gt;,
+## #   Contested.Possessions &lt;dbl&gt;, Uncontested.Possessions &lt;dbl&gt;,
+## #   Contested.Marks &lt;dbl&gt;, Marks.Inside.50 &lt;dbl&gt;, One.Percenters &lt;dbl&gt;,
+## #   Bounces &lt;dbl&gt;, Goal.Assists &lt;dbl&gt;, Time.on.Ground.. &lt;int&gt;,
+## #   Substitute &lt;int&gt;, Umpire.1 &lt;chr&gt;, Umpire.2 &lt;chr&gt;, Umpire.3 &lt;chr&gt;,
+## #   Umpire.4 &lt;chr&gt;, group_id &lt;int&gt;, AF &lt;dbl&gt;, countgames &lt;int&gt;,
+## #   Z_score &lt;dbl&gt;</code></pre>
+<p>After finding the <code>Z_score</code>, we can do a check. What we want to see is that for each season our <code>Z_score</code> column has a mean of 0 and a variance of 1. We can also produce the summaries of the other variables by <code>Season</code> to check our other created columns like <code>countgames</code> make sense</p>
+<pre class="r"><code>df%&gt;%
+  filter(Season&gt;1986)%&gt;%
+  group_by(Season, ID)%&gt;%
+  mutate(countgames=n())%&gt;%
+  group_by(Season)%&gt;%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%&gt;%
+  split(.$Season)%&gt;%map(summary)</code></pre>
+<p>Then the last thing is to filter out the players who didn’t play more than 10 games in a season and to find each players meanZ_score by year.</p>
+<pre class="r"><code>df%&gt;%
+  filter(Season&gt;1986 &amp; Time.on.Ground..&gt; 60)%&gt;%
+  group_by(Season, ID)%&gt;%
+  mutate(countgames=n())%&gt;%
+  group_by(Season)%&gt;%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%&gt;%
+  group_by(Season, ID, First.name, Surname)%&gt;%
+filter(countgames&gt;10)%&gt;%
+  summarise(meanZ_score=mean(Z_score))%&gt;%
+  arrange(desc(meanZ_score))</code></pre>
+<pre><code>## # A tibble: 5,792 x 5
+## # Groups:   Season, ID, First.name [5,792]
+##    Season    ID First.name Surname  meanZ_score
+##     &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt;
+##  1   2014 11787 Tom        Rockliff        2.32
+##  2   2012  1460 Dane       Swan            2.25
+##  3   2018 12196 Tom        Mitchell        2.14
+##  4   2016 11787 Tom        Rockliff        2.13
+##  5   2018 12166 Jack       Macrae          2.10
+##  6   2017 12196 Tom        Mitchell        2.02
+##  7   2012  1105 Gary       Ablett          2.01
+##  8   2010  1460 Dane       Swan            1.99
+##  9   2014  1105 Gary       Ablett          1.87
+## 10   2018 12217 Brodie     Grundy          1.79
+## # … with 5,782 more rows</code></pre>
+<p>But this would probably looks best as a graph as noted earlier.</p>
+<pre class="r"><code>df%&gt;%
+  filter(Season&gt;1986)%&gt;%
+  group_by(Season, ID)%&gt;%
+  mutate(countgames=n())%&gt;%
+  group_by(Season)%&gt;%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%&gt;%
+  group_by(Season, ID, First.name, Surname)%&gt;%
+filter(countgames&gt;10)%&gt;%
+  summarise(meanZ_score=mean(Z_score))%&gt;%
+  ggplot(aes(x=meanZ_score, y=Season))+geom_point()</code></pre>
+<p><img src="/thoughts/2019-03-20-best-fantasy-player-of-all-time_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Then you probably would want to label our top 10 list so lets do that.</p>
+<pre class="r"><code>df%&gt;%
+  filter(Season&gt;1986)%&gt;%
+  group_by(Season, ID)%&gt;%
+  mutate(countgames=n())%&gt;%
+  group_by(Season)%&gt;%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%&gt;%
+  group_by(Season, ID, First.name, Surname)%&gt;%
+filter(countgames&gt;10)%&gt;%
+  summarise(meanZ_score=mean(Z_score))%&gt;%
+  ggplot(aes(x=meanZ_score, y=Season))+
+  geom_point()+
+  geom_text(aes(label=ifelse(meanZ_score&gt;1.9, as.character(Surname),&quot;&quot;)), vjust=2, size=2, colour=&quot;blue&quot;)+
+  ggtitle(&quot;AFL Fantasy Z-Score by Season&quot;)</code></pre>
+<p><img src="/thoughts/2019-03-20-best-fantasy-player-of-all-time_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>So what we can see here is that <a href="https://twitter.com/ncb_cfc?lang=en">Nathan Buckley</a> in his day, had some of the best fantasy seasons of AFL that we have statistics for. In fact, he has 3 out of the top 10 all time fantasy seasons.</p>
+<p>It’s just a shame that fantasy wasn’t around back when he was around.</p>
+<p>What about top 10 finishes?</p>
+<pre class="r"><code>df%&gt;%
+  filter(Season&gt;1986)%&gt;%
+  group_by(Season, ID)%&gt;%
+  mutate(countgames=n())%&gt;%
+  group_by(Season)%&gt;%
+  mutate(Z_score=(AF-mean(AF))/sd(AF))%&gt;%
+  group_by(Season, ID, First.name, Surname)%&gt;%
+filter(countgames&gt;10 &amp; AF&gt;30)%&gt;%
+  summarise(meanZ_score=mean(Z_score))%&gt;%
+   group_by(Season) %&gt;%
+  arrange(desc(meanZ_score))%&gt;% 
+  mutate(id = row_number())%&gt;%
+  filter(id&lt;11)%&gt;%
+  group_by(ID, First.name, Surname)%&gt;%summarise(top10=n())%&gt;%
+  arrange(desc(top10))</code></pre>
+<pre><code>## # A tibble: 150 x 4
+## # Groups:   ID, First.name [150]
+##       ID First.name Surname    top10
+##    &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;int&gt;
+##  1   217 Nathan     Buckley       11
+##  2  1105 Gary       Ablett         9
+##  3  1460 Dane       Swan           9
+##  4   766 Wayne      Carey          7
+##  5   990 Tony       Lockett        7
+##  6   157 Barry      Mitchell       6
+##  7   927 Stewart    Loewe          6
+##  8  4182 Scott      Pendlebury     6
+##  9   142 Greg       Williams       5
+## 10   312 James      Hird           5
+## # … with 140 more rows</code></pre>
+<p>Yes there you have it, not only does he have some of the best seasons of fantasy relative to the other players in his season group. But he also has the most number of top10 fantasy finishes in “possible” fantasy history( if we started when tackles first started getting recorded).</p>
+</div>
