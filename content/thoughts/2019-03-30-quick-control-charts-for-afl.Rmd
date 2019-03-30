@@ -29,7 +29,11 @@ fitzRoy::match_results%>%
   summarise(meantotal=mean(total))%>%
 filter(Season>1989 &  Round=="R1")%>%
 ggplot(aes(x=Season,y=meantotal))+geom_point()+geom_line()+stat_QC(method="XmR")+ylab("Mean Round 1 Total for Each Game") +ggtitle("Stop Freaking OUT over ONE ROUND")
+
 ```
 
+So if we were to look at the control chart just for round 1 in each AFLM season since the 90s it would seem as though that even though this round was lower scoring that there isn't much too see here. 
+
+After all we can and should expect natural variation in scores, wouldn't footy be boring if scores were the same every week. 
 
 
