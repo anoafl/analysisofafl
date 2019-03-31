@@ -36,4 +36,74 @@ So if we were to look at the control chart just for round 1 in each AFLM season 
 
 After all we can and should expect natural variation in scores, wouldn't footy be boring if scores were the same every week. 
 
+So next lets thing about the [expected scores framework](https://www.optasports.com/services/analytics/advanced-metrics/)
 
+So the thing is we know that [week to week](http://www.matterofstats.com/mafl-stats-journal/2016/6/18/goal-kicking-accuracy-after-wins-and-losses) thanks to [matterofstats](https://twitter.com/MatterOfStats) we know that scoring does have certain properties. But what I want to look at with a control chart is last week in round 1 2019, were team creating worse oppotunities and outside the bounds that would cause us to worry if we were using a control chart at work. 
+
+
+
+```{r echo=FALSE}
+library(readxl)
+CDExp_17 <- read_excel("~/Downloads/CDExp_17.xlsx")
+head(CDExp_17)
+```
+
+
+So now lets get plotting.
+
+```{r}
+CDExp_17%>%
+  mutate(totalexpected=H_CD_Exp + A_CD_Exp)%>%
+  group_by(Year, Round)%>%
+  summarise(meanexpected=mean(totalexpected))%>%
+  unite("year_round", Year, Round)%>%
+  ggplot(aes(x=year_round, y=meanexpected, group=1))+
+  geom_line()+ 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+So what we can see here is that the plot has been re-ordered even though our dataframe is in the order that we want. 
+
+```{r}
+CDExp_17%>%
+  mutate(totalexpected=H_CD_Exp + A_CD_Exp)%>%
+  group_by(Year, Round)%>%
+  summarise(meanexpected=mean(totalexpected))%>%
+  unite("year_round", Year, Round)
+
+```
+
+So what is going on here is that ggplot orders the graph by the levels of our dataframe
+
+```{r}
+df<-CDExp_17%>%
+  mutate(totalexpected=H_CD_Exp + A_CD_Exp)%>%
+  group_by(Year, Round)%>%
+  summarise(meanexpected=mean(totalexpected))%>%
+  unite("year_round", Year, Round)
+str(df)
+df$year_round<-as.factor(df$year_round)
+levels(df$year_round)
+```
+
+Which if you notice is the oder of our plot earlier. 
+
+So how do we fix that? 
+
+Lets just add a numeric column that is the row numbers and that will become our x-axis.
+
+```{r}
+CDExp_17%>%
+  mutate(totalexpected=H_CD_Exp + A_CD_Exp)%>%
+  group_by(Year, Round)%>%
+  summarise(meanexpected=mean(totalexpected))%>%
+  unite("year_round", Year, Round)%>%
+  mutate(id = row_number())%>%
+  ggplot(aes(x=id, y=meanexpected, group=1))+
+  geom_line()+ 
+  stat_QC(method="XmR")
+  
+```
+
+There you go, if we think about expected scores as oppotunities created, round 1 was actually on the up from the finals series, players just didn't kick that well. But hey as we know goal kicking isn't going to happen at 100% of the time.

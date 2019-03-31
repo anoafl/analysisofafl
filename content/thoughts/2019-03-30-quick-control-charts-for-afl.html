@@ -37,3 +37,78 @@ ggplot(aes(x=Season,y=meantotal))+geom_point()+geom_line()+stat_QC(method=&quot;
 <p><img src="/thoughts/2019-03-30-quick-control-charts-for-afl_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
 <p>So if we were to look at the control chart just for round 1 in each AFLM season since the 90s it would seem as though that even though this round was lower scoring that there isn’t much too see here.</p>
 <p>After all we can and should expect natural variation in scores, wouldn’t footy be boring if scores were the same every week.</p>
+<p>So next lets thing about the <a href="https://www.optasports.com/services/analytics/advanced-metrics/">expected scores framework</a></p>
+<p>So the thing is we know that <a href="http://www.matterofstats.com/mafl-stats-journal/2016/6/18/goal-kicking-accuracy-after-wins-and-losses">week to week</a> thanks to <a href="https://twitter.com/MatterOfStats">matterofstats</a> we know that scoring does have certain properties. But what I want to look at with a control chart is last week in round 1 2019, were team creating worse oppotunities and outside the bounds that would cause us to worry if we were using a control chart at work.</p>
+<pre><code>## # A tibble: 6 x 8
+##   Home_Team   Away_Team      Year Round H_CD_Exp A_CD_Exp H_Actual A_Actual
+##   &lt;chr&gt;       &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 Carlton     Richmond       2017     1       70      120       89      132
+## 2 Collingwood Western Bull…  2017     1       91       88       86      100
+## 3 Sydney      Port Adelaide  2017     1       79       90       82      110
+## 4 St Kilda    Melbourne      2017     1       99      109       90      120
+## 5 Gold Coast  Brisbane Lio…  2017     1       73       98       96       98
+## 6 Essendon    Hawthorn       2017     1      117       90      116       91</code></pre>
+<p>So now lets get plotting.</p>
+<pre class="r"><code>CDExp_17%&gt;%
+  mutate(totalexpected=H_CD_Exp + A_CD_Exp)%&gt;%
+  group_by(Year, Round)%&gt;%
+  summarise(meanexpected=mean(totalexpected))%&gt;%
+  unite(&quot;year_round&quot;, Year, Round)%&gt;%
+  ggplot(aes(x=year_round, y=meanexpected, group=1))+
+  geom_line()+ 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
+<p><img src="/thoughts/2019-03-30-quick-control-charts-for-afl_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>So what we can see here is that the plot has been re-ordered even though our dataframe is in the order that we want.</p>
+<pre class="r"><code>CDExp_17%&gt;%
+  mutate(totalexpected=H_CD_Exp + A_CD_Exp)%&gt;%
+  group_by(Year, Round)%&gt;%
+  summarise(meanexpected=mean(totalexpected))%&gt;%
+  unite(&quot;year_round&quot;, Year, Round)</code></pre>
+<pre><code>## # A tibble: 55 x 2
+##    year_round meanexpected
+##    &lt;chr&gt;             &lt;dbl&gt;
+##  1 2017_1             193.
+##  2 2017_2             191.
+##  3 2017_3             181.
+##  4 2017_4             184.
+##  5 2017_5             188.
+##  6 2017_6             181.
+##  7 2017_7             191.
+##  8 2017_8             178.
+##  9 2017_9             180.
+## 10 2017_10            186.
+## # … with 45 more rows</code></pre>
+<p>So what is going on here is that ggplot orders the graph by the levels of our dataframe</p>
+<pre class="r"><code>df&lt;-CDExp_17%&gt;%
+  mutate(totalexpected=H_CD_Exp + A_CD_Exp)%&gt;%
+  group_by(Year, Round)%&gt;%
+  summarise(meanexpected=mean(totalexpected))%&gt;%
+  unite(&quot;year_round&quot;, Year, Round)
+str(df)</code></pre>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    55 obs. of  2 variables:
+##  $ year_round  : chr  &quot;2017_1&quot; &quot;2017_2&quot; &quot;2017_3&quot; &quot;2017_4&quot; ...
+##  $ meanexpected: num  193 191 181 184 188 ...</code></pre>
+<pre class="r"><code>df$year_round&lt;-as.factor(df$year_round)
+levels(df$year_round)</code></pre>
+<pre><code>##  [1] &quot;2017_1&quot;  &quot;2017_10&quot; &quot;2017_11&quot; &quot;2017_12&quot; &quot;2017_13&quot; &quot;2017_14&quot; &quot;2017_15&quot;
+##  [8] &quot;2017_16&quot; &quot;2017_17&quot; &quot;2017_18&quot; &quot;2017_19&quot; &quot;2017_2&quot;  &quot;2017_20&quot; &quot;2017_21&quot;
+## [15] &quot;2017_22&quot; &quot;2017_23&quot; &quot;2017_24&quot; &quot;2017_25&quot; &quot;2017_26&quot; &quot;2017_27&quot; &quot;2017_3&quot; 
+## [22] &quot;2017_4&quot;  &quot;2017_5&quot;  &quot;2017_6&quot;  &quot;2017_7&quot;  &quot;2017_8&quot;  &quot;2017_9&quot;  &quot;2018_1&quot; 
+## [29] &quot;2018_10&quot; &quot;2018_11&quot; &quot;2018_12&quot; &quot;2018_13&quot; &quot;2018_14&quot; &quot;2018_15&quot; &quot;2018_16&quot;
+## [36] &quot;2018_17&quot; &quot;2018_18&quot; &quot;2018_19&quot; &quot;2018_2&quot;  &quot;2018_20&quot; &quot;2018_21&quot; &quot;2018_22&quot;
+## [43] &quot;2018_23&quot; &quot;2018_24&quot; &quot;2018_25&quot; &quot;2018_26&quot; &quot;2018_27&quot; &quot;2018_3&quot;  &quot;2018_4&quot; 
+## [50] &quot;2018_5&quot;  &quot;2018_6&quot;  &quot;2018_7&quot;  &quot;2018_8&quot;  &quot;2018_9&quot;  &quot;2019_1&quot;</code></pre>
+<p>Which if you notice is the oder of our plot earlier.</p>
+<p>So how do we fix that?</p>
+<p>Lets just add a numeric column that is the row numbers and that will become our x-axis.</p>
+<pre class="r"><code>CDExp_17%&gt;%
+  mutate(totalexpected=H_CD_Exp + A_CD_Exp)%&gt;%
+  group_by(Year, Round)%&gt;%
+  summarise(meanexpected=mean(totalexpected))%&gt;%
+  unite(&quot;year_round&quot;, Year, Round)%&gt;%
+  mutate(id = row_number())%&gt;%
+  ggplot(aes(x=id, y=meanexpected, group=1))+
+  geom_line()+ 
+  stat_QC(method=&quot;XmR&quot;)</code></pre>
+<p><img src="/thoughts/2019-03-30-quick-control-charts-for-afl_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>There you go, if we think about expected scores as oppotunities created, round 1 was actually on the up from the finals series, players just didn’t kick that well. But hey as we know goal kicking isn’t going to happen at 100% of the time.</p>
