@@ -1,0 +1,72 @@
+---
+title: Control Charts Another Package
+author: Robert Nguyen
+date: '2019-04-20'
+slug: control-charts-another-package
+categories:
+  - viz
+tags:
+  - viz
+description: 'xmrr'
+---
+
+I got an email from Alex Zanidean, who runs the [xmrr](https://cran.r-project.org/web/packages/xmrr/xmrr.pdf) package 
+
+"You might enjoy my package xmrr for similar charts – but mine recalculate the bounds automatically" and if we go to the vingette, "XMRs combine X-Bar control charts and Moving Range control charts. These functions also will recalculate the reference lines when significant change has occurred" This seems like a pretty handy thing. So lets do it.
+
+First lets do our graphic from our previous post using [ggQC](https://cran.r-project.org/package=ggQC)
+
+```{r}
+library(fitzRoy)
+library(tidyverse)
+library(ggQC)
+library(xmrr)
+fitzRoy::match_results%>%
+  mutate(total=Home.Points+Away.Points)%>%
+  group_by(Season,Round)%>%
+  summarise(meantotal=mean(total))%>%
+filter(Season>1989 &  Round=="R1")%>%
+  ggplot(aes(x=Season,y=meantotal))+geom_point()+geom_line()+stat_QC(method="XmR")+ylab("Mean Round 1 Total for Each Game") +ggtitle("Stop Freaking OUT over ONE ROUND")
+
+df<-fitzRoy::match_results%>%
+  mutate(total=Home.Points+Away.Points)%>%
+  group_by(Season,Round)%>%
+  summarise(meantotal=mean(total))%>%
+filter(Season>1989 &  Round=="R1")
+
+```
+
+So when using a package for the first time, one of the best things about the R community is how the examples are usually fully reproducible and this helps.
+
+From the [github](https://github.com/Zanidean/xmrr)
+
+```{r}
+Year <- seq(2001, 2009, 1)
+Measure <-  runif(length(Year))
+
+df <- data.frame(Year, Measure)
+head(df)
+
+xmr(df, "Measure", recalc = T)
+```
+
+Lets create a similar dataframe as df, but using data from [fitzRoy](https://github.com/jimmyday12/fitzRoy)
+
+```{r}
+df<-fitzRoy::match_results%>%
+  mutate(total=Home.Points+Away.Points)%>%
+  group_by(Season,Round)%>%
+  summarise(meantotal=mean(total))%>%
+filter(Season>1989 &  Round=="R1")%>%
+  select(Season, meantotal)
+df<-data.frame(df)
+xmr_data <-xmr(df, "meantotal", recalc = T)
+
+xmr_chart(df = xmr_data, 
+          time = "Season", 
+          measure = "meantotal",
+          line_width = 0.75, text_size = 12, point_size = 2.5)
+
+```
+
+Does this tell a different story or a very similar one to earlier?
