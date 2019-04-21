@@ -26,3 +26,144 @@ Maybe you like to debate among your mates, maybe you work for a club and want to
 
 No matter the purpose, information is key. But its more than just having the information available. You can construct a lot of the above but it would be very time consuming and probably a bit overwhelming. But that's why [James Day](https://twitter.com/jamesday87) and I have gotten [fitzRoy](https://github.com/jimmyday12/fitzRoy) together so all of these things are relatively quick, easy and can be updated weekly. 
 
+Fantasy sports has grown in popularity recently and people head over to sites like [draftstars](https://www.draftstars.com.au/) and [moneyball](https://moneyball.com.au/landing/generic-fantasy/?utm_source=google&utm_medium=cpc&utm_term=%7Bkeyword%7D&utm_campaign=Google-SEM:Brand&gclid=CjwKCAjwqfDlBRBDEiwAigXUaNRGSQOGENRHLwaFjQwRotNf9T14yS87p8GU8jxgA05RDuReelqi_RoCvGsQAvD_BwE) one of the things people try to do is construct teams for money. 
+
+I'm not really into fantasy sports, but the general gist from chatting to people is this. 
+
+1. You get a salary cap to spend on a team of players
+2. There are more expensive and less expensive players, but in general price is correlated positively with points
+3. You pick x players and who ever gets the most fantasy points wins!
+
+If we were to look at the US, one of the more popular websites is [rotowire](https://www.rotowire.com/basketball/opp-avg.php) this site people tell me is handy because you are able to see how many points a team gives up to positions. 
+
+If you were doing DFS for AFL one of the questions you might come up with, is "I wonder which team gives up the most fantasy points to forwards".
+
+Well thankfully piecing together a few posts I have done you can do that!
+
+We want to use the fantastic (bit biased here) R package [fitzRoy](https://jimmyday12.github.io/fitzRoy/) which myself and [James Day](https://twitter.com/jamesday87) work on to get the player data from either [afltables](https://afltables.com/afl/afl_index.html) or [footywire](https://www.footywire.com). After this we can use my blog post on [getting player information](https://analysisofafl.netlify.com/data/2018-11-24-getting-player-information/) where we can pull positions of players roughly (forwards, mids, defence and ruck). Then from there we join them together (there will be some missing data but we can fill that in) and lastly we make a similar table to [rotowire](https://www.rotowire.com) which just lists the teams arranged by the average they give up to a certain position. 
+
+
+```{r}
+library(tidyverse)
+library(fitzRoy)
+df<-fitzRoy::player_stats%>%
+  filter(Season==2019)
+
+```
+
+Don't forget to [skim](https://cran.r-project.org/web/packages/skimr/vignettes/Using_skimr.html) your data.
+
+```{r}
+skimr::skim(df)
+
+```
+
+Next lets get the players positions and for funsies lets get some other infomation as well.
+
+```{r}
+library(rvest)
+url<-"https://www.footywire.com/afl/footy/ft_players"
+
+
+link<-read_html(url)%>%
+html_nodes("br+ a , .lnormtop a:nth-child(1)")%>%
+  html_attr("href")
+
+url_players<-str_c("https://www.footywire.com/afl/footy/",link)
+
+cbind.fill <- function(...){
+    nm <- list(...) 
+    nm <- lapply(nm, as.matrix)
+    n <- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+player_info <- function(x){
+  # page <- read_html(x)
+  page<-read_html(x)
+
+player<- page%>%
+  html_nodes("#playerProfileName")%>%
+  html_text()
+# player
+
+playing.for<-  page%>%
+  html_nodes("#playerProfileTeamDiv a b")%>%
+  html_text() %>% as.tibble()
+# playing.for
+number<-     page%>%
+  html_nodes("#playerProfileTeamDiv > b")%>%
+  html_text() %>% as.tibble()
+# number
+weight<-page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Weight:).*(?=Position:)"))%>%as.tibble()
+# weight
+
+height<-page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Height:).*(?=Weight:)"))%>%as.tibble()
+# height
+draft_position <- page%>%
+  html_nodes("#playerProfileDraftInfo")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Drafted: ).*(?=by)"))%>%as.tibble()
+# draft_position
+club_drafted <- page%>%
+  html_nodes("#playerProfileDraftInfo a+ a")%>%
+  html_text()%>%str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_remove(".*by") %>% as.tibble()
+# club_drafted
+position <-     page%>%
+  html_nodes("#playerProfileData2")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_remove(".*Position: ")%>%
+  str_squish() %>% as.tibble()
+
+sc_price<-page%>%
+  html_nodes("#playerProfileSupercoach")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Price:).*(?=Supercoach Profile)"))%>%as.tibble()
+# sc_price
+
+af_price<-page%>%
+  html_nodes("#playerProfileDreamteam")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Price:).*(?=AFL Fantasy Profile)"))%>%as.tibble()
+# af_price
+
+player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
+
+player_information <- as.tibble(player_information)
+  
+  
+  
+  
+  #combine, name, and make it a tibble
+  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
+  
+  player_information <- as.tibble(player_information)
+
+  # print(x)
+  # return(x)
+  return(player_information)
+}
+footywire <- purrr::map_df(url_players, player_info)
+
+names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position","sc_price", "af_price")
+```

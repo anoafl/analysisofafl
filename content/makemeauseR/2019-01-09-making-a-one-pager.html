@@ -26,3 +26,124 @@ description: 'Maybe handy for fantasy'
 <li>You might be a punter so having information like <a href="https://twitter.com/matterofstats?lang=en">Tony</a> presents over in his <a href="http://www.matterofstats.com/mafl-team-dashboards/matterofstats-2018-team-dashboard-for-round-23">matterofstats</a> might inform your betting strategy.</li>
 </ul>
 <p>No matter the purpose, information is key. But its more than just having the information available. You can construct a lot of the above but it would be very time consuming and probably a bit overwhelming. But that’s why <a href="https://twitter.com/jamesday87">James Day</a> and I have gotten <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> together so all of these things are relatively quick, easy and can be updated weekly.</p>
+<p>Fantasy sports has grown in popularity recently and people head over to sites like <a href="https://www.draftstars.com.au/">draftstars</a> and <a href="https://moneyball.com.au/landing/generic-fantasy/?utm_source=google&amp;utm_medium=cpc&amp;utm_term=%7Bkeyword%7D&amp;utm_campaign=Google-SEM:Brand&amp;gclid=CjwKCAjwqfDlBRBDEiwAigXUaNRGSQOGENRHLwaFjQwRotNf9T14yS87p8GU8jxgA05RDuReelqi_RoCvGsQAvD_BwE">moneyball</a> one of the things people try to do is construct teams for money.</p>
+<p>I’m not really into fantasy sports, but the general gist from chatting to people is this.</p>
+<ol style="list-style-type: decimal">
+<li>You get a salary cap to spend on a team of players</li>
+<li>There are more expensive and less expensive players, but in general price is correlated positively with points</li>
+<li>You pick x players and who ever gets the most fantasy points wins!</li>
+</ol>
+<p>If we were to look at the US, one of the more popular websites is <a href="https://www.rotowire.com/basketball/opp-avg.php">rotowire</a> this site people tell me is handy because you are able to see how many points a team gives up to positions.</p>
+<p>If you were doing DFS for AFL one of the questions you might come up with, is “I wonder which team gives up the most fantasy points to forwards”.</p>
+<p>Well thankfully piecing together a few posts I have done you can do that!</p>
+<p>We want to use the fantastic (bit biased here) R package <a href="https://jimmyday12.github.io/fitzRoy/">fitzRoy</a> which myself and <a href="https://twitter.com/jamesday87">James Day</a> work on to get the player data from either <a href="https://afltables.com/afl/afl_index.html">afltables</a> or <a href="https://www.footywire.com">footywire</a>. After this we can use my blog post on <a href="https://analysisofafl.netlify.com/data/2018-11-24-getting-player-information/">getting player information</a> where we can pull positions of players roughly (forwards, mids, defence and ruck). Then from there we join them together (there will be some missing data but we can fill that in) and lastly we make a similar table to <a href="https://www.rotowire.com">rotowire</a> which just lists the teams arranged by the average they give up to a certain position.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.1.1       ✔ purrr   0.3.2  
+## ✔ tibble  2.1.1       ✔ dplyr   0.8.0.1
+## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
+## ✔ readr   1.3.1       ✔ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(fitzRoy)
+df&lt;-fitzRoy::player_stats%&gt;%
+  filter(Season==2019)</code></pre>
+<p>Don’t forget to <a href="https://cran.r-project.org/web/packages/skimr/vignettes/Using_skimr.html">skim</a> your data.</p>
+<pre class="r"><code>skimr::skim(df)</code></pre>
+<pre><code>## Skim summary statistics
+##  n obs: 792 
+##  n variables: 43 
+## 
+## ── Variable type:character ───────────────────────────────────────────────────────────────────────
+##    variable missing complete   n min max empty n_unique
+##  Opposition       0      792 792   3  16     0       18
+##      Player       0      792 792   8  20     0      423
+##       Round       0      792 792   7   7     0        2
+##      Status       0      792 792   4   4     0        2
+##        Team       0      792 792   3  16     0       18
+##       Venue       0      792 792   3  18     0        9
+## 
+## ── Variable type:Date ────────────────────────────────────────────────────────────────────────────
+##  variable missing complete   n        min        max     median n_unique
+##      Date       0      792 792 2019-03-21 2019-03-31 2019-03-26        8
+## 
+## ── Variable type:integer ─────────────────────────────────────────────────────────────────────────
+##        variable missing complete   n   mean     sd p0 p25   p50 p75 p100
+##              AF       0      792 792  70.51  25.99 -1  51  68.5  87  166
+##               B       0      792 792   0.4    0.73  0   0   0     1    5
+##              BO       0      792 792   0.22   0.61  0   0   0     0    5
+##             CCL       0      792 792   0.56   1.05  0   0   0     1    5
+##              CG       0      792 792   2.85   1.78  0   2   3     4   10
+##              CL       0      792 792   1.77   2.3   0   0   1     3   15
+##              CM       0      792 792   0.45   0.82  0   0   0     1    5
+##              CP       0      792 792   6.79   3.78  0   4   6     9   25
+##               D       0      792 792  17.02   7.32  1  11  16    22   44
+##              ED       0      792 792  12.18   5.76  1   8  12    16   34
+##              FA       0      792 792   0.97   1.09  0   0   1     2    7
+##              FF       0      792 792   0.97   1.07  0   0   1     1    7
+##               G       0      792 792   0.52   0.88  0   0   0     1    5
+##              GA       0      792 792   0.37   0.65  0   0   0     1    4
+##             GA1       0      792 792   0.37   0.65  0   0   0     1    4
+##              HB       0      792 792   6.97   4.35  0   4   6     9   29
+##              HO       0      792 792   1.7    6.59  0   0   0     0   53
+##             I50       0      792 792   2.52   2.05  0   1   2     4   11
+##             ITC       0      792 792   3.42   2.73  0   1   3     5   13
+##               K       0      792 792  10.05   4.66  0   6  10    13   30
+##               M       0      792 792   3.98   2.44  0   2   4     5   14
+##              MG       0      792 792 271.5  144.79 -5 165 247   362  901
+##             MI5       0      792 792   0.5    0.9   0   0   0     1    5
+##  One.Percenters       0      792 792   2.49   2.55  0   1   2     3   17
+##             R50       0      792 792   1.94   2.25  0   0   1     3   15
+##              SC       0      792 792  73.88  27.15  1  54  72.5  91  167
+##             SCL       0      792 792   1.2    1.64  0   0   1     2   11
+##              SI       0      792 792   4.12   2.56  0   2   4     6   13
+##               T       0      792 792   2.79   2.04  0   1   2     4   11
+##              T5       0      792 792   0.47   0.84  0   0   0     1    5
+##              TO       0      792 792   3.4    2.14  0   2   3     5   13
+##             TOG       0      792 792  81.83   9.33  5  78  83    87  100
+##              UP       0      792 792  10.01   5.29  1   6   9    13   31
+##      hist
+##  ▁▃▇▇▅▂▁▁
+##  ▇▂▁▁▁▁▁▁
+##  ▇▁▁▁▁▁▁▁
+##  ▇▂▁▁▁▁▁▁
+##  ▇▇▇▇▂▁▁▁
+##  ▇▃▂▁▁▁▁▁
+##  ▇▂▁▁▁▁▁▁
+##  ▃▇▆▂▁▁▁▁
+##  ▁▆▇▆▃▂▁▁
+##  ▃▇▇▆▃▁▁▁
+##  ▇▆▃▁▁▁▁▁
+##  ▇▇▃▁▁▁▁▁
+##  ▇▃▁▁▁▁▁▁
+##  ▇▂▁▁▁▁▁▁
+##  ▇▂▁▁▁▁▁▁
+##  ▅▇▃▂▁▁▁▁
+##  ▇▁▁▁▁▁▁▁
+##  ▇▅▆▂▁▁▁▁
+##  ▇▇▃▃▂▁▁▁
+##  ▁▇▇▆▂▁▁▁
+##  ▃▇▇▃▁▁▁▁
+##  ▃▇▆▅▂▁▁▁
+##  ▇▂▁▁▁▁▁▁
+##  ▇▂▁▁▁▁▁▁
+##  ▇▃▂▁▁▁▁▁
+##  ▁▃▇▇▆▂▁▁
+##  ▇▂▂▁▁▁▁▁
+##  ▅▇▃▆▃▁▁▁
+##  ▇▅▇▂▁▁▁▁
+##  ▇▂▁▁▁▁▁▁
+##  ▃▇▃▃▂▁▁▁
+##  ▁▁▁▁▁▂▇▂
+##  ▃▇▇▅▂▁▁▁
+## 
+## ── Variable type:numeric ─────────────────────────────────────────────────────────────────────────
+##  variable missing complete   n    mean    sd     p0     p25    p50  p75
+##        DE       0      792 792   71.21 13.96   14.3   61.72   72.2   81
+##  Match_id       0      792 792 9729.5   5.19 9721   9725    9729.5 9734
+##    Season       0      792 792 2019     0    2019   2019    2019   2019
+##  p100     hist
+##   100 ▁▁▁▃▆▇▇▂
+##  9738 ▇▅▅▅▅▅▅▇
+##  2019 ▁▁▁▇▁▁▁▁</code></pre>
