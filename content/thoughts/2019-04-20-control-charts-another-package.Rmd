@@ -26,7 +26,9 @@ fitzRoy::match_results%>%
   group_by(Season,Round)%>%
   summarise(meantotal=mean(total))%>%
 filter(Season>1989 &  Round=="R1")%>%
-  ggplot(aes(x=Season,y=meantotal))+geom_point()+geom_line()+stat_QC(method="XmR")+ylab("Mean Round 1 Total for Each Game") +ggtitle("Stop Freaking OUT over ONE ROUND")
+  ggplot(aes(x=Season,y=meantotal))+geom_point()+
+  geom_line()+stat_QC(method="XmR")+
+  ylab("Mean Round 1 Total for Each Game") +ggtitle("Stop Freaking OUT over ONE ROUND")
 
 df<-fitzRoy::match_results%>%
   mutate(total=Home.Points+Away.Points)%>%

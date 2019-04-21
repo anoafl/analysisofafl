@@ -32,7 +32,9 @@ fitzRoy::match_results%&gt;%
   group_by(Season,Round)%&gt;%
   summarise(meantotal=mean(total))%&gt;%
 filter(Season&gt;1989 &amp;  Round==&quot;R1&quot;)%&gt;%
-  ggplot(aes(x=Season,y=meantotal))+geom_point()+geom_line()+stat_QC(method=&quot;XmR&quot;)+ylab(&quot;Mean Round 1 Total for Each Game&quot;) +ggtitle(&quot;Stop Freaking OUT over ONE ROUND&quot;)</code></pre>
+  ggplot(aes(x=Season,y=meantotal))+geom_point()+
+  geom_line()+stat_QC(method=&quot;XmR&quot;)+
+  ylab(&quot;Mean Round 1 Total for Each Game&quot;) +ggtitle(&quot;Stop Freaking OUT over ONE ROUND&quot;)</code></pre>
 <p><img src="/thoughts/2019-04-20-control-charts-another-package_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
 <pre class="r"><code>df&lt;-fitzRoy::match_results%&gt;%
   mutate(total=Home.Points+Away.Points)%&gt;%
@@ -47,33 +49,33 @@ Measure &lt;-  runif(length(Year))
 df &lt;- data.frame(Year, Measure)
 head(df)</code></pre>
 <pre><code>##   Year   Measure
-## 1 2001 0.9100798
-## 2 2002 0.9474634
-## 3 2003 0.5237437
-## 4 2004 0.8953134
-## 5 2005 0.9077580
-## 6 2006 0.2150458</code></pre>
+## 1 2001 0.6146880
+## 2 2002 0.2854914
+## 3 2003 0.6081190
+## 4 2004 0.4357665
+## 5 2005 0.1509844
+## 6 2006 0.5935707</code></pre>
 <pre class="r"><code>xmr(df, &quot;Measure&quot;, recalc = T)</code></pre>
-<pre><code>##   Year     Measure Order Central Line Moving Range Average Moving Range
-## 1 2001 0.910079784     1        0.837           NA                   NA
-## 2 2002 0.947463399     2        0.837        0.037                0.211
-## 3 2003 0.523743654     3        0.837        0.424                0.211
-## 4 2004 0.895313364     4        0.837        0.372                0.211
-## 5 2005 0.907758017     5        0.837        0.012                0.211
-## 6 2006 0.215045801     6        0.837        0.693                0.211
-## 7 2007 0.818842546     7        0.837        0.604                0.211
-## 8 2008 0.007861991     8        0.837        0.811                0.211
-## 9 2009 0.590723776     9        0.837        0.583                0.211
+<pre><code>##   Year   Measure Order Central Line Moving Range Average Moving Range
+## 1 2001 0.6146880     1        0.419           NA                   NA
+## 2 2002 0.2854914     2        0.419        0.329                0.277
+## 3 2003 0.6081190     3        0.419        0.323                0.277
+## 4 2004 0.4357665     4        0.419        0.172                0.277
+## 5 2005 0.1509844     5        0.419        0.285                0.277
+## 6 2006 0.5935707     6        0.419        0.443                0.277
+## 7 2007 0.5739720     7        0.419        0.020                0.277
+## 8 2008 0.9961513     8        0.419        0.422                0.277
+## 9 2009 0.9091553     9        0.419        0.087                0.277
 ##   Lower Natural Process Limit Upper Natural Process Limit
 ## 1                          NA                          NA
-## 2                       0.275                       1.399
-## 3                       0.275                       1.399
-## 4                       0.275                       1.399
-## 5                       0.275                       1.399
-## 6                       0.275                       1.399
-## 7                       0.275                       1.399
-## 8                       0.275                       1.399
-## 9                       0.275                       1.399</code></pre>
+## 2                           0                       1.156
+## 3                           0                       1.156
+## 4                           0                       1.156
+## 5                           0                       1.156
+## 6                           0                       1.156
+## 7                           0                       1.156
+## 8                           0                       1.156
+## 9                           0                       1.156</code></pre>
 <p>Lets create a similar dataframe as df, but using data from <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a></p>
 <pre class="r"><code>df&lt;-fitzRoy::match_results%&gt;%
   mutate(total=Home.Points+Away.Points)%&gt;%
