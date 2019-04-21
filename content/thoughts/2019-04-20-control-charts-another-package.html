@@ -49,33 +49,33 @@ Measure &lt;-  runif(length(Year))
 df &lt;- data.frame(Year, Measure)
 head(df)</code></pre>
 <pre><code>##   Year   Measure
-## 1 2001 0.6146880
-## 2 2002 0.2854914
-## 3 2003 0.6081190
-## 4 2004 0.4357665
-## 5 2005 0.1509844
-## 6 2006 0.5935707</code></pre>
+## 1 2001 0.7021658
+## 2 2002 0.6488748
+## 3 2003 0.9156940
+## 4 2004 0.9788410
+## 5 2005 0.6417381
+## 6 2006 0.5848234</code></pre>
 <pre class="r"><code>xmr(df, &quot;Measure&quot;, recalc = T)</code></pre>
 <pre><code>##   Year   Measure Order Central Line Moving Range Average Moving Range
-## 1 2001 0.6146880     1        0.419           NA                   NA
-## 2 2002 0.2854914     2        0.419        0.329                0.277
-## 3 2003 0.6081190     3        0.419        0.323                0.277
-## 4 2004 0.4357665     4        0.419        0.172                0.277
-## 5 2005 0.1509844     5        0.419        0.285                0.277
-## 6 2006 0.5935707     6        0.419        0.443                0.277
-## 7 2007 0.5739720     7        0.419        0.020                0.277
-## 8 2008 0.9961513     8        0.419        0.422                0.277
-## 9 2009 0.9091553     9        0.419        0.087                0.277
+## 1 2001 0.7021658     1        0.777           NA                   NA
+## 2 2002 0.6488748     2        0.777        0.053                 0.18
+## 3 2003 0.9156940     3        0.777        0.267                 0.18
+## 4 2004 0.9788410     4        0.777        0.063                 0.18
+## 5 2005 0.6417381     5        0.777        0.337                 0.18
+## 6 2006 0.5848234     6        0.777        0.057                 0.18
+## 7 2007 0.9490080     7        0.777        0.364                 0.18
+## 8 2008 0.5043880     8        0.777        0.445                 0.18
+## 9 2009 0.8819234     9        0.777        0.378                 0.18
 ##   Lower Natural Process Limit Upper Natural Process Limit
 ## 1                          NA                          NA
-## 2                           0                       1.156
-## 3                           0                       1.156
-## 4                           0                       1.156
-## 5                           0                       1.156
-## 6                           0                       1.156
-## 7                           0                       1.156
-## 8                           0                       1.156
-## 9                           0                       1.156</code></pre>
+## 2                       0.298                       1.257
+## 3                       0.298                       1.257
+## 4                       0.298                       1.257
+## 5                       0.298                       1.257
+## 6                       0.298                       1.257
+## 7                       0.298                       1.257
+## 8                       0.298                       1.257
+## 9                       0.298                       1.257</code></pre>
 <p>Lets create a similar dataframe as df, but using data from <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a></p>
 <pre class="r"><code>df&lt;-fitzRoy::match_results%&gt;%
   mutate(total=Home.Points+Away.Points)%&gt;%
@@ -89,6 +89,7 @@ xmr_data &lt;-xmr(df, &quot;meantotal&quot;, recalc = T)
 xmr_chart(df = xmr_data, 
           time = &quot;Season&quot;, 
           measure = &quot;meantotal&quot;,
-          line_width = 0.75, text_size = 12, point_size = 2.5)</code></pre>
+          line_width = 0.75, text_size = 12, point_size = 2.5) +
+          scale_x_discrete(breaks = seq(1990, 2020, 5))</code></pre>
 <p><img src="/thoughts/2019-04-20-control-charts-another-package_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>Does this tell a different story or a very similar one to earlier?</p>

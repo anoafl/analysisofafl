@@ -147,3 +147,122 @@ df&lt;-fitzRoy::player_stats%&gt;%
 ##   100 ▁▁▁▃▆▇▇▂
 ##  9738 ▇▅▅▅▅▅▅▇
 ##  2019 ▁▁▁▇▁▁▁▁</code></pre>
+<p>Next lets get the players positions and for funsies lets get some other infomation as well.</p>
+<pre class="r"><code>library(rvest)</code></pre>
+<pre><code>## Loading required package: xml2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;rvest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     pluck</code></pre>
+<pre><code>## The following object is masked from &#39;package:readr&#39;:
+## 
+##     guess_encoding</code></pre>
+<pre class="r"><code>url&lt;-&quot;https://www.footywire.com/afl/footy/ft_players&quot;
+
+
+link&lt;-read_html(url)%&gt;%
+html_nodes(&quot;br+ a , .lnormtop a:nth-child(1)&quot;)%&gt;%
+  html_attr(&quot;href&quot;)
+
+url_players&lt;-str_c(&quot;https://www.footywire.com/afl/footy/&quot;,link)
+
+cbind.fill &lt;- function(...){
+    nm &lt;- list(...) 
+    nm &lt;- lapply(nm, as.matrix)
+    n &lt;- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+player_info &lt;- function(x){
+  # page &lt;- read_html(x)
+  page&lt;-read_html(x)
+
+player&lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileName&quot;)%&gt;%
+  html_text()
+# player
+
+playing.for&lt;-  page%&gt;%
+  html_nodes(&quot;#playerProfileTeamDiv a b&quot;)%&gt;%
+  html_text() %&gt;% as.tibble()
+# playing.for
+number&lt;-     page%&gt;%
+  html_nodes(&quot;#playerProfileTeamDiv &gt; b&quot;)%&gt;%
+  html_text() %&gt;% as.tibble()
+# number
+weight&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Weight:).*(?=Position:)&quot;))%&gt;%as.tibble()
+# weight
+
+height&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Height:).*(?=Weight:)&quot;))%&gt;%as.tibble()
+# height
+draft_position &lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileDraftInfo&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Drafted: ).*(?=by)&quot;))%&gt;%as.tibble()
+# draft_position
+club_drafted &lt;- page%&gt;%
+  html_nodes(&quot;#playerProfileDraftInfo a+ a&quot;)%&gt;%
+  html_text()%&gt;%str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_remove(&quot;.*by&quot;) %&gt;% as.tibble()
+# club_drafted
+position &lt;-     page%&gt;%
+  html_nodes(&quot;#playerProfileData2&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_remove(&quot;.*Position: &quot;)%&gt;%
+  str_squish() %&gt;% as.tibble()
+
+sc_price&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileSupercoach&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Price:).*(?=Supercoach Profile)&quot;))%&gt;%as.tibble()
+# sc_price
+
+af_price&lt;-page%&gt;%
+  html_nodes(&quot;#playerProfileDreamteam&quot;)%&gt;%
+  html_text()%&gt;%
+  str_replace_all(&quot;[\r\n]&quot; , &quot;&quot;)%&gt;%
+  str_squish()%&gt;%
+  str_extract(pattern =(&quot;(?&lt;=Price:).*(?=AFL Fantasy Profile)&quot;))%&gt;%as.tibble()
+# af_price
+
+player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
+
+player_information &lt;- as.tibble(player_information)
+  
+  
+  
+  
+  #combine, name, and make it a tibble
+  player_information &lt;- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
+  
+  player_information &lt;- as.tibble(player_information)
+
+  # print(x)
+  # return(x)
+  return(player_information)
+}
+footywire &lt;- purrr::map_df(url_players, player_info)</code></pre>
+<pre><code>## Warning: `as.tibble()` is deprecated, use `as_tibble()` (but mind the new semantics).
+## This warning is displayed once per session.</code></pre>
+<pre class="r"><code>names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;,&quot;sc_price&quot;, &quot;af_price&quot;)</code></pre>
+<p>After all this, we need to join the information together so its in one dataframe.</p>
+<p>Get data into one dataframe, do a table like on rotowire</p>
+<p>Bonus, take a team, say collingwood and show the distribution of points given up to ‘mid/fwds’</p>

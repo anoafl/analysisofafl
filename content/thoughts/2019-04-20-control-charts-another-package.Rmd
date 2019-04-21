@@ -67,7 +67,8 @@ xmr_data <-xmr(df, "meantotal", recalc = T)
 xmr_chart(df = xmr_data, 
           time = "Season", 
           measure = "meantotal",
-          line_width = 0.75, text_size = 12, point_size = 2.5)
+          line_width = 0.75, text_size = 12, point_size = 2.5) +
+          scale_x_discrete(breaks = seq(1990, 2020, 5))
 
 ```
 
