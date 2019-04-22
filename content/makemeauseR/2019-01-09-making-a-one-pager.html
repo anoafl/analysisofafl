@@ -39,12 +39,12 @@ description: 'Maybe handy for fantasy'
 <p>Well thankfully piecing together a few posts I have done you can do that!</p>
 <p>We want to use the fantastic (bit biased here) R package <a href="https://jimmyday12.github.io/fitzRoy/">fitzRoy</a> which myself and <a href="https://twitter.com/jamesday87">James Day</a> work on to get the player data from either <a href="https://afltables.com/afl/afl_index.html">afltables</a> or <a href="https://www.footywire.com">footywire</a>. After this we can use my blog post on <a href="https://analysisofafl.netlify.com/data/2018-11-24-getting-player-information/">getting player information</a> where we can pull positions of players roughly (forwards, mids, defence and ruck). Then from there we join them together (there will be some missing data but we can fill that in) and lastly we make a similar table to <a href="https://www.rotowire.com">rotowire</a> which just lists the teams arranged by the average they give up to a certain position.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
 <pre><code>## ✔ ggplot2 3.1.1       ✔ purrr   0.3.2  
 ## ✔ tibble  2.1.1       ✔ dplyr   0.8.0.1
 ## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
 ## ✔ readr   1.3.1       ✔ forcats 0.4.0</code></pre>
-<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(fitzRoy)
@@ -59,7 +59,7 @@ df&lt;-fitzRoy::get_footywire_stats(9721:9756)</code></pre>
 ##  n obs: 1584 
 ##  n variables: 43 
 ## 
-## ── Variable type:character ───────────────────────────────────────────────────────────────────────
+## ── Variable type:character ──────────────────────────────────────────────────────────────────────────────────────
 ##    variable missing complete    n min max empty n_unique
 ##  Opposition       0     1584 1584   3  16     0       18
 ##      Player       0     1584 1584   8  20     0      474
@@ -68,11 +68,11 @@ df&lt;-fitzRoy::get_footywire_stats(9721:9756)</code></pre>
 ##        Team       0     1584 1584   3  16     0       18
 ##       Venue       0     1584 1584   3  18     0        9
 ## 
-## ── Variable type:Date ────────────────────────────────────────────────────────────────────────────
+## ── Variable type:Date ───────────────────────────────────────────────────────────────────────────────────────────
 ##  variable missing complete    n        min        max     median n_unique
 ##      Date       0     1584 1584 2019-03-21 2019-04-14 2019-04-02       16
 ## 
-## ── Variable type:integer ─────────────────────────────────────────────────────────────────────────
+## ── Variable type:integer ────────────────────────────────────────────────────────────────────────────────────────
 ##        variable missing complete    n    mean     sd   p0     p25    p50
 ##              AF       0     1584 1584   70.8   26.7    -1   51      69  
 ##               B       0     1584 1584    0.4    0.73    0    0       0  
@@ -144,7 +144,7 @@ df&lt;-fitzRoy::get_footywire_stats(9721:9756)</code></pre>
 ##    88     100 ▁▁▁▁▁▂▇▃
 ##    13      35 ▃▇▇▃▂▁▁▁
 ## 
-## ── Variable type:numeric ─────────────────────────────────────────────────────────────────────────
+## ── Variable type:numeric ────────────────────────────────────────────────────────────────────────────────────────
 ##  variable missing complete    n    mean    sd   p0  p25    p50    p75 p100
 ##        DE       0     1584 1584   72.06 14.12    0   63   72.7   81.8  100
 ##    Season       0     1584 1584 2019     0    2019 2019 2019   2019   2019
@@ -489,9 +489,16 @@ footywire_positions&lt;-select(footywire, player, club, position)
   
 dataset&lt;-left_join(footywire_2019, footywire_positions, by=c(&quot;Player&quot;=&quot;player&quot;, &quot;Team&quot;=&quot;club&quot;))</code></pre>
 <p>Now lets do some plotting!</p>
+<p>Suppose we wanted to see which players did well playing the West Coast Eagles, we could do a simple plot of position by their fantasy scores.</p>
 <pre class="r"><code>dataset%&gt;%
     filter(Opposition==&quot;West Coast&quot;)%&gt;%
     ggplot(aes(y=AF, x=as.factor(position)))+
-  geom_point()+ 
-  geom_text(aes(label=Player),check_overlap = TRUE)</code></pre>
+    geom_point()+ 
+    geom_text(aes(label=Player),check_overlap = TRUE, size=2) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
 <p><img src="/makemeauseR/2019-01-09-making-a-one-pager_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code>dataset%&gt;%
+    ggplot(aes(y=AF, x=as.factor(position)))+
+    geom_violin()+ 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+ facet_wrap( ~ Opposition, ncol=6)</code></pre>
+<p><img src="/makemeauseR/2019-01-09-making-a-one-pager_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>

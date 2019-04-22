@@ -273,9 +273,19 @@ Suppose we wanted to see which players did well playing the West Coast Eagles, w
 dataset%>%
     filter(Opposition=="West Coast")%>%
     ggplot(aes(y=AF, x=as.factor(position)))+
-  geom_point()+ 
-  geom_text(aes(label=Player),check_overlap = TRUE)
+    geom_point()+ 
+    geom_text(aes(label=Player),check_overlap = TRUE, size=2) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
+
+```{r}
+dataset%>%
+    ggplot(aes(y=AF, x=as.factor(position)))+
+    geom_violin()+ 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+ facet_wrap( ~ Opposition, ncol=6)
+
+```
+
 
 
