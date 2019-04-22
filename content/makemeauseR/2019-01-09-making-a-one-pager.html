@@ -8,6 +8,7 @@ categories:
   - R
 tags:
   - betting
+  - DFS
 description: 'Maybe handy for fantasy'
 ---
 
@@ -47,106 +48,109 @@ description: 'Maybe handy for fantasy'
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(fitzRoy)
-df&lt;-fitzRoy::player_stats%&gt;%
-  filter(Season==2019)</code></pre>
+
+
+df&lt;-fitzRoy::get_footywire_stats(9721:9756)</code></pre>
+<pre><code>## Getting data from footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
 <p>Don’t forget to <a href="https://cran.r-project.org/web/packages/skimr/vignettes/Using_skimr.html">skim</a> your data.</p>
 <pre class="r"><code>skimr::skim(df)</code></pre>
 <pre><code>## Skim summary statistics
-##  n obs: 792 
+##  n obs: 1584 
 ##  n variables: 43 
 ## 
 ## ── Variable type:character ───────────────────────────────────────────────────────────────────────
-##    variable missing complete   n min max empty n_unique
-##  Opposition       0      792 792   3  16     0       18
-##      Player       0      792 792   8  20     0      423
-##       Round       0      792 792   7   7     0        2
-##      Status       0      792 792   4   4     0        2
-##        Team       0      792 792   3  16     0       18
-##       Venue       0      792 792   3  18     0        9
+##    variable missing complete    n min max empty n_unique
+##  Opposition       0     1584 1584   3  16     0       18
+##      Player       0     1584 1584   8  20     0      474
+##       Round       0     1584 1584   7   7     0        4
+##      Status       0     1584 1584   4   4     0        2
+##        Team       0     1584 1584   3  16     0       18
+##       Venue       0     1584 1584   3  18     0        9
 ## 
 ## ── Variable type:Date ────────────────────────────────────────────────────────────────────────────
-##  variable missing complete   n        min        max     median n_unique
-##      Date       0      792 792 2019-03-21 2019-03-31 2019-03-26        8
+##  variable missing complete    n        min        max     median n_unique
+##      Date       0     1584 1584 2019-03-21 2019-04-14 2019-04-02       16
 ## 
 ## ── Variable type:integer ─────────────────────────────────────────────────────────────────────────
-##        variable missing complete   n   mean     sd p0 p25   p50 p75 p100
-##              AF       0      792 792  70.51  25.99 -1  51  68.5  87  166
-##               B       0      792 792   0.4    0.73  0   0   0     1    5
-##              BO       0      792 792   0.22   0.61  0   0   0     0    5
-##             CCL       0      792 792   0.56   1.05  0   0   0     1    5
-##              CG       0      792 792   2.85   1.78  0   2   3     4   10
-##              CL       0      792 792   1.77   2.3   0   0   1     3   15
-##              CM       0      792 792   0.45   0.82  0   0   0     1    5
-##              CP       0      792 792   6.79   3.78  0   4   6     9   25
-##               D       0      792 792  17.02   7.32  1  11  16    22   44
-##              ED       0      792 792  12.18   5.76  1   8  12    16   34
-##              FA       0      792 792   0.97   1.09  0   0   1     2    7
-##              FF       0      792 792   0.97   1.07  0   0   1     1    7
-##               G       0      792 792   0.52   0.88  0   0   0     1    5
-##              GA       0      792 792   0.37   0.65  0   0   0     1    4
-##             GA1       0      792 792   0.37   0.65  0   0   0     1    4
-##              HB       0      792 792   6.97   4.35  0   4   6     9   29
-##              HO       0      792 792   1.7    6.59  0   0   0     0   53
-##             I50       0      792 792   2.52   2.05  0   1   2     4   11
-##             ITC       0      792 792   3.42   2.73  0   1   3     5   13
-##               K       0      792 792  10.05   4.66  0   6  10    13   30
-##               M       0      792 792   3.98   2.44  0   2   4     5   14
-##              MG       0      792 792 271.5  144.79 -5 165 247   362  901
-##             MI5       0      792 792   0.5    0.9   0   0   0     1    5
-##  One.Percenters       0      792 792   2.49   2.55  0   1   2     3   17
-##             R50       0      792 792   1.94   2.25  0   0   1     3   15
-##              SC       0      792 792  73.88  27.15  1  54  72.5  91  167
-##             SCL       0      792 792   1.2    1.64  0   0   1     2   11
-##              SI       0      792 792   4.12   2.56  0   2   4     6   13
-##               T       0      792 792   2.79   2.04  0   1   2     4   11
-##              T5       0      792 792   0.47   0.84  0   0   0     1    5
-##              TO       0      792 792   3.4    2.14  0   2   3     5   13
-##             TOG       0      792 792  81.83   9.33  5  78  83    87  100
-##              UP       0      792 792  10.01   5.29  1   6   9    13   31
-##      hist
-##  ▁▃▇▇▅▂▁▁
-##  ▇▂▁▁▁▁▁▁
-##  ▇▁▁▁▁▁▁▁
-##  ▇▂▁▁▁▁▁▁
-##  ▇▇▇▇▂▁▁▁
-##  ▇▃▂▁▁▁▁▁
-##  ▇▂▁▁▁▁▁▁
-##  ▃▇▆▂▁▁▁▁
-##  ▁▆▇▆▃▂▁▁
-##  ▃▇▇▆▃▁▁▁
-##  ▇▆▃▁▁▁▁▁
-##  ▇▇▃▁▁▁▁▁
-##  ▇▃▁▁▁▁▁▁
-##  ▇▂▁▁▁▁▁▁
-##  ▇▂▁▁▁▁▁▁
-##  ▅▇▃▂▁▁▁▁
-##  ▇▁▁▁▁▁▁▁
-##  ▇▅▆▂▁▁▁▁
-##  ▇▇▃▃▂▁▁▁
-##  ▁▇▇▆▂▁▁▁
-##  ▃▇▇▃▁▁▁▁
-##  ▃▇▆▅▂▁▁▁
-##  ▇▂▁▁▁▁▁▁
-##  ▇▂▁▁▁▁▁▁
-##  ▇▃▂▁▁▁▁▁
-##  ▁▃▇▇▆▂▁▁
-##  ▇▂▂▁▁▁▁▁
-##  ▅▇▃▆▃▁▁▁
-##  ▇▅▇▂▁▁▁▁
-##  ▇▂▁▁▁▁▁▁
-##  ▃▇▃▃▂▁▁▁
-##  ▁▁▁▁▁▂▇▂
-##  ▃▇▇▅▂▁▁▁
+##        variable missing complete    n    mean     sd   p0     p25    p50
+##              AF       0     1584 1584   70.8   26.7    -1   51      69  
+##               B       0     1584 1584    0.4    0.73    0    0       0  
+##              BO       0     1584 1584    0.23   0.6     0    0       0  
+##             CCL       0     1584 1584    0.56   1.09    0    0       0  
+##              CG       0     1584 1584    2.66   1.76    0    1       2  
+##              CL       0     1584 1584    1.72   2.29    0    0       1  
+##              CM       0     1584 1584    0.49   0.86    0    0       0  
+##              CP       0     1584 1584    6.65   3.77    0    4       6  
+##               D       0     1584 1584   16.95   7.34    0   11      16  
+##              ED       0     1584 1584   12.27   5.83    0    8      12  
+##              FA       0     1584 1584    0.91   1.03    0    0       1  
+##              FF       0     1584 1584    0.91   1.04    0    0       1  
+##               G       0     1584 1584    0.53   0.93    0    0       0  
+##              GA       0     1584 1584    0.37   0.65    0    0       0  
+##             GA1       0     1584 1584    0.37   0.65    0    0       0  
+##              HB       0     1584 1584    6.88   4.39    0    4       6  
+##              HO       0     1584 1584    1.7    6.7     0    0       0  
+##             I50       0     1584 1584    2.45   2       0    1       2  
+##             ITC       0     1584 1584    3.31   2.71    0    1       3  
+##               K       0     1584 1584   10.07   4.74    0    6      10  
+##               M       0     1584 1584    4.18   2.57    0    2       4  
+##        Match_id       0     1584 1584 9738.5   10.39 9721 9729.75 9738.5
+##              MG       0     1584 1584  265.01 143.88   -5  161     241  
+##             MI5       0     1584 1584    0.5    0.9     0    0       0  
+##  One.Percenters       0     1584 1584    2.37   2.48    0    1       2  
+##             R50       0     1584 1584    1.86   2.16    0    0       1  
+##              SC       0     1584 1584   74.97  27.92    0   55      74  
+##             SCL       0     1584 1584    1.16   1.58    0    0       1  
+##              SI       0     1584 1584    4.09   2.54    0    2       4  
+##               T       0     1584 1584    2.71   2.06    0    1       2  
+##              T5       0     1584 1584    0.46   0.8     0    0       0  
+##              TO       0     1584 1584    3.29   2.1     0    2       3  
+##             TOG       0     1584 1584   81.81  10.28    2   78      83  
+##              UP       0     1584 1584   10.06   5.26    0    6       9  
+##      p75 p100     hist
+##    88     166 ▁▃▇▇▅▂▁▁
+##     1       5 ▇▂▁▁▁▁▁▁
+##     0       5 ▇▁▁▁▁▁▁▁
+##     1       8 ▇▁▁▁▁▁▁▁
+##     4      11 ▆▆▇▂▁▁▁▁
+##     3      16 ▇▂▁▁▁▁▁▁
+##     1       6 ▇▃▁▁▁▁▁▁
+##     8      25 ▅▇▆▂▁▁▁▁
+##    21      44 ▁▆▇▇▃▂▁▁
+##    16      36 ▂▇▇▆▂▁▁▁
+##     1       7 ▇▆▃▁▁▁▁▁
+##     1       7 ▇▆▃▁▁▁▁▁
+##     1       7 ▇▂▁▁▁▁▁▁
+##     1       4 ▇▂▁▁▁▁▁▁
+##     1       4 ▇▂▁▁▁▁▁▁
+##     9      29 ▅▇▃▂▁▁▁▁
+##     0      58 ▇▁▁▁▁▁▁▁
+##     4      12 ▇▇▂▂▁▁▁▁
+##     5      15 ▇▇▅▃▂▁▁▁
+##    13      30 ▂▇▇▆▂▁▁▁
+##     6      16 ▇▇▆▃▁▁▁▁
+##  9747.25 9756 ▇▆▇▆▆▇▆▇
+##   351     901 ▃▇▇▅▂▁▁▁
+##     1       7 ▇▂▁▁▁▁▁▁
+##     3      17 ▇▂▁▁▁▁▁▁
+##     3      15 ▇▃▂▁▁▁▁▁
+##    92     177 ▁▃▆▇▅▂▁▁
+##     2      11 ▇▂▂▁▁▁▁▁
+##     6      16 ▇▇▆▃▁▁▁▁
+##     4      14 ▆▇▃▂▁▁▁▁
+##     1       5 ▇▂▁▁▁▁▁▁
+##     4.25   13 ▃▇▃▃▁▁▁▁
+##    88     100 ▁▁▁▁▁▂▇▃
+##    13      35 ▃▇▇▃▂▁▁▁
 ## 
 ## ── Variable type:numeric ─────────────────────────────────────────────────────────────────────────
-##  variable missing complete   n    mean    sd     p0     p25    p50  p75
-##        DE       0      792 792   71.21 13.96   14.3   61.72   72.2   81
-##  Match_id       0      792 792 9729.5   5.19 9721   9725    9729.5 9734
-##    Season       0      792 792 2019     0    2019   2019    2019   2019
-##  p100     hist
-##   100 ▁▁▁▃▆▇▇▂
-##  9738 ▇▅▅▅▅▅▅▇
-##  2019 ▁▁▁▇▁▁▁▁</code></pre>
+##  variable missing complete    n    mean    sd   p0  p25    p50    p75 p100
+##        DE       0     1584 1584   72.06 14.12    0   63   72.7   81.8  100
+##    Season       0     1584 1584 2019     0    2019 2019 2019   2019   2019
+##      hist
+##  ▁▁▁▂▅▇▇▃
+##  ▁▁▁▇▁▁▁▁</code></pre>
 <p>Next lets get the players positions and for funsies lets get some other infomation as well.</p>
 <pre class="r"><code>library(rvest)</code></pre>
 <pre><code>## Loading required package: xml2</code></pre>
@@ -263,6 +267,231 @@ footywire &lt;- purrr::map_df(url_players, player_info)</code></pre>
 <pre><code>## Warning: `as.tibble()` is deprecated, use `as_tibble()` (but mind the new semantics).
 ## This warning is displayed once per session.</code></pre>
 <pre class="r"><code>names(footywire) &lt;- c(&quot;player&quot;, &quot;club&quot;, &quot;number&quot;,&quot;weight&quot;,&quot;height&quot;,  &quot;draft_position&quot;, &quot;club_drafted&quot;, &quot;position&quot;,&quot;sc_price&quot;, &quot;af_price&quot;)</code></pre>
-<p>After all this, we need to join the information together so its in one dataframe.</p>
-<p>Get data into one dataframe, do a table like on rotowire</p>
-<p>Bonus, take a team, say collingwood and show the distribution of points given up to ‘mid/fwds’</p>
+<p>So now we have our dataframes.</p>
+<p>Lets have a looksie</p>
+<pre class="r"><code>head(footywire)</code></pre>
+<pre><code>## # A tibble: 6 x 10
+##   player club  number weight height draft_position club_drafted position
+##   &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;          &lt;chr&gt;        &lt;chr&gt;   
+## 1 Jake … Rich… #39    &quot; 76k… &quot; 180… Round 1, Pick… Richmond Ti… Forward 
+## 2 Ryan … Geel… #45    &quot; 100… &quot; 200… Round 4, Pick… Geelong Cats Ruck    
+## 3 Gary … Geel… #4     &quot; 87k… &quot; 182… Round 3, Pick… Geelong Cats Midfield
+## 4 Blake… St K… #8     &quot; 92k… &quot; 190… Round 1, Pick… St Kilda Sa… Midfiel…
+## 5 Marcu… Bris… #24    &quot; 98k… &quot; 192… Round 2, Pick… Western Bul… Defender
+## 6 Taylo… Coll… #13    &quot; 83k… &quot; 181… Round 1, Pick… GWS Giants   Midfield
+## # … with 2 more variables: sc_price &lt;chr&gt;, af_price &lt;chr&gt;</code></pre>
+<pre class="r"><code>head(df)</code></pre>
+<pre><code>##         Date Season   Round Venue         Player    Team Opposition Status
+## 1 2019-03-21   2019 Round 1   MCG Patrick Cripps Carlton   Richmond   Home
+## 2 2019-03-21   2019 Round 1   MCG    Marc Murphy Carlton   Richmond   Home
+## 3 2019-03-21   2019 Round 1   MCG   Kade Simpson Carlton   Richmond   Home
+## 4 2019-03-21   2019 Round 1   MCG    Dale Thomas Carlton   Richmond   Home
+## 5 2019-03-21   2019 Round 1   MCG     Nic Newman Carlton   Richmond   Home
+## 6 2019-03-21   2019 Round 1   MCG  Edward Curnow Carlton   Richmond   Home
+##   Match_id CP UP ED   DE CM GA MI5 One.Percenters BO CCL SCL SI  MG TO ITC
+## 1     9721 21 11 26 81.2  0  0   0              0  1   4   3  5 263  3   4
+## 2     9721  6 23 21 72.4  0  0   0              0  0   0   1  7 530  5   3
+## 3     9721  5 19 21 77.8  0  0   0              1  0   1   1  2 462  2   6
+## 4     9721  6 17 23 85.2  0  1   0              4  0   0   0  8 434  4   6
+## 5     9721  5 17 22 84.6  0  0   0              3  0   0   1  4 584  2   6
+## 6     9721  7 18 18 72.0  0  1   2              1  0   0   2  8 303  6   0
+##   T5 TOG  K HB  D  M G B T HO GA1 I50 CL CG R50 FF FA  AF  SC
+## 1  0  89 10 22 32  1 0 0 6  0   0   2  7  3   2  3  1 101 126
+## 2  0  87 16 13 29  4 1 0 1  0   0   5  1  1   4  1  0  97  91
+## 3  0  84 15 12 27  6 0 0 1  0   0   1  2  1   5  1  0  92  83
+## 4  0  78 15 12 27  3 1 0 2  0   1   3  0  4   5  1  1  90  93
+## 5  0  84 21  5 26  9 1 0 2  0   0   2  1  2  12  1  0 115 134
+## 6  2  82 13 12 25 12 0 1 3  0   1   3  2  4   1  1  0 113  98</code></pre>
+<p>What we can see here is that if we were to attempt to join on team and player name that the team names do not align between the freshly scraped data and the dataset within <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> so lets replace the team names in the freshly scraped footywire data to match those existing already within <a href="https://github.com/jimmyday12/fitzRoy">#fitzRoy</a>.</p>
+<p>Too see how its an issue we can use <code>unique</code></p>
+<pre class="r"><code>unique(footywire$club)</code></pre>
+<pre><code>##  [1] &quot;Richmond Tigers&quot;           &quot;Geelong Cats&quot;             
+##  [3] &quot;St Kilda Saints&quot;           &quot;Brisbane Lions&quot;           
+##  [5] &quot;Collingwood Magpies&quot;       &quot;West Coast Eagles&quot;        
+##  [7] &quot;Gold Coast Suns&quot;           &quot;North Melbourne Kangaroos&quot;
+##  [9] &quot;Sydney Swans&quot;              &quot;Essendon Bombers&quot;         
+## [11] &quot;Port Adelaide Power&quot;       &quot;Adelaide Crows&quot;           
+## [13] &quot;Melbourne Demons&quot;          &quot;Fremantle Dockers&quot;        
+## [15] &quot;Hawthorn Hawks&quot;            &quot;GWS Giants&quot;               
+## [17] &quot;Western Bulldogs&quot;          &quot;Carlton Blues&quot;</code></pre>
+<pre class="r"><code>unique(df$Team)</code></pre>
+<pre><code>##  [1] &quot;Carlton&quot;          &quot;Richmond&quot;         &quot;Collingwood&quot;     
+##  [4] &quot;Geelong&quot;          &quot;Melbourne&quot;        &quot;Port Adelaide&quot;   
+##  [7] &quot;Adelaide&quot;         &quot;Hawthorn&quot;         &quot;Western Bulldogs&quot;
+## [10] &quot;Sydney&quot;           &quot;Brisbane&quot;         &quot;West Coast&quot;      
+## [13] &quot;St Kilda&quot;         &quot;Gold Coast&quot;       &quot;GWS&quot;             
+## [16] &quot;Essendon&quot;         &quot;Fremantle&quot;        &quot;North Melbourne&quot;</code></pre>
+<pre class="r"><code>footywire&lt;-footywire%&gt;%
+  mutate(club=replace(club, club==&quot;Richmond Tigers&quot;,&quot;Richmond&quot; ))%&gt;%
+  mutate(club=replace(club, club==&quot;Geelong Cats&quot; ,&quot;Geelong&quot;  ))%&gt;%
+  mutate(club=replace(club, club==&quot;St Kilda Saints&quot; ,&quot;St Kilda&quot;  ))%&gt;%
+  mutate(club=replace(club, club==&quot;Brisbane Lions&quot; ,&quot;Brisbane&quot;))%&gt;%
+  mutate(club=replace(club, club==&quot;Collingwood Magpies&quot; ,&quot;Collingwood&quot; ))%&gt;%
+  mutate(club=replace(club, club==&quot;West Coast Eagles&quot; ,&quot;West Coast&quot; ))%&gt;%
+  mutate(club=replace(club, club==&quot;Gold Coast Suns&quot; ,&quot;Gold Coast&quot; ))%&gt;%
+  mutate(club=replace(club, club==&quot;North Melbourne Kangaroos&quot;,&quot;North Melbourne&quot;  ))%&gt;%
+  mutate(club=replace(club, club==&quot;Sydney Swans&quot; , &quot;Sydney&quot;  ))%&gt;%
+  mutate(club=replace(club, club==&quot;Essendon Bombers&quot; ,&quot;Essendon&quot; ))%&gt;%
+  mutate(club=replace(club, club==&quot;Port Adelaide Power&quot;,&quot;Port Adelaide&quot; ))%&gt;%
+  mutate(club=replace(club, club==&quot;Adelaide Crows&quot; ,&quot;Adelaide&quot; ))%&gt;%
+  mutate(club=replace(club, club==&quot;Melbourne Demons&quot; ,&quot;Melbourne&quot;  ))%&gt;%
+  mutate(club=replace(club, club==&quot;Fremantle Dockers&quot; ,&quot;Fremantle&quot;  ))%&gt;%
+  mutate(club=replace(club, club==&quot;Hawthorn Hawks&quot;, &quot;Hawthorn&quot;  ))%&gt;%
+  mutate(club=replace(club, club==&quot;GWS Giants&quot;  ,&quot;GWS&quot; ))%&gt;%
+  mutate(club=replace(club, club== &quot;Footscray&quot; ,&quot;Western Bulldogs&quot; ))%&gt;%
+  mutate(club=replace(club, club==&quot;Carlton Blues&quot;    ,&quot;Carlton&quot;  ))</code></pre>
+<p>Then we check it. I find using <code>str_sort</code> helps to see the output on top of each other.</p>
+<pre class="r"><code>str_sort(unique(footywire$club))</code></pre>
+<pre><code>##  [1] &quot;Adelaide&quot;         &quot;Brisbane&quot;         &quot;Carlton&quot;         
+##  [4] &quot;Collingwood&quot;      &quot;Essendon&quot;         &quot;Fremantle&quot;       
+##  [7] &quot;Geelong&quot;          &quot;Gold Coast&quot;       &quot;GWS&quot;             
+## [10] &quot;Hawthorn&quot;         &quot;Melbourne&quot;        &quot;North Melbourne&quot; 
+## [13] &quot;Port Adelaide&quot;    &quot;Richmond&quot;         &quot;St Kilda&quot;        
+## [16] &quot;Sydney&quot;           &quot;West Coast&quot;       &quot;Western Bulldogs&quot;</code></pre>
+<pre class="r"><code>str_sort(unique(df$Team))</code></pre>
+<pre><code>##  [1] &quot;Adelaide&quot;         &quot;Brisbane&quot;         &quot;Carlton&quot;         
+##  [4] &quot;Collingwood&quot;      &quot;Essendon&quot;         &quot;Fremantle&quot;       
+##  [7] &quot;Geelong&quot;          &quot;Gold Coast&quot;       &quot;GWS&quot;             
+## [10] &quot;Hawthorn&quot;         &quot;Melbourne&quot;        &quot;North Melbourne&quot; 
+## [13] &quot;Port Adelaide&quot;    &quot;Richmond&quot;         &quot;St Kilda&quot;        
+## [16] &quot;Sydney&quot;           &quot;West Coast&quot;       &quot;Western Bulldogs&quot;</code></pre>
+<p>From the footywire data, we want to take the player names, club and position and then join this onto the <code>player_stats</code> dataset from <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>.</p>
+<pre class="r"><code>footywire_positions&lt;-select(footywire, player, club, position)
+footywire_2019&lt;-df
+
+dataset&lt;-left_join(footywire_2019, footywire_positions, by=c(&quot;Player&quot;=&quot;player&quot;, &quot;Team&quot;=&quot;club&quot;))</code></pre>
+<p>Issue here is that the hyphen names don’t match so we got to change those aswell.</p>
+<p>We can view these problem rows as follows.</p>
+<pre class="r"><code>dataset[rowSums(is.na(dataset)) &gt; 0,]</code></pre>
+<pre><code>##            Date Season   Round              Venue               Player
+## 12   2019-03-21   2019 Round 1                MCG          Sam P-Seton
+## 97   2019-03-23   2019 Round 1                MCG        Alex N-Bullen
+## 119  2019-03-23   2019 Round 1                MCG         Sam P-Pepper
+## 121  2019-03-23   2019 Round 1                MCG        Darcy B-Jones
+## 297  2019-03-24   2019 Round 1     Marvel Stadium       George H-Smith
+## 352  2019-03-24   2019 Round 1 Showground Stadium Anthony M-Tipungwuti
+## 388  2019-03-24   2019 Round 1      Optus Stadium       Luke D-Uniacke
+## 396  2019-03-24   2019 Round 1      Optus Stadium          Ed V-Willis
+## 506  2019-03-30   2019 Round 2     Marvel Stadium Anthony M-Tipungwuti
+## 532  2019-03-30   2019 Round 2      Adelaide Oval        Darcy B-Jones
+## 542  2019-03-30   2019 Round 2      Adelaide Oval         Sam P-Pepper
+## 555  2019-03-30   2019 Round 2      Adelaide Oval          Sam P-Seton
+## 609  2019-03-30   2019 Round 2      GMHBA Stadium        Alex N-Bullen
+## 664  2019-03-31   2019 Round 2     Marvel Stadium       Luke D-Uniacke
+## 856  2019-04-05   2019 Round 3                MCG        Alex N-Bullen
+## 871  2019-04-05   2019 Round 3                MCG Anthony M-Tipungwuti
+## 887  2019-04-06   2019 Round 3     Marvel Stadium          Sam P-Seton
+## 992  2019-04-06   2019 Round 3              Gabba         Sam P-Pepper
+## 998  2019-04-06   2019 Round 3              Gabba        Darcy B-Jones
+## 1139 2019-04-07   2019 Round 3                MCG       Luke D-Uniacke
+## 1329 2019-04-13   2019 Round 4                MCG Anthony M-Tipungwuti
+## 1373 2019-04-13   2019 Round 4      Adelaide Oval        Darcy B-Jones
+## 1382 2019-04-13   2019 Round 4      Adelaide Oval         Sam P-Pepper
+## 1422 2019-04-13   2019 Round 4     Marvel Stadium       Luke D-Uniacke
+## 1442 2019-04-13   2019 Round 4     Marvel Stadium     Cameron E-Yolmen
+## 1529 2019-04-14   2019 Round 4   Metricon Stadium          Sam P-Seton
+##                 Team      Opposition Status Match_id CP UP ED    DE CM GA
+## 12           Carlton        Richmond   Home     9721  4 14 11  61.1  0  0
+## 97         Melbourne   Port Adelaide   Home     9723  9  8  9  60.0  0  0
+## 119    Port Adelaide       Melbourne   Away     9723  9 11 10  50.0  1  0
+## 121    Port Adelaide       Melbourne   Away     9723  7 14 14  73.7  1  0
+## 297       Gold Coast        St Kilda   Away     9727  5 12 12  70.6  1  0
+## 352         Essendon             GWS   Away     9728  3  3  3  60.0  0  1
+## 388  North Melbourne       Fremantle   Away     9729  7  8 12  80.0  0  1
+## 396  North Melbourne       Fremantle   Away     9729  0  1  1 100.0  0  0
+## 506         Essendon        St Kilda   Home     9732  2  6  2  28.6  0  0
+## 532    Port Adelaide         Carlton   Home     9733  8 18 15  55.6  0  2
+## 542    Port Adelaide         Carlton   Home     9733 11 11 16  76.2  1  0
+## 555          Carlton   Port Adelaide   Away     9733 10 11 17  81.0  0  0
+## 609        Melbourne         Geelong   Away     9734  6  4  4  44.4  0  0
+## 664  North Melbourne        Brisbane   Home     9736 15 11 21  80.8  0  2
+## 856        Melbourne        Essendon   Home     9740  2  5  5  62.5  0  1
+## 871         Essendon       Melbourne   Away     9740  4  8 12  85.7  0  2
+## 887          Carlton          Sydney   Home     9741  8 10 15  83.3  0  1
+## 992    Port Adelaide        Brisbane   Away     9743 12 19 21  72.4  0  0
+## 998    Port Adelaide        Brisbane   Away     9743  6 11 12  66.7  0  0
+## 1139 North Melbourne        Hawthorn   Away     9746  4  6  8  88.9  0  2
+## 1329        Essendon        Brisbane   Home     9751  8 12 17  85.0  1  0
+## 1373   Port Adelaide        Richmond   Home     9752  3 16 14  77.8  0  1
+## 1382   Port Adelaide        Richmond   Home     9752 11  4  7  53.8  0  0
+## 1422 North Melbourne        Adelaide   Home     9753  5 13 14  82.4  0  0
+## 1442        Adelaide North Melbourne   Away     9753  9  8 13  86.7  0  0
+## 1529         Carlton      Gold Coast   Away     9755  8  9 14  77.8  0  1
+##      MI5 One.Percenters BO CCL SCL SI  MG TO ITC T5 TOG  K HB  D  M G B T
+## 12     0              1  0   1   1  0 282  6   4  0  85 12  6 18  8 0 0 2
+## 97     2              1  0   1   1  5 191  3   2  2  89  9  6 15  2 0 2 5
+## 119    1              1  1   1   1 10 375  8   2  1  79 12  8 20  3 0 3 2
+## 121    0              4  0   0   0  3 212  5   7  0  79 11  8 19  5 0 0 2
+## 297    0              2  0   0   0  2 269  5   7  0  78  9  8 17  3 0 0 2
+## 352    0              0  1   0   1  1 139  2   1  3  84  3  2  5  1 0 0 5
+## 388    3              2  0   1   0  5 129  3   2  2  72  7  8 15  5 1 0 3
+## 396    0              1  0   0   0  0  -4  0   0  0  13  0  1  1  0 0 0 0
+## 506    0              2  0   1   0  1 129  2   0  5  78  4  3  7  1 0 0 5
+## 532    1              3  0   1   2  4 457  4   7  0  88 17 10 27  6 0 1 4
+## 542    1              1  1   0   4  4 175  2   4  2  81  7 14 21  3 2 1 8
+## 555    0              1  0   1   1  4 332  2   8  0  79 13  8 21  6 1 0 2
+## 609    0              2  0   0   4  2 151  3   0  2  90  7  2  9  1 0 0 4
+## 664    0              1  0   1   4  8 371  1   3  0  68 11 15 26  5 0 1 3
+## 856    0              1  0   0   0  2  34  3   0  1  78  4  4  8  0 1 0 4
+## 871    1              1  3   0   0  8 278  1   3  0  88  9  5 14  4 4 0 3
+## 887    0              1  0   1   3  6 231  1   3  1  79 10  8 18  4 0 0 5
+## 992    0              0  2   5   2  8 699  5   3  1  87 18 11 29  3 0 0 4
+## 998    0              2  0   1   1  3 391  5   8  0  86 15  3 18  6 0 0 7
+## 1139   0              2  1   0   1  4 192  2   0  0  66  5  4  9  1 0 0 2
+## 1329   5              1  2   0   2 12 477  2   0  2  79 16  4 20 10 7 1 3
+## 1373   0              1  0   0   0  4 227  3   4  0  82 15  3 18  8 0 0 1
+## 1382   0              1  1   0   1  4 188  5   3  0  78  6  7 13  0 1 0 3
+## 1422   0              0  2   0   2  5 202  3   0  0  76 10  7 17  4 0 0 2
+## 1442   0              4  0   0   2  5 113  3   3  0  78  6  9 15  3 0 0 3
+## 1529   0              0  0   2   2  3  91  2   3  0  79  6 12 18  2 0 0 7
+##      HO GA1 I50 CL CG R50 FF FA  AF  SC position
+## 12    0   0   4  2  2   2  1  0  81  63     &lt;NA&gt;
+## 97    0   0   1  2  2   0  1  0  68  67     &lt;NA&gt;
+## 119   0   0   3  2  7   1  1  4  61  52     &lt;NA&gt;
+## 121   0   0   1  0  4   1  0  1  69  76     &lt;NA&gt;
+## 297   0   0   2  0  3   4  2  2  56  65     &lt;NA&gt;
+## 352   0   1   5  1  3   0  0  2  30  43     &lt;NA&gt;
+## 388   0   1   1  1  2   0  1  0  71  80     &lt;NA&gt;
+## 396   0   0   0  0  1   0  0  1  -1   1     &lt;NA&gt;
+## 506   0   0   3  1  3   1  1  0  42  28     &lt;NA&gt;
+## 532   0   2   7  3  2   1  2  0 108  91     &lt;NA&gt;
+## 542   0   0   1  4  2   0  0  2  97 109     &lt;NA&gt;
+## 555   0   0   2  2  3   3  0  2  81 108     &lt;NA&gt;
+## 609   0   0   5  4  1   0  1  0  45  44     &lt;NA&gt;
+## 664   0   2   5  5  1   2  2  1  90 118     &lt;NA&gt;
+## 856   0   1   0  0  2   0  1  0  43  40     &lt;NA&gt;
+## 871   0   2   3  0  1   0  1  1  83 104     &lt;NA&gt;
+## 887   0   1   2  4  1   2  2  0  80  88     &lt;NA&gt;
+## 992   0   0  11  7  2   2  3  1 101 115     &lt;NA&gt;
+## 998   0   0   4  2  4   1  1  0  98  79     &lt;NA&gt;
+## 1139  0   2   3  1  1   0  0  1  31  64     &lt;NA&gt;
+## 1329  0   0   5  2  3   0  1  1 139 143     &lt;NA&gt;
+## 1373  0   1   1  0  3   1  0  0  79  61     &lt;NA&gt;
+## 1382  0   0   1  1  3   0  1  1  48  65     &lt;NA&gt;
+## 1422  0   0   3  2  2   0  0  1  61  60     &lt;NA&gt;
+## 1442  0   0   2  2  4   0  1  2  52  67     &lt;NA&gt;
+## 1529  0   1   1  4  2   0  0  1  73  77     &lt;NA&gt;</code></pre>
+<p>So what is the issue?</p>
+<p>If we go to say <a href="https://www.footywire.com/afl/footy/pg-essendon-bombers--anthony-mcdonald-tipungwuti">Anthony McDonald-Tipungwuti</a> page where we take his player information we can see that his name is listed as Anthony McDonald-Tipungwuti, however if we were to go to an <a href="https://www.footywire.com/afl/footy/th-essendon-bombers">Essendon Bombers</a> game, such as their one vs the <a href="https://www.footywire.com/afl/footy/ft_match_statistics?mid=9728">Giants</a> we can see that his name is Anthony M-Tipungwuti which is what is in the <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> dataset.</p>
+<p>So lets change the names in the scrape to match the names within <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>.</p>
+<pre class="r"><code>footywire&lt;-footywire%&gt;%
+  mutate(player=replace(player, player==&quot;Sam Petrevski-Seton&quot;,&quot;Sam P-Seton&quot; ))%&gt;%
+   mutate(player=replace(player, player==&quot;Alex Neal-Bullen&quot;,&quot;Alex N-Bullen&quot; ))%&gt;%
+   mutate(player=replace(player, player==&quot;Sam Powell-Pepper&quot;,&quot;Sam P-Pepper&quot; ))%&gt;%
+   mutate(player=replace(player, player==&quot;Darcy Byrne-Jones&quot;,&quot;Darcy B-Jones&quot; ))%&gt;%
+   mutate(player=replace(player, player==&quot;George Horlin-Smith&quot;,&quot;George H-Smith&quot; ))%&gt;%
+    mutate(player=replace(player, player==&quot;Anthony McDonald-Tipungwuti&quot;,&quot;Anthony M-Tipungwuti&quot; ))%&gt;%
+   mutate(player=replace(player, player==&quot;Luke Davies-Uniacke&quot;,&quot;Luke D-Uniacke&quot; ))%&gt;%
+  mutate(player=replace(player, player==&quot;Cameron Ellis-Yolmen&quot;,&quot;Cameron E-Yolmen&quot; )) %&gt;%
+  mutate(player=replace(player, player==&quot;Ed Vickers-Willis&quot;,&quot;Ed V-Willis&quot; ))
+  
+footywire_positions&lt;-select(footywire, player, club, position)  
+  
+dataset&lt;-left_join(footywire_2019, footywire_positions, by=c(&quot;Player&quot;=&quot;player&quot;, &quot;Team&quot;=&quot;club&quot;))</code></pre>
+<p>Now lets do some plotting!</p>
+<pre class="r"><code>dataset%&gt;%
+    filter(Opposition==&quot;West Coast&quot;)%&gt;%
+    ggplot(aes(y=AF, x=as.factor(position)))+
+  geom_point()+ 
+  geom_text(aes(label=Player),check_overlap = TRUE)</code></pre>
+<p><img src="/makemeauseR/2019-01-09-making-a-one-pager_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>

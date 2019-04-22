@@ -73,3 +73,5 @@ xmr_chart(df = xmr_data,
 ```
 
 Does this tell a different story or a very similar one to earlier?
+
+

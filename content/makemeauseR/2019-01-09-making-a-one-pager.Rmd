@@ -8,6 +8,7 @@ categories:
   - R
 tags:
   - betting
+  - DFS
 description: 'Maybe handy for fantasy'
 ---
 
@@ -46,8 +47,11 @@ We want to use the fantastic (bit biased here) R package [fitzRoy](https://jimmy
 ```{r}
 library(tidyverse)
 library(fitzRoy)
-df<-fitzRoy::player_stats%>%
-  filter(Season==2019)
+
+
+df<-fitzRoy::get_footywire_stats(9721:9756)
+
+
 
 ```
 
@@ -168,10 +172,110 @@ footywire <- purrr::map_df(url_players, player_info)
 names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position","sc_price", "af_price")
 ```
 
-After all this, we need to join the information together so its in one dataframe. 
+So now we have our dataframes. 
 
-Get data into one dataframe, do a table like on rotowire
+Lets have a looksie
 
-Bonus, take a team, say collingwood and show the distribution of points given up to 'mid/fwds'
+```{r}
+head(footywire)
+head(df)
+
+```
+
+What we can see here is that if we were to attempt to join on team and player name that the team names do not align between the freshly scraped data and the dataset within [fitzRoy](https://github.com/jimmyday12/fitzRoy) so lets replace the team names in the freshly scraped footywire data to match those existing already within [#fitzRoy](https://github.com/jimmyday12/fitzRoy).
+
+Too see how its an issue we can use `unique` 
+
+```{r}
+unique(footywire$club)
+unique(df$Team)
+
+```
+
+```{r}
+footywire<-footywire%>%
+  mutate(club=replace(club, club=="Richmond Tigers","Richmond" ))%>%
+  mutate(club=replace(club, club=="Geelong Cats" ,"Geelong"  ))%>%
+  mutate(club=replace(club, club=="St Kilda Saints" ,"St Kilda"  ))%>%
+  mutate(club=replace(club, club=="Brisbane Lions" ,"Brisbane"))%>%
+  mutate(club=replace(club, club=="Collingwood Magpies" ,"Collingwood" ))%>%
+  mutate(club=replace(club, club=="West Coast Eagles" ,"West Coast" ))%>%
+  mutate(club=replace(club, club=="Gold Coast Suns" ,"Gold Coast" ))%>%
+  mutate(club=replace(club, club=="North Melbourne Kangaroos","North Melbourne"  ))%>%
+  mutate(club=replace(club, club=="Sydney Swans" , "Sydney"  ))%>%
+  mutate(club=replace(club, club=="Essendon Bombers" ,"Essendon" ))%>%
+  mutate(club=replace(club, club=="Port Adelaide Power","Port Adelaide" ))%>%
+  mutate(club=replace(club, club=="Adelaide Crows" ,"Adelaide" ))%>%
+  mutate(club=replace(club, club=="Melbourne Demons" ,"Melbourne"  ))%>%
+  mutate(club=replace(club, club=="Fremantle Dockers" ,"Fremantle"  ))%>%
+  mutate(club=replace(club, club=="Hawthorn Hawks", "Hawthorn"  ))%>%
+  mutate(club=replace(club, club=="GWS Giants"  ,"GWS" ))%>%
+  mutate(club=replace(club, club== "Footscray" ,"Western Bulldogs" ))%>%
+  mutate(club=replace(club, club=="Carlton Blues"    ,"Carlton"  ))
+
+```
+
+Then we check it. I find using `str_sort` helps to see the output on top of each other. 
+
+```{r}
+str_sort(unique(footywire$club))
+str_sort(unique(df$Team))
+
+```
+
+From the footywire data, we want to take the player names, club and position and then join this onto the `player_stats` dataset from [fitzRoy](https://github.com/jimmyday12/fitzRoy). 
+
+```{r}
+footywire_positions<-select(footywire, player, club, position)
+footywire_2019<-df
+
+dataset<-left_join(footywire_2019, footywire_positions, by=c("Player"="player", "Team"="club"))
+```
+
+Issue here is that the hyphen names don't match so we got to change those aswell. 
+
+We can view these problem rows as follows.
+
+```{r}
+dataset[rowSums(is.na(dataset)) > 0,]
+
+```
+
+So what is the issue? 
+
+If we go to say [Anthony McDonald-Tipungwuti](https://www.footywire.com/afl/footy/pg-essendon-bombers--anthony-mcdonald-tipungwuti) page where we take his player information we can see that his name is listed as Anthony McDonald-Tipungwuti, however if we were to go to an [Essendon Bombers](https://www.footywire.com/afl/footy/th-essendon-bombers) game, such as their one vs the [Giants](https://www.footywire.com/afl/footy/ft_match_statistics?mid=9728) we can see that his name is Anthony M-Tipungwuti which is what is in the [fitzRoy](https://github.com/jimmyday12/fitzRoy) dataset.
+
+
+So lets change the names in the scrape to match the names within [fitzRoy](https://github.com/jimmyday12/fitzRoy).
+
+```{r}
+footywire<-footywire%>%
+  mutate(player=replace(player, player=="Sam Petrevski-Seton","Sam P-Seton" ))%>%
+   mutate(player=replace(player, player=="Alex Neal-Bullen","Alex N-Bullen" ))%>%
+   mutate(player=replace(player, player=="Sam Powell-Pepper","Sam P-Pepper" ))%>%
+   mutate(player=replace(player, player=="Darcy Byrne-Jones","Darcy B-Jones" ))%>%
+   mutate(player=replace(player, player=="George Horlin-Smith","George H-Smith" ))%>%
+    mutate(player=replace(player, player=="Anthony McDonald-Tipungwuti","Anthony M-Tipungwuti" ))%>%
+   mutate(player=replace(player, player=="Luke Davies-Uniacke","Luke D-Uniacke" ))%>%
+  mutate(player=replace(player, player=="Cameron Ellis-Yolmen","Cameron E-Yolmen" )) %>%
+  mutate(player=replace(player, player=="Ed Vickers-Willis","Ed V-Willis" ))
+  
+footywire_positions<-select(footywire, player, club, position)  
+  
+dataset<-left_join(footywire_2019, footywire_positions, by=c("Player"="player", "Team"="club"))
+
+```
+Now lets do some plotting!
+
+Suppose we wanted to see which players did well playing the West Coast Eagles, we could do a simple plot of position by their fantasy scores. 
+
+```{r}
+dataset%>%
+    filter(Opposition=="West Coast")%>%
+    ggplot(aes(y=AF, x=as.factor(position)))+
+  geom_point()+ 
+  geom_text(aes(label=Player),check_overlap = TRUE)
+
+```
 
 

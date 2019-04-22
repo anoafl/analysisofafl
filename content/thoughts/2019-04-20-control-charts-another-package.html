@@ -17,12 +17,12 @@ description: 'xmrr'
 <p>First lets do our graphic from our previous post using <a href="https://cran.r-project.org/package=ggQC">ggQC</a></p>
 <pre class="r"><code>library(fitzRoy)
 library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ── Attaching packages ───── tidyverse 1.2.1 ──</code></pre>
 <pre><code>## ✔ ggplot2 3.1.1       ✔ purrr   0.3.2  
 ## ✔ tibble  2.1.1       ✔ dplyr   0.8.0.1
 ## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
 ## ✔ readr   1.3.1       ✔ forcats 0.4.0</code></pre>
-<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+<pre><code>## ── Conflicts ──────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(ggQC)
@@ -49,33 +49,33 @@ Measure &lt;-  runif(length(Year))
 df &lt;- data.frame(Year, Measure)
 head(df)</code></pre>
 <pre><code>##   Year   Measure
-## 1 2001 0.7021658
-## 2 2002 0.6488748
-## 3 2003 0.9156940
-## 4 2004 0.9788410
-## 5 2005 0.6417381
-## 6 2006 0.5848234</code></pre>
+## 1 2001 0.5032418
+## 2 2002 0.7435385
+## 3 2003 0.1127812
+## 4 2004 0.3818857
+## 5 2005 0.6752043
+## 6 2006 0.4476480</code></pre>
 <pre class="r"><code>xmr(df, &quot;Measure&quot;, recalc = T)</code></pre>
 <pre><code>##   Year   Measure Order Central Line Moving Range Average Moving Range
-## 1 2001 0.7021658     1        0.777           NA                   NA
-## 2 2002 0.6488748     2        0.777        0.053                 0.18
-## 3 2003 0.9156940     3        0.777        0.267                 0.18
-## 4 2004 0.9788410     4        0.777        0.063                 0.18
-## 5 2005 0.6417381     5        0.777        0.337                 0.18
-## 6 2006 0.5848234     6        0.777        0.057                 0.18
-## 7 2007 0.9490080     7        0.777        0.364                 0.18
-## 8 2008 0.5043880     8        0.777        0.445                 0.18
-## 9 2009 0.8819234     9        0.777        0.378                 0.18
+## 1 2001 0.5032418     1        0.483           NA                   NA
+## 2 2002 0.7435385     2        0.483        0.240                0.358
+## 3 2003 0.1127812     3        0.483        0.631                0.358
+## 4 2004 0.3818857     4        0.483        0.269                0.358
+## 5 2005 0.6752043     5        0.483        0.293                0.358
+## 6 2006 0.4476480     6        0.483        0.228                0.358
+## 7 2007 0.3416156     7        0.483        0.106                0.358
+## 8 2008 0.3271194     8        0.483        0.014                0.358
+## 9 2009 0.5749751     9        0.483        0.248                0.358
 ##   Lower Natural Process Limit Upper Natural Process Limit
 ## 1                          NA                          NA
-## 2                       0.298                       1.257
-## 3                       0.298                       1.257
-## 4                       0.298                       1.257
-## 5                       0.298                       1.257
-## 6                       0.298                       1.257
-## 7                       0.298                       1.257
-## 8                       0.298                       1.257
-## 9                       0.298                       1.257</code></pre>
+## 2                           0                       1.437
+## 3                           0                       1.437
+## 4                           0                       1.437
+## 5                           0                       1.437
+## 6                           0                       1.437
+## 7                           0                       1.437
+## 8                           0                       1.437
+## 9                           0                       1.437</code></pre>
 <p>Lets create a similar dataframe as df, but using data from <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a></p>
 <pre class="r"><code>df&lt;-fitzRoy::match_results%&gt;%
   mutate(total=Home.Points+Away.Points)%&gt;%
