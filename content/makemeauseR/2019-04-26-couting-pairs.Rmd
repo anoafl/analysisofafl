@@ -1,0 +1,49 @@
+---
+title: Couting Pairs
+author: Robert Nguyen
+date: '2019-04-26'
+slug: couting-pairs
+categories:
+  - fitzRoy
+tags:
+  - fitzRoy
+description: 'Saw a tweet from @matt_pavlich'
+---
+
+Saw a [tweet](https://twitter.com/matt_pavlich/status/1121558513111588865) from [@matt_pavlich](https://twitter.com/matt_pavlich) asking twitter roughly how many games he and [David Mundy](https://afltables.com/afl/stats/players/D/David_Mundy.html) have played together. 
+
+Thankfully, you don't have to wonder anymore and you can reproduce the results yourself and do running counts for your favourite players!
+
+```{r}
+library(tidyverse)
+library(fitzRoy)
+df<-fitzRoy::get_afltables_stats(start_date = "1990-01-01", end_date=Sys.Date())
+df$matchID<-paste(df$Season, df$Round, df$Home.team, df$Away.team)
+
+df$name<-paste(df$First.name, df$Surname)
+df_data<-df%>%filter(Playing.for=="Fremantle")%>%select(name, matchID, Playing.for)
+df_data %>%
+mutate(n = 1) %>%
+spread(name, n, fill=0) %>%
+select(-Playing.for, -matchID) %>%
+{crossprod(as.matrix(.))} %>%
+replace(lower.tri(., diag=T), NA) %>%
+reshape2::melt(na.rm=T) %>%
+unite('Pair', c('Var1', 'Var2'), sep=", ")%>%
+  filter(value>150)%>%
+  arrange(desc(value))
+
+
+```
+
+Some interesting things you might want to do now you have the script and data, you might want to see which pair has played the most together for each team.
+
+Something you might also want to do is look the games that they played together in.
+
+```{r}
+df_data%>%
+  filter(name %in% c("David Mundy", "Matthew Pavlich")) %>%
+  group_by(matchID)%>%
+  count(n=n())%>%
+  filter(n==2)
+```

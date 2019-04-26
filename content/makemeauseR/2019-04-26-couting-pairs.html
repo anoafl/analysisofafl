@@ -1,0 +1,96 @@
+---
+title: Couting Pairs
+author: Robert Nguyen
+date: '2019-04-26'
+slug: couting-pairs
+categories:
+  - fitzRoy
+tags:
+  - fitzRoy
+description: 'Saw a tweet from @matt_pavlich'
+---
+
+
+
+<p>Saw a <a href="https://twitter.com/matt_pavlich/status/1121558513111588865">tweet</a> from <span class="citation">[@matt_pavlich]</span>(<a href="https://twitter.com/matt_pavlich" class="uri">https://twitter.com/matt_pavlich</a>) asking twitter roughly how many games he and <a href="https://afltables.com/afl/stats/players/D/David_Mundy.html">David Mundy</a> have played together.</p>
+<p>Thankfully, you don’t have to wonder anymore and you can reproduce the results yourself and do running counts for your favourite players!</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.1.1       ✔ purrr   0.3.2  
+## ✔ tibble  2.1.1       ✔ dplyr   0.8.0.1
+## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
+## ✔ readr   1.3.1       ✔ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(fitzRoy)
+df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1990-01-01&quot;, end_date=Sys.Date())</code></pre>
+<pre><code>## Returning data from 1990-01-01 to 2019-04-26</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Warning: Detecting old grouped_df format, replacing `vars` attribute by
+## `groups`</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre class="r"><code>df$matchID&lt;-paste(df$Season, df$Round, df$Home.team, df$Away.team)
+
+df$name&lt;-paste(df$First.name, df$Surname)
+df_data&lt;-df%&gt;%filter(Playing.for==&quot;Fremantle&quot;)%&gt;%select(name, matchID, Playing.for)
+df_data %&gt;%
+mutate(n = 1) %&gt;%
+spread(name, n, fill=0) %&gt;%
+select(-Playing.for, -matchID) %&gt;%
+{crossprod(as.matrix(.))} %&gt;%
+replace(lower.tri(., diag=T), NA) %&gt;%
+reshape2::melt(na.rm=T) %&gt;%
+unite(&#39;Pair&#39;, c(&#39;Var1&#39;, &#39;Var2&#39;), sep=&quot;, &quot;)%&gt;%
+  filter(value&gt;150)%&gt;%
+  arrange(desc(value))</code></pre>
+<pre><code>##                                 Pair value
+## 1  Aaron Sandilands, Matthew Pavlich   232
+## 2       David Mundy, Matthew Pavlich   226
+## 3    Luke McPharlin, Matthew Pavlich   224
+## 4       David Mundy, Michael Johnson   222
+## 5      Aaron Sandilands, David Mundy   214
+## 6      Matthew Pavlich, Paul Hasleby   200
+## 7     Antoni Grover, Matthew Pavlich   191
+## 8   Matthew Pavlich, Michael Johnson   187
+## 9        David Mundy, Luke McPharlin   186
+## 10  Aaron Sandilands, Luke McPharlin   183
+## 11         David Mundy, Stephen Hill   183
+## 12         David Mundy, Ryan Crowley   175
+## 13 Aaron Sandilands, Michael Johnson   173
+## 14   Luke McPharlin, Michael Johnson   171
+## 15       Shane Parker, Shaun McManus   171
+## 16     Matthew Pavlich, Ryan Crowley   167
+## 17    Matthew Pavlich, Shaun McManus   164
+## 18     Michael Johnson, Ryan Crowley   163
+## 19       Matthew Pavlich, Peter Bell   160
+## 20     David Mundy, Garrick Ibbotson   158
+## 21          Chris Mayne, David Mundy   154
+## 22    David Mundy, Hayden Ballantyne   154
+## 23        David Mundy, Paul Duffield   153
+## 24       Antoni Grover, Paul Hasleby   153
+## 25     Matthew Pavlich, Stephen Hill   151</code></pre>
+<p>Some interesting things you might want to do now you have the script and data, you might want to see which pair has played the most together for each team.</p>
+<p>Something you might also want to do is look the games that they played together in.</p>
+<pre class="r"><code>df_data%&gt;%
+  filter(name %in% c(&quot;David Mundy&quot;, &quot;Matthew Pavlich&quot;)) %&gt;%
+  group_by(matchID)%&gt;%
+  count(n=n())%&gt;%
+  filter(n==2)</code></pre>
+<pre><code>## # A tibble: 226 x 3
+## # Groups:   matchID [226]
+##    matchID                                n    nn
+##    &lt;chr&gt;                              &lt;int&gt; &lt;int&gt;
+##  1 2005 10 Geelong Fremantle              2     2
+##  2 2005 11 Fremantle Brisbane Lions       2     2
+##  3 2005 12 Sydney Fremantle               2     2
+##  4 2005 13 Fremantle North Melbourne      2     2
+##  5 2005 14 Adelaide Fremantle             2     2
+##  6 2005 15 Fremantle Western Bulldogs     2     2
+##  7 2005 16 Carlton Fremantle              2     2
+##  8 2005 17 Fremantle Melbourne            2     2
+##  9 2005 18 Collingwood Fremantle          2     2
+## 10 2005 19 Fremantle Richmond             2     2
+## # … with 216 more rows</code></pre>
