@@ -20,14 +20,14 @@ tags : ["ELO", "fitzRoy", "open science"]
 <p>So while you might be reading other blogs and sure they are “coding” it up from “scratch”. I think a missing point to this thought is while that’s true, it also doesn’t have to be you. Lots of people develop packages and answer questions on sites like <a href="https://stackoverflow.com/questions/tagged/r">stackoverflow</a>.</p>
 <p>So if you have ever wanted to build your own ELO for AFL why not use this <a href="https://cran.r-project.org/web/packages/elo/index.html">ELO package</a>. That’s what it was designed for, for people to use it.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ----------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 3.0.0.9000     v purrr   0.2.5     
-## v tibble  1.4.2          v dplyr   0.7.6     
-## v tidyr   0.8.1          v stringr 1.3.1     
-## v readr   1.1.1          v forcats 0.3.0</code></pre>
-<pre><code>## -- Conflicts -------------------------- tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre><code>## ── Attaching packages ───────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.2.0     ✔ purrr   0.3.2
+## ✔ tibble  2.1.3     ✔ dplyr   0.8.2
+## ✔ tidyr   0.8.3     ✔ stringr 1.4.0
+## ✔ readr   1.3.1     ✔ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ──────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(elo)
 library(fitzRoy)
 library(lubridate)</code></pre>
@@ -36,61 +36,136 @@ library(lubridate)</code></pre>
 <pre><code>## The following object is masked from &#39;package:base&#39;:
 ## 
 ##     date</code></pre>
-<pre class="r"><code># Get data
-results &lt;- fitzRoy::get_match_results()
-results &lt;- results %&gt;%filter(Season %in% c(2014,2015,2016,2017))%&gt;%
-  mutate(seas_rnd = paste0(Season, &quot;.&quot;, Round.Number),
-         First.Game = ifelse(Round.Number == 1, TRUE, FALSE)
-  )
+<pre class="r"><code>results &lt;- fitzRoy::get_match_results()
+fixture &lt;- fitzRoy::get_fixture(2019)
 
-fixture &lt;- fitzRoy::get_fixture()
-fixture &lt;- fixture %&gt;%
-  # filter(Date &gt; max(results$Date)) %&gt;%
+head(results)</code></pre>
+<pre><code>## # A tibble: 6 x 16
+##    Game Date       Round Home.Team Home.Goals Home.Behinds Home.Points
+##   &lt;dbl&gt; &lt;date&gt;     &lt;chr&gt; &lt;chr&gt;          &lt;int&gt;        &lt;int&gt;       &lt;int&gt;
+## 1     1 1897-05-08 R1    Fitzroy            6           13          49
+## 2     2 1897-05-08 R1    Collingw…          5           11          41
+## 3     3 1897-05-08 R1    Geelong            3            6          24
+## 4     4 1897-05-08 R1    Sydney             3            9          27
+## 5     5 1897-05-15 R2    Sydney             6            4          40
+## 6     6 1897-05-15 R2    Essendon           4            6          30
+## # … with 9 more variables: Away.Team &lt;chr&gt;, Away.Goals &lt;int&gt;,
+## #   Away.Behinds &lt;int&gt;, Away.Points &lt;int&gt;, Venue &lt;chr&gt;, Margin &lt;int&gt;,
+## #   Season &lt;dbl&gt;, Round.Type &lt;chr&gt;, Round.Number &lt;int&gt;</code></pre>
+<pre class="r"><code>results &lt;- results %&gt;%
+  mutate(seas_rnd = paste0(Season, &quot;.&quot;, Round.Number),
+         First.Game = ifelse(Round.Number == 1, TRUE, FALSE))
+
+head(results)</code></pre>
+<pre><code>## # A tibble: 6 x 18
+##    Game Date       Round Home.Team Home.Goals Home.Behinds Home.Points
+##   &lt;dbl&gt; &lt;date&gt;     &lt;chr&gt; &lt;chr&gt;          &lt;int&gt;        &lt;int&gt;       &lt;int&gt;
+## 1     1 1897-05-08 R1    Fitzroy            6           13          49
+## 2     2 1897-05-08 R1    Collingw…          5           11          41
+## 3     3 1897-05-08 R1    Geelong            3            6          24
+## 4     4 1897-05-08 R1    Sydney             3            9          27
+## 5     5 1897-05-15 R2    Sydney             6            4          40
+## 6     6 1897-05-15 R2    Essendon           4            6          30
+## # … with 11 more variables: Away.Team &lt;chr&gt;, Away.Goals &lt;int&gt;,
+## #   Away.Behinds &lt;int&gt;, Away.Points &lt;int&gt;, Venue &lt;chr&gt;, Margin &lt;int&gt;,
+## #   Season &lt;dbl&gt;, Round.Type &lt;chr&gt;, Round.Number &lt;int&gt;, seas_rnd &lt;chr&gt;,
+## #   First.Game &lt;lgl&gt;</code></pre>
+<pre class="r"><code>fixture &lt;- fixture %&gt;%
+  filter(Date &gt; max(results$Date)) %&gt;%
   mutate(Date = ymd(format(Date, &quot;%Y-%m-%d&quot;))) %&gt;%
   rename(Round.Number = Round)
 
-# Simple ELO
 # Set parameters
-HGA &lt;- 0
-carryOver &lt;- 1
-B &lt;- 0.03
-k_val &lt;- 20
+HGA &lt;- 30 # home ground advantage
+carryOver &lt;- 0.5 # season carry over
+k_val &lt;- 20 # update weighting factor
 
-# Create margin function to ensure result is between 0 and 1
-map_margin_to_outcome &lt;- function(margin, B) {
-  1 / (1 + (exp(-B * margin)))
+
+map_margin_to_outcome &lt;- function(margin, marg.max = 80, marg.min = -80){
+  norm &lt;- (margin - marg.min)/(marg.max - marg.min)
+  norm %&gt;% pmin(1) %&gt;% pmax(0)
 }
 
 # Run ELO
 elo.data &lt;- elo.run(
-  map_margin_to_outcome(Home.Points - Away.Points, B = B) ~
-    adjust(Home.Team, HGA) +
+  map_margin_to_outcome(Home.Points - Away.Points) ~
+  adjust(Home.Team, HGA) +
     Away.Team +
-    group(seas_rnd) ,
-    # regress(First.Game, 1500, carryOver),
+    group(seas_rnd) +
+    regress(First.Game, 1500, carryOver),
   k = k_val,
   data = results
 )
 
-# as.data.frame(elo.data)
-# as.matrix(elo.data)
-# final.elos(elo.data)
-
-
-# Do predictions
-fixture &lt;- fixture %&gt;%filter(Season==2018)%&gt;%
+as.data.frame(elo.data) %&gt;% tail()</code></pre>
+<pre><code>##               team.A          team.B       p.A  wins.A    update    elo.A
+## 15528         Sydney      Gold Coast 0.5849803 0.76250  3.550395 1497.135
+## 15529    Collingwood North Melbourne 0.5848363 0.22500 -7.196726 1518.862
+## 15530  Port Adelaide       Footscray 0.5746598 0.34375 -4.618196 1502.893
+## 15531       St Kilda        Richmond 0.5271466 0.29375 -4.667931 1471.617
+## 15532 Brisbane Lions       Melbourne 0.5833187 0.70625  2.458626 1508.817
+## 15533      Fremantle         Carlton 0.5790813 0.47500 -2.081626 1502.480
+##          elo.B
+## 15528 1460.405
+## 15529 1503.730
+## 15530 1489.859
+## 15531 1492.071
+## 15532 1475.459
+## 15533 1481.227</code></pre>
+<pre class="r"><code>as.matrix(elo.data) %&gt;% tail()</code></pre>
+<pre><code>##         Adelaide Brisbane Lions  Carlton Collingwood Essendon Fitzroy
+## [2791,] 1513.852       1499.096 1482.224    1524.114 1504.841    1500
+## [2792,] 1513.972       1500.577 1478.602    1522.139 1508.463    1500
+## [2793,] 1516.079       1498.933 1480.246    1525.196 1508.463    1500
+## [2794,] 1518.601       1498.933 1479.145    1525.196 1509.635    1500
+## [2795,] 1518.601       1506.358 1479.145    1526.059 1506.024    1500
+## [2796,] 1516.706       1508.817 1481.227    1518.862 1506.512    1500
+##         Footscray Fremantle  Geelong Gold Coast      GWS Hawthorn
+## [2791,]  1491.370  1502.481 1533.124   1476.197 1517.994 1497.941
+## [2792,]  1485.004  1504.456 1533.719   1468.234 1525.957 1496.460
+## [2793,]  1485.004  1504.456 1541.934   1464.799 1523.850 1496.460
+## [2794,]  1486.105  1506.316 1541.934   1463.956 1526.889 1495.288
+## [2795,]  1485.241  1504.562 1540.387   1463.956 1526.889 1493.680
+## [2796,]  1489.859  1502.480 1542.282   1460.405 1526.402 1492.532
+##         Melbourne North Melbourne Port Adelaide Richmond St Kilda   Sydney
+## [2791,]  1479.339        1492.084      1498.387 1502.193 1492.304 1487.083
+## [2792,]  1479.219        1496.137      1507.824 1498.140 1482.867 1486.488
+## [2793,]  1476.163        1499.573      1507.824 1489.926 1482.867 1491.976
+## [2794,]  1476.163        1496.533      1505.964 1487.403 1483.710 1491.976
+## [2795,]  1477.917        1496.533      1507.511 1487.403 1476.285 1493.585
+## [2796,]  1475.459        1503.730      1502.893 1492.071 1471.617 1497.135
+##         University West Coast
+## [2791,]       1500   1505.376
+## [2792,]       1500   1511.741
+## [2793,]       1500   1506.252
+## [2794,]       1500   1506.252
+## [2795,]       1500   1509.863
+## [2796,]       1500   1511.010</code></pre>
+<pre class="r"><code>final.elos(elo.data)</code></pre>
+<pre><code>##        Adelaide  Brisbane Lions         Carlton     Collingwood 
+##        1516.706        1508.817        1481.227        1518.862 
+##        Essendon         Fitzroy       Footscray       Fremantle 
+##        1506.512        1380.902        1489.859        1502.480 
+##         Geelong      Gold Coast             GWS        Hawthorn 
+##        1542.282        1460.405        1526.402        1492.532 
+##       Melbourne North Melbourne   Port Adelaide        Richmond 
+##        1475.459        1503.730        1502.893        1492.071 
+##        St Kilda          Sydney      University      West Coast 
+##        1471.617        1497.135        1412.936        1511.010</code></pre>
+<pre class="r"><code>fixture &lt;- fixture %&gt;%
   mutate(Prob = predict(elo.data, newdata = fixture))
 
-results &lt;- fitzRoy::get_match_results()
-# View(fixture)
-
-results&lt;-select(results,Date, Home.Team, Margin)
-
-left_join(fixture, results, by=c(&quot;Date&quot;=&quot;Date&quot;,&quot;Home.Team&quot;=&quot;Home.Team&quot; ))%&gt;%
-  mutate(pick=if_else(Prob&gt;0.5,1,-1))%&gt;%
-  mutate(correct=pick*Margin)%&gt;%
-  mutate(right_pick=if_else(correct&gt;0,1,0))%&gt;%
-  mutate(accuracy=sum(right_pick, na.rm = TRUE))%&gt;%View()</code></pre>
+head(fixture)</code></pre>
+<pre><code>## # A tibble: 6 x 8
+##   Date       Season Season.Game Round.Number Home.Team Away.Team Venue
+##   &lt;date&gt;      &lt;int&gt;       &lt;int&gt;        &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;
+## 1 2019-06-30   2019           1           15 St Kilda  Richmond  Marv…
+## 2 2019-06-30   2019           1           15 Brisbane… Melbourne Gabba
+## 3 2019-06-30   2019           1           15 Fremantle Carlton   Optu…
+## 4 2019-07-05   2019           1           16 Hawthorn  Collingw… MCG  
+## 5 2019-07-06   2019           1           16 Essendon  Sydney    MCG  
+## 6 2019-07-06   2019           1           16 Gold Coa… Richmond  Metr…
+## # … with 1 more variable: Prob &lt;dbl&gt;</code></pre>
 <p>So if you run that script end to end you should have a working ELO model that you can play around with.</p>
 <div id="somethings-to-note." class="section level1">
 <h1>Somethings to note.</h1>
