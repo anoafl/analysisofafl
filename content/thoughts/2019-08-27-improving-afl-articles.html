@@ -1,0 +1,175 @@
+---
+title: Improving AFL articles
+author: robert nguyen
+date: '2019-08-27'
+slug: improving-afl-articles
+categories: [viz]
+tags: [viz]
+description: 'Sometimes you just want to play around'
+---
+
+
+
+<p>So you might have seen an article from someone who has a weird simpsons display picture about the <a href="https://docs.google.com/document/d/1dCxSxHJVAeOU5tQGpLR5P0SuqlPPahb6r_pDydBclpA/edit?usp=sharing">sorry state of AFL analytics</a>. This isn’t saying that AFL work is poor as a whole or that people within AFL circles aren’t capable of good work. This just points to a framework in place by the powers to be, that handcuff those who want to do leading work.</p>
+<p>The main thing stopping growth in the AFL analytics community is data availability. While some might argue that the demand isn’t there, I’d like to argue that the demand is there, but the data is hard to get in a useable format and those that do get access to it don’t write in a very accessible way for the average fan who has a little bit of analytical taste.</p>
+<p>Lets take this article on how the <a href="https://www.afl.com.au/news/2019-07-30/stats-files-why-the-lions-might-be-the-afls-most-versatile-team">Brisbane Lions are playing differently week to week</a>. Taking out the obvious how fans of other teams can’t get a feel for if their teams change on a week to week basis. Or the fact that league wide data isn’t available for fans to tell if there just might be a lot of variance week to week in how teams score. The data itself is presented in a poor, generally unusable format. Now that might sound harsh, so lets take a step back, its unusable for me, because I don’t like to just read numbers, I’d like to see some visualisation - which hopefully I am not in the minority on this one.</p>
+<p>So lets take a table from the article and try to visualise it.</p>
+<p>The table we are going to look at is the table that describes how they have scored vs different opponents and the make up of those scoring sources.</p>
+<div class="figure">
+<img src="/img/lions_table.PNG" alt="Table to recreate" />
+<p class="caption">Table to recreate</p>
+</div>
+<p>What are the issues with this table as presented?</p>
+<ol style="list-style-type: decimal">
+<li>No visual - people I think prefer visualisation over a dump of numbers where possible</li>
+<li>Some numbers have been <strong>bolded</strong> but there is no explanation as to why? - Leaving the reader to wonder well a lot is it to do with a significant change on the previous week? Maybe its just the max/min values of that ‘’scores from’’</li>
+</ol>
+<p>So it seems like it should be an easy copy and paste job into say R and we can go right? - So thanks to <a href="https://twitter.com/milesmcbain?lang=en">Miles</a> and the fantastic <a href="https://cran.r-project.org/web/packages/datapasta/README.html">datapasta</a> we should be able to j ust copy and paste that data into a nice dataframe and do some visualisations.</p>
+<p>Now unfortunetly we get this error message <code>Could not paste clipboard as tibble. Text could not be parsed as table</code>. Which sucks but hey we shouldn’t let that stop us because guess what, we can paste it as a vector!</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.2.0           ✔ purrr   0.3.2      
+## ✔ tibble  2.1.3           ✔ dplyr   0.8.3      
+## ✔ tidyr   0.8.99.9000     ✔ stringr 1.4.0      
+## ✔ readr   1.3.1           ✔ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ───────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>data_set&lt;-c(&quot;OPPONENT&quot;, NA, &quot;FORWARD 50&quot;, NA, &quot;ATTACKING MIDFIELD&quot;, NA, &quot;CENTRE BOUNCE&quot;, NA, &quot;DEFENSIVE MIDFIELD&quot;, NA, &quot;DEFENSIVE 50&quot;, NA, &quot;SCORE PER IN50&quot;, NA, &quot;GOAL PER IN50&quot;, NA, &quot;St Kilda, round 14&quot;, NA, &quot;30.4%&quot;, NA, &quot;33.9%&quot;, NA, &quot;7%&quot;, NA, &quot;21.7%&quot;, NA, &quot;7%&quot;, NA, &quot;48.4%&quot;, NA, &quot;27.4%&quot;, NA, &quot;Melbourne, round 15&quot;, NA, &quot;15%&quot;, NA, &quot;37.4%&quot;, NA, &quot;30.8%&quot;, NA, &quot;2.8%&quot;, NA, &quot;14%&quot;, NA, &quot;50.8%&quot;, NA, &quot;23.8%&quot;, NA, &quot;GWS Giants, round 16&quot;, NA, &quot;36.2%&quot;, NA, &quot;14.9%&quot;, NA, &quot;1.1%&quot;, NA, &quot;26.6%&quot;, NA, &quot;21.3%&quot;, NA, &quot;49%&quot;, NA, &quot;28.6%&quot;, NA, &quot;Port Adelaide, round 17&quot;, NA, &quot;28.9%&quot;, NA, &quot;24.7%&quot;, NA, &quot;14.4%&quot;, NA, &quot;24.7%&quot;, NA, &quot;7.2%&quot;, NA, &quot;49.1%&quot;, NA, &quot;25.5%&quot;, NA, &quot;North Melbourne, round 18&quot;, NA, &quot;35.6%&quot;, NA, &quot;17.2%&quot;, NA, &quot;10.3%&quot;, NA, &quot;16.1%&quot;, NA, &quot;20.7%&quot;, NA, &quot;40.3%&quot;, NA, &quot;17.9%&quot;, NA, &quot;Hawthorn, round 19&quot;, NA, &quot;23%&quot;, NA, &quot;39.1%&quot;, NA, &quot;13.8%&quot;, NA, &quot;20.7%&quot;, NA, &quot;3.4%&quot;, NA, &quot;55%&quot;, NA, &quot;32.5%&quot;)</code></pre>
+<p>So the issue here is that now we have a vector that has NA in it and we also have a vector when really we want a dataframe.</p>
+<p>So lets fix that!</p>
+<p>First lets remove the NA</p>
+<pre class="r"><code>data_fr&lt;-data_set[!is.na(data_set)]</code></pre>
+<p>Now lets make it into a data.frame</p>
+<pre class="r"><code>data_fr&lt;-matrix(data_fr, ncol=8, byrow=TRUE)
+data_fr</code></pre>
+<pre><code>##      [,1]                        [,2]         [,3]                
+## [1,] &quot;OPPONENT&quot;                  &quot;FORWARD 50&quot; &quot;ATTACKING MIDFIELD&quot;
+## [2,] &quot;St Kilda, round 14&quot;        &quot;30.4%&quot;      &quot;33.9%&quot;             
+## [3,] &quot;Melbourne, round 15&quot;       &quot;15%&quot;        &quot;37.4%&quot;             
+## [4,] &quot;GWS Giants, round 16&quot;      &quot;36.2%&quot;      &quot;14.9%&quot;             
+## [5,] &quot;Port Adelaide, round 17&quot;   &quot;28.9%&quot;      &quot;24.7%&quot;             
+## [6,] &quot;North Melbourne, round 18&quot; &quot;35.6%&quot;      &quot;17.2%&quot;             
+## [7,] &quot;Hawthorn, round 19&quot;        &quot;23%&quot;        &quot;39.1%&quot;             
+##      [,4]            [,5]                 [,6]           [,7]            
+## [1,] &quot;CENTRE BOUNCE&quot; &quot;DEFENSIVE MIDFIELD&quot; &quot;DEFENSIVE 50&quot; &quot;SCORE PER IN50&quot;
+## [2,] &quot;7%&quot;            &quot;21.7%&quot;              &quot;7%&quot;           &quot;48.4%&quot;         
+## [3,] &quot;30.8%&quot;         &quot;2.8%&quot;               &quot;14%&quot;          &quot;50.8%&quot;         
+## [4,] &quot;1.1%&quot;          &quot;26.6%&quot;              &quot;21.3%&quot;        &quot;49%&quot;           
+## [5,] &quot;14.4%&quot;         &quot;24.7%&quot;              &quot;7.2%&quot;         &quot;49.1%&quot;         
+## [6,] &quot;10.3%&quot;         &quot;16.1%&quot;              &quot;20.7%&quot;        &quot;40.3%&quot;         
+## [7,] &quot;13.8%&quot;         &quot;20.7%&quot;              &quot;3.4%&quot;         &quot;55%&quot;           
+##      [,8]           
+## [1,] &quot;GOAL PER IN50&quot;
+## [2,] &quot;27.4%&quot;        
+## [3,] &quot;23.8%&quot;        
+## [4,] &quot;28.6%&quot;        
+## [5,] &quot;25.5%&quot;        
+## [6,] &quot;17.9%&quot;        
+## [7,] &quot;32.5%&quot;</code></pre>
+<p>Now lets check our column names.</p>
+<pre class="r"><code>colnames(data_fr)</code></pre>
+<pre><code>## NULL</code></pre>
+<p>Whoops we still have to name our columns this comes in handy for when we want to do plotting down the track.</p>
+<pre class="r"><code>colnames(data_fr) = data_fr[1, ]
+data_fr =data_fr[-1, ] </code></pre>
+<p>Now we check our dataframe and whoops I forgot to make it an actual dataframe so lets do that</p>
+<pre class="r"><code>data_fr&lt;-as.data.frame(data_fr,stringsAsFactors = FALSE)
+
+str(data_fr)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    6 obs. of  8 variables:
+##  $ OPPONENT          : chr  &quot;St Kilda, round 14&quot; &quot;Melbourne, round 15&quot; &quot;GWS Giants, round 16&quot; &quot;Port Adelaide, round 17&quot; ...
+##  $ FORWARD 50        : chr  &quot;30.4%&quot; &quot;15%&quot; &quot;36.2%&quot; &quot;28.9%&quot; ...
+##  $ ATTACKING MIDFIELD: chr  &quot;33.9%&quot; &quot;37.4%&quot; &quot;14.9%&quot; &quot;24.7%&quot; ...
+##  $ CENTRE BOUNCE     : chr  &quot;7%&quot; &quot;30.8%&quot; &quot;1.1%&quot; &quot;14.4%&quot; ...
+##  $ DEFENSIVE MIDFIELD: chr  &quot;21.7%&quot; &quot;2.8%&quot; &quot;26.6%&quot; &quot;24.7%&quot; ...
+##  $ DEFENSIVE 50      : chr  &quot;7%&quot; &quot;14%&quot; &quot;21.3%&quot; &quot;7.2%&quot; ...
+##  $ SCORE PER IN50    : chr  &quot;48.4%&quot; &quot;50.8%&quot; &quot;49%&quot; &quot;49.1%&quot; ...
+##  $ GOAL PER IN50     : chr  &quot;27.4%&quot; &quot;23.8%&quot; &quot;28.6%&quot; &quot;25.5%&quot; ...</code></pre>
+<p>What you might notice here, is that we have percentages with the % sign and this forces our dataframe to have character columns when really we’d want numeric</p>
+<p>So lets fix that, thankfully <a href="https://readr.tidyverse.org/">readr</a> has a handy <code>parse_number</code> function</p>
+<pre class="r"><code>data_fr$`FORWARD 50`&lt;-readr::parse_number(data_fr$`FORWARD 50`)
+data_fr$`ATTACKING MIDFIELD`&lt;-readr::parse_number(data_fr$`ATTACKING MIDFIELD`)</code></pre>
+<p>Now another fun thing, you might have noticed is that when we had the variable names, that we have spaces in them. This makes it a bit annoying to work with – looking forward one of the benefits of using the tidyverse and the <code>%&gt;%</code> is that we can just type the variable names, unfortunetly if we do this with variable names that have spaces this would lead to an error.</p>
+<p>So lets fix that</p>
+<pre class="r"><code>names(data_fr)&lt;-str_replace_all(names(data_fr), c(&quot; &quot; = &quot;.&quot; , &quot;,&quot; = &quot;&quot; ))
+str(data_fr)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    6 obs. of  8 variables:
+##  $ OPPONENT          : chr  &quot;St Kilda, round 14&quot; &quot;Melbourne, round 15&quot; &quot;GWS Giants, round 16&quot; &quot;Port Adelaide, round 17&quot; ...
+##  $ FORWARD.50        : num  30.4 15 36.2 28.9 35.6 23
+##  $ ATTACKING.MIDFIELD: num  33.9 37.4 14.9 24.7 17.2 39.1
+##  $ CENTRE.BOUNCE     : chr  &quot;7%&quot; &quot;30.8%&quot; &quot;1.1%&quot; &quot;14.4%&quot; ...
+##  $ DEFENSIVE.MIDFIELD: chr  &quot;21.7%&quot; &quot;2.8%&quot; &quot;26.6%&quot; &quot;24.7%&quot; ...
+##  $ DEFENSIVE.50      : chr  &quot;7%&quot; &quot;14%&quot; &quot;21.3%&quot; &quot;7.2%&quot; ...
+##  $ SCORE.PER.IN50    : chr  &quot;48.4%&quot; &quot;50.8%&quot; &quot;49%&quot; &quot;49.1%&quot; ...
+##  $ GOAL.PER.IN50     : chr  &quot;27.4%&quot; &quot;23.8%&quot; &quot;28.6%&quot; &quot;25.5%&quot; ...</code></pre>
+<p>Now lets make the rest of our variables numbers</p>
+<pre class="r"><code>data_fr$CENTRE.BOUNCE&lt;-parse_number(data_fr$CENTRE.BOUNCE)
+
+data_fr$DEFENSIVE.MIDFIELD&lt;-parse_number(data_fr$DEFENSIVE.MIDFIELD)
+data_fr$DEFENSIVE.50&lt;-parse_number(data_fr$DEFENSIVE.50)
+data_fr$SCORE.PER.IN50&lt;-parse_number(data_fr$SCORE.PER.IN50)
+
+data_fr$GOAL.PER.IN50&lt;-parse_number(data_fr$GOAL.PER.IN50)
+str(data_fr)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    6 obs. of  8 variables:
+##  $ OPPONENT          : chr  &quot;St Kilda, round 14&quot; &quot;Melbourne, round 15&quot; &quot;GWS Giants, round 16&quot; &quot;Port Adelaide, round 17&quot; ...
+##  $ FORWARD.50        : num  30.4 15 36.2 28.9 35.6 23
+##  $ ATTACKING.MIDFIELD: num  33.9 37.4 14.9 24.7 17.2 39.1
+##  $ CENTRE.BOUNCE     : num  7 30.8 1.1 14.4 10.3 13.8
+##  $ DEFENSIVE.MIDFIELD: num  21.7 2.8 26.6 24.7 16.1 20.7
+##  $ DEFENSIVE.50      : num  7 14 21.3 7.2 20.7 3.4
+##  $ SCORE.PER.IN50    : num  48.4 50.8 49 49.1 40.3 55
+##  $ GOAL.PER.IN50     : num  27.4 23.8 28.6 25.5 17.9 32.5</code></pre>
+<p>Ok so now we have all that, what is our next issue? We need to get our data into a format that is easier to think about when plotting, to do this before we had to use functions like spread and gather which were not as intuitive as the new ones pivot_longer() and pivot_wider()</p>
+<p>So how do we do that, well first we have to install the development version of <a href="https://tidyr.tidyverse.org/dev/articles/pivot.html"><code>tidyr</code></a> hopefully this reminds people of what they usually might be coming from (excel)</p>
+<pre class="r"><code>library(tidyr)
+data_fr%&gt;%
+  tidyr::pivot_longer(-OPPONENT, names_to=&quot;scoring_method&quot;, values_to=&quot;pertcentage&quot;)</code></pre>
+<pre><code>## # A tibble: 42 x 3
+##    OPPONENT            scoring_method     pertcentage
+##    &lt;chr&gt;               &lt;chr&gt;                    &lt;dbl&gt;
+##  1 St Kilda, round 14  FORWARD.50                30.4
+##  2 St Kilda, round 14  ATTACKING.MIDFIELD        33.9
+##  3 St Kilda, round 14  CENTRE.BOUNCE              7  
+##  4 St Kilda, round 14  DEFENSIVE.MIDFIELD        21.7
+##  5 St Kilda, round 14  DEFENSIVE.50               7  
+##  6 St Kilda, round 14  SCORE.PER.IN50            48.4
+##  7 St Kilda, round 14  GOAL.PER.IN50             27.4
+##  8 Melbourne, round 15 FORWARD.50                15  
+##  9 Melbourne, round 15 ATTACKING.MIDFIELD        37.4
+## 10 Melbourne, round 15 CENTRE.BOUNCE             30.8
+## # … with 32 more rows</code></pre>
+<p>From there we just put it all together and try to paint hopefully a more intuitive visualisation.</p>
+<pre class="r"><code>data_fr%&gt;%
+  tidyr::pivot_longer(-OPPONENT, names_to=&quot;scoring_method&quot;, values_to=&quot;pertcentage&quot;)%&gt;%
+  ggplot(aes(y=pertcentage, x=scoring_method))+
+  geom_point(aes(colour=factor(OPPONENT)))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
+<p><img src="/thoughts/2019-08-27-improving-afl-articles_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>So what we can see here and get a feel for is the sort of values that each different scoring method had over the 6 week period. We can see that against Melbourne the lions had their highest percentage over the defined period for centre bounces and lowest from defensive midfield and forward 50. Was this a decision they made? Do other teams when playing Melbourne have the same pattern? We don’t know (data isn’t available) and Marc didn’t bother to look or it didn’t fit the narrative so was left out or looked it fit a narrative and was left out?</p>
+<p>Some people might say that looks ok, but instead of reading top bottom, I’d rather read left to right, in other words can you flip it. Well lets do that.</p>
+<pre class="r"><code>data_fr%&gt;%
+  tidyr::pivot_longer(-OPPONENT, names_to=&quot;scoring_method&quot;, values_to=&quot;pertcentage&quot;)%&gt;%
+  ggplot(aes(y=pertcentage, x=scoring_method))+
+  geom_point(aes(colour=factor(OPPONENT)))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()</code></pre>
+<p><img src="/thoughts/2019-08-27-improving-afl-articles_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>What else do we know about the data, well if we take out the variables <code>SCORE.PER.IN50</code> and <code>GOAL.PER.IN50</code> we should end up with 5 scoring methods that add up to 100.</p>
+<p>So lets do that</p>
+<pre class="r"><code>data_fr%&gt;%
+  tidyr::pivot_longer(-OPPONENT, names_to=&quot;scoring_method&quot;, values_to=&quot;pertcentage&quot;)%&gt;%
+  filter(!scoring_method %in% c(&quot;SCORE.PER.IN50&quot;, &quot;GOAL.PER.IN50&quot;) )%&gt;%
+  ggplot(aes(y=pertcentage, x=scoring_method))+
+  geom_point(aes(colour=factor(OPPONENT)))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()</code></pre>
+<p><img src="/thoughts/2019-08-27-improving-afl-articles_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>Now something else, you might do is that it was brought up in a talk by <a href="https://twitter.com/alicesweeting?lang=en">Alice Sweeting</a> that some people are colourblind and I’m not sure about you reading, but to me these colours look pretty close to each other anyways. So lets fix that so instead of colours lets use symbols. lets also remove the legend title (yep this will require a google)</p>
+<pre class="r"><code>data_fr%&gt;%
+  tidyr::pivot_longer(-OPPONENT, names_to=&quot;scoring_method&quot;, values_to=&quot;pertcentage&quot;)%&gt;%
+  filter(!scoring_method %in% c(&quot;SCORE.PER.IN50&quot;, &quot;GOAL.PER.IN50&quot;) )%&gt;%
+  ggplot(aes(y=pertcentage, x=scoring_method))+
+  geom_point(aes(colour=factor(OPPONENT), shape=factor(OPPONENT)))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()+theme(legend.title = element_blank())</code></pre>
+<p><img src="/thoughts/2019-08-27-improving-afl-articles_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>So there you go, thanks to wonderful people like Miles you can now copy data that you see in articles that you might want to explore further. This is particularly helpful when sites/journalists decide that instead of a visualisation you must view numbers like in an excel sheet and really who wants to do that!</p>

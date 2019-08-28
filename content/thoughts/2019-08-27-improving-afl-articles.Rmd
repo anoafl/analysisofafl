@@ -1,0 +1,189 @@
+---
+title: Improving AFL articles
+author: robert nguyen
+date: '2019-08-27'
+slug: improving-afl-articles
+categories: [viz]
+tags: [viz]
+description: 'Sometimes you just want to play around'
+---
+
+So you might have seen an article from someone who has a weird simpsons display picture about the [sorry state of AFL analytics](https://docs.google.com/document/d/1dCxSxHJVAeOU5tQGpLR5P0SuqlPPahb6r_pDydBclpA/edit?usp=sharing). This isn't saying that AFL work is poor as a whole or that people within AFL circles aren't capable of good work. This just points to a framework in place by the powers to be, that handcuff those who want to do leading work. 
+
+The main thing stopping growth in the AFL analytics community is data availability. While some might argue that the demand isn't there, I'd like to argue that the demand is there, but the data is hard to get in a useable format and those that do get access to it don't write in a very accessible way for the average fan who has a little bit of analytical taste.
+ 
+ 
+ Lets take this article on how the [Brisbane Lions are playing differently week to week](https://www.afl.com.au/news/2019-07-30/stats-files-why-the-lions-might-be-the-afls-most-versatile-team). Taking out the obvious how fans of other teams can't get a feel for if their teams change on a week to week basis. Or the fact that league wide data isn't available for fans to tell if there just might be a lot of variance week to week in how teams score. The data itself is presented in a poor, generally unusable format. Now that might sound harsh, so lets take a step back, its unusable for me, because I don't like to just read numbers, I'd like to see some visualisation - which hopefully I am not in the minority on this one. 
+ 
+ So lets take a table from the article and try to visualise it.
+ 
+ The table we are going to look at is the table that describes how they have scored vs different opponents and the make up of those scoring sources.
+ 
+ ![Table to recreate](/img/lions_table.PNG)
+ 
+ 
+ What are the issues with this table as presented? 
+ 
+ 1. No visual - people I think prefer visualisation over a dump of numbers where possible
+ 2. Some numbers have been **bolded** but there is no explanation as to why? - Leaving the reader to wonder well a lot is it to do with a significant change on the previous week? Maybe its just the max/min values of that ''scores from'' 
+ 
+ 
+ So it seems like it should be an easy copy and paste job into say R and we can go right? - So thanks to [Miles](https://twitter.com/milesmcbain?lang=en) and the fantastic [datapasta](https://cran.r-project.org/web/packages/datapasta/README.html) we should be able to j ust copy and paste that data into a nice dataframe and do some visualisations. 
+ 
+Now unfortunetly we get this error message `Could not paste clipboard as tibble. Text could not be parsed as table`. Which sucks but hey we shouldn't let that stop us because guess what, we can paste it as a vector! 
+ 
+ 
+ ```{r}
+ library(tidyverse)
+ data_set<-c("OPPONENT", NA, "FORWARD 50", NA, "ATTACKING MIDFIELD", NA, "CENTRE BOUNCE", NA, "DEFENSIVE MIDFIELD", NA, "DEFENSIVE 50", NA, "SCORE PER IN50", NA, "GOAL PER IN50", NA, "St Kilda, round 14", NA, "30.4%", NA, "33.9%", NA, "7%", NA, "21.7%", NA, "7%", NA, "48.4%", NA, "27.4%", NA, "Melbourne, round 15", NA, "15%", NA, "37.4%", NA, "30.8%", NA, "2.8%", NA, "14%", NA, "50.8%", NA, "23.8%", NA, "GWS Giants, round 16", NA, "36.2%", NA, "14.9%", NA, "1.1%", NA, "26.6%", NA, "21.3%", NA, "49%", NA, "28.6%", NA, "Port Adelaide, round 17", NA, "28.9%", NA, "24.7%", NA, "14.4%", NA, "24.7%", NA, "7.2%", NA, "49.1%", NA, "25.5%", NA, "North Melbourne, round 18", NA, "35.6%", NA, "17.2%", NA, "10.3%", NA, "16.1%", NA, "20.7%", NA, "40.3%", NA, "17.9%", NA, "Hawthorn, round 19", NA, "23%", NA, "39.1%", NA, "13.8%", NA, "20.7%", NA, "3.4%", NA, "55%", NA, "32.5%")
+ 
+ ```
+ 
+ So the issue here is that now we have a vector that has NA in it and we also have a vector when really we want a dataframe. 
+ 
+ So lets fix that!
+ 
+ First lets remove the NA
+ 
+ ```{r}
+ data_fr<-data_set[!is.na(data_set)]
+ ```
+ 
+ Now lets make it into a data.frame
+ 
+ ```{r}
+ data_fr<-matrix(data_fr, ncol=8, byrow=TRUE)
+ data_fr
+ 
+ ```
+ 
+ Now lets check our column names.
+ 
+ ```{r}
+ colnames(data_fr)
+ 
+ ```
+ 
+ Whoops we still have to name our columns this comes in handy for when we want to do plotting down the track.
+ 
+ ```{r}
+colnames(data_fr) = data_fr[1, ]
+data_fr =data_fr[-1, ] 
+ 
+ ```
+Now we check our dataframe and whoops I forgot to make it an actual dataframe so lets do that
+
+```{r}
+data_fr<-as.data.frame(data_fr,stringsAsFactors = FALSE)
+
+str(data_fr)
+
+```
+ 
+ What you might notice here, is that we have percentages with the % sign and this forces our dataframe to have character columns when really we'd want numeric 
+ 
+ So lets fix that, thankfully [readr](https://readr.tidyverse.org/) has a handy `parse_number` function
+ 
+ ```{r}
+
+data_fr$`FORWARD 50`<-readr::parse_number(data_fr$`FORWARD 50`)
+data_fr$`ATTACKING MIDFIELD`<-readr::parse_number(data_fr$`ATTACKING MIDFIELD`)
+ ```
+
+Now another fun thing, you might have noticed is that when we had the variable names, that we have spaces in them. This makes it a bit annoying to work with -- looking forward one of the benefits of using the tidyverse and the `%>%` is that we can just type the variable names, unfortunetly if we do this with variable names that have spaces this would lead to an error. 
+
+
+So lets fix that
+
+```{r}
+names(data_fr)<-str_replace_all(names(data_fr), c(" " = "." , "," = "" ))
+str(data_fr)
+
+```
+
+Now lets make the rest of our variables numbers
+
+```{r}
+data_fr$CENTRE.BOUNCE<-parse_number(data_fr$CENTRE.BOUNCE)
+
+data_fr$DEFENSIVE.MIDFIELD<-parse_number(data_fr$DEFENSIVE.MIDFIELD)
+data_fr$DEFENSIVE.50<-parse_number(data_fr$DEFENSIVE.50)
+data_fr$SCORE.PER.IN50<-parse_number(data_fr$SCORE.PER.IN50)
+
+data_fr$GOAL.PER.IN50<-parse_number(data_fr$GOAL.PER.IN50)
+str(data_fr)
+```
+
+Ok so now we have all that, what is our next issue? We need to get our data into a format that is easier to think about when plotting, to do this before we had to use functions like spread and gather which were not as intuitive as the new ones pivot_longer() and pivot_wider()
+
+So how do we do that, well first we have to install the development version of [`tidyr`](https://tidyr.tidyverse.org/dev/articles/pivot.html) hopefully this reminds people of what they usually might be coming from (excel)
+
+
+```{r}
+library(tidyr)
+data_fr%>%
+  tidyr::pivot_longer(-OPPONENT, names_to="scoring_method", values_to="pertcentage")
+
+```
+
+
+From there we just put it all together and try to paint hopefully a more intuitive visualisation. 
+
+```{r}
+
+data_fr%>%
+  tidyr::pivot_longer(-OPPONENT, names_to="scoring_method", values_to="pertcentage")%>%
+  ggplot(aes(y=pertcentage, x=scoring_method))+
+  geom_point(aes(colour=factor(OPPONENT)))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+So what we can see here and get a feel for is the sort of values that each different scoring method had over the 6 week period. We can see that against Melbourne the lions had their highest percentage over the defined period for centre bounces and lowest from defensive midfield and forward 50. Was this a decision they made? Do other teams when playing Melbourne have the same pattern? We don't know (data isn't available) and Marc didn't bother to look or it didn't fit the narrative so was left out or looked it fit a narrative and was left out? 
+
+Some people might say that looks ok, but instead of reading top bottom, I'd rather read left to right, in other words can you flip it. Well lets do that. 
+
+```{r}
+data_fr%>%
+  tidyr::pivot_longer(-OPPONENT, names_to="scoring_method", values_to="pertcentage")%>%
+  ggplot(aes(y=pertcentage, x=scoring_method))+
+  geom_point(aes(colour=factor(OPPONENT)))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()
+
+```
+
+What else do we know about the data, well if we take out the variables `SCORE.PER.IN50` and `GOAL.PER.IN50` we should end up with 5 scoring methods that add up to 100.
+
+So lets do that
+
+```{r}
+data_fr%>%
+  tidyr::pivot_longer(-OPPONENT, names_to="scoring_method", values_to="pertcentage")%>%
+  filter(!scoring_method %in% c("SCORE.PER.IN50", "GOAL.PER.IN50") )%>%
+  ggplot(aes(y=pertcentage, x=scoring_method))+
+  geom_point(aes(colour=factor(OPPONENT)))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()
+```
+
+Now something else, you might do is that it was brought up in a talk by [Alice Sweeting](https://twitter.com/alicesweeting?lang=en) that some people are colourblind and I'm not sure about you reading, but to me these colours look pretty close to each other anyways. So lets fix that so instead of colours lets use symbols. lets also remove the legend title (yep this will require a google)
+
+
+
+
+```{r}
+data_fr%>%
+  tidyr::pivot_longer(-OPPONENT, names_to="scoring_method", values_to="pertcentage")%>%
+  filter(!scoring_method %in% c("SCORE.PER.IN50", "GOAL.PER.IN50") )%>%
+  ggplot(aes(y=pertcentage, x=scoring_method))+
+  geom_point(aes(colour=factor(OPPONENT), shape=factor(OPPONENT)))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+coord_flip()+theme(legend.title = element_blank())
+
+
+```
+
+So there you go, thanks to wonderful people like Miles you can now copy data that you see in articles that you might want to explore further. This is particularly helpful when sites/journalists decide that instead of a visualisation you must view numbers like in an excel sheet and really who wants to do that!
+
+
+
+
+ 
