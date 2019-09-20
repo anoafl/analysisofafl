@@ -1,0 +1,262 @@
+---
+title: Brownlow Competition
+author: Robert Nguyen
+date: '2019-09-18'
+tags : ["Brownlow", "fitzRoy", "open science"]
+description: 'Win yourself some cash - Enter a modelling competition'
+---
+
+
+## Step One Collate the Data
+
+We need the votes and the match statistics to train the model. So what we are going to do is for the competition and of course for people personally, we want to be able to provide as much data as possible. One of the emails I received previously was that footywire, now has some extra variables that are not included in the datasets for afltables for example score involvements. While AFL tables has variables that people think matter for Brownlow that are not included in footywire for example umpires. 
+
+So lets get our afltables dataset.
+
+```{r}
+library(tidyverse)
+library(fitzRoy)
+df<-fitzRoy::get_afltables_stats(start_date="1990-01-01", end_date = Sys.Date())
+table(df$Season, df$Brownlow.Votes)
+
+```
+
+What we can see here is that we are missing some data for the 2018 Brownlow Votes, to get this data we need to follow basically 3 steps. 
+
+1. Get the AFLTables Urls
+2. Feed these URLS to get the games. 
+3. Delete the 2018 AFL season
+4. Add in the rescraped data with the Brownlow Votes
+
+```{r}
+urls<-fitzRoy::get_afltables_urls(start_date = "2018-01-01", end_date = Sys.Date())
+df1<-fitzRoy::scrape_afltables_match(urls)
+all.equal.character(names(df1), names(df))
+```
+
+What we can see is that in the new freshly scraped data we have 2 less columns, the `group_id` column and the `Substitute` column. 
+
+So lets just take out those columns 
+
+```{r}
+df<-df%>%
+  dplyr::select(-group_id, -Substitute)
+
+all.equal.character(names(df1), names(df))
+
+
+
+```
+
+Now we just filter out the data without all the Brownlow Votes.  Join on the tables
+
+```{r}
+df<-df%>%
+  filter(!Season %in% c(2018,2019) )
+
+df3<-rbind(df1, df)
+
+table(df3$Brownlow.Votes, df3$Season)
+```
+
+Now lets get our match results data, again just another example of joining on datasets and create the variable called margin.
+
+```{r}
+
+dataset_scores<-fitzRoy::get_match_results()
+dataset_scores1<-dataset_scores%>%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores2<-dplyr::select(dataset_scores, Date, Round, Away.Team, Away.Points,Game)
+#Sometimes when joining datasets together it helps to rename things for consistency
+
+colnames(dataset_scores1)[3]<-"Team"
+colnames(dataset_scores1)[4]<-"Points"
+colnames(dataset_scores2)[3]<-"Team"
+colnames(dataset_scores2)[4]<-"Points"
+
+df5<-rbind(dataset_scores1,dataset_scores2)
+dataset_margins<-df5%>%group_by(Game)%>%
+  arrange(Game)%>%
+  mutate(margin=c(-diff(Points),diff(Points)))
+# View(dataset_margins) # I have commented this out, but always good to view 
+dataset_margins$Date<-as.Date(dataset_margins$Date)
+df3<-left_join(df3,dataset_margins,by=c("Date"="Date",  "Playing.for"="Team"))
+```
+
+
+Now we have a few issues if we want to join on the afltables data to the footywire data. 
+
+```{r}
+footywire2019<-fitzRoy::get_footywire_stats(9721:9922)
+footywire<-fitzRoy::player_stats
+
+head(footywire)
+head(footywire2019)
+
+```
+
+So the first issue with the footywire data is that the new data isn't in the same order 
+
+So one way of arranging them in the same order is to just use `select` with `names`
+
+```{r}
+footywire<-footywire%>%dplyr::select(names(footywire2019))
+all.equal.character(names(footywire), names(footywire2019))
+
+footywire<-footywire%>%filter(!Season%in% c(2019))
+
+footywire_all<-rbind(footywire, footywire2019)
+
+```
+Another issue, is that the footywire data, doesn't go all the way back, for example a statistic like meters gained, doesn't exist in our 2010 dataset.
+
+```{r}
+footywire_all%>%group_by(Season)%>%summarise(meanmg=mean(MG),
+                                             meanccl=mean(CCL),
+                                             meansi=mean(SI),
+                                             meanto=mean(TO),
+                                             meanitc=mean(ITC),
+                                             meant5=mean(T5))%>%pivot_longer(3:7,"id", "value")%>%ggplot(aes(x=as.factor(Season), y=value))+geom_line(aes(group=id, colour=id))
+
+```
+
+Our next issue, is that we have too much data! The Brownlow Medal is a home and away award, So we need to filter out the finals data 
+
+```{r}
+footywire_all<-footywire_all%>%filter(!Round %in% c(  "Qualifying Final" , "Elimination Final",
+"Semi Final",  "Preliminary Final", "Grand Final" ))
+
+df3<-df3%>%filter(!Round.x %in% c(  "Qualifying Final" ,
+ "Elimination Final", "Semi Final",        "Preliminary Final", "Grand Final",      
+ "EF", "SF","PF",               
+ "QF" , "GF"))
+```
+
+Our next check is making sure that the datasets (afltables and footywire) both have the same amount of players/teams
+
+```{r}
+dim(df3%>%filter(Season>2014 & Season<2019))
+dim(footywire_all%>%filter(Season>2014& Season<2019 ))
+footywire_all<-footywire_all%>%filter(Season>2014 )
+df3<-df3%>%filter(Season>2014 )
+dim(footywire_all)
+dim(df3)
+```
+
+Cool, so each dataset has 34804 rows, now our next step is to add the Brownlow Votes to the footywire dataset. 
+
+So usually what we would do, is we would combine some of the variables together to create a unique ID which we can then use to join the data. 
+
+But the issue we have here, is that we would want to join on names, but in the datasets, players have different names!
+
+Sometimes they are called Matthew, or Matt, Nicolas, or Nic etc. But most annoyingly Tom or Thomas.
+
+So this is quite annoying right. So a quicker hacky fix, is lets just arrange the data and then join it on!
+
+```{r}
+df3%>%
+  arrange(Season, Round.x, First.name, Surname, Playing.for)
+
+```
+What we see here is that round 10, is after round 1. Why is that?
+
+```{r}
+str(df3$Round.x) 
+
+
+#lets change that
+
+df3$Round.x<-as.numeric(df3$Round.x)
+
+df3%>%arrange(Season, Round.x, First.name, Surname, Playing.for)
+```
+
+What about the footywire dataset
+
+
+```{r}
+footywire_all%>%arrange(Season, Round, Team,Player )
+footywire_all$Round<-str_remove(footywire_all$Round, "Round ")
+footywire_all$Round<-as.numeric(footywire_all$Round)
+
+```
+
+```{r}
+df3%>%arrange(Season, Round.x, Playing.for, First.name, Surname)
+footywire_all%>%arrange(Season, Round, Team,Player )
+
+  df3<-df3%>%arrange(Season, Round.x, Playing.for, Kicks,First.name, Surname)
+footywire_all<-footywire_all%>%arrange(Season, Round, Team, K,Player )
+```
+
+Now lets join it all
+
+```{r}
+check<-cbind(footywire_all,df3$margin, df3$Brownlow.Votes)
+
+joined2018<-check%>%
+  group_by(Season, Player, Team)%>%
+  summarise(Brownlow.votes=sum(`df3$Brownlow.Votes`))%>%
+  filter(Season==2014)%>%arrange(desc(Brownlow.votes), Team, Player)
+
+afltables2018<-df3%>%
+   group_by(Season, First.name, Surname, Playing.for)%>%
+  summarise(Brownlow.votes.total=sum(Brownlow.Votes))%>%
+  filter(Season==2014)%>%arrange(desc(Brownlow.votes.total), Playing.for, First.name, Surname)
+ check<-cbind(afltables2018, joined2018)
+ check<-check %>%mutate(Playing.for = str_replace(Playing.for, "Brisbane Lions", "Brisbane"))
+
+check<-check %>%mutate(Playing.for = str_replace(Playing.for, "Footscray", "Western Bulldogs"))
+
+check<-check %>%mutate(Playing.for = str_replace(Playing.for,  "Greater Western Sydney","GWS"))
+
+ 
+all.equal(check$Brownlow.votes.total,check$Brownlow.votes)
+all.equal.character(check$Playing.for, check$Team)
+
+```
+
+So that seems OK. 
+
+
+```{r}
+full_dataset<-cbind(footywire_all,df3$margin, df3$Brownlow.Votes)
+
+
+```
+
+# now we need the team stats
+
+```{r}
+
+team_stats<-full_dataset%>%
+  dplyr::select(Date, Player, Round, Team, Opposition,Season,Match_id, CP:SC)%>%
+  group_by(Date, Season, Round,Match_id)%>%
+  summarise_if(is.numeric,sum, na.rm=TRUE)
+
+colnames(team_stats) <- paste(colnames(team_stats), "team_total", sep = "_")
+
+```
+
+```{r}
+dataset<-left_join(full_dataset, team_stats, by=c("Date"="Date_team_total",
+                                          "Match_id"="Match_id_team_total"))
+
+```
+
+
+```{r}
+dataset<-dataset%>%
+  dplyr::select(Date:SC, CP_team_total:SC_team_total,`df3$margin`, `df3$Brownlow.Votes`)
+
+colnames(dataset)[78] <- "Margin"
+colnames(dataset)[79] <- "Brownlow.votes"
+```
+
+
+There you go, hopefully a nice new Brownlow model dataset to play with. Now that you do, why not give the [Betfair Brownlow compettion a go with up to 2k to win!](https://www.betfair.com.au/hub/betfairs-brownlow-medal-datathon/). 
+
+If you follow this post and this blog, you can also join on the umpire data and the player characteristics from footywire!
+
+
+
+
