@@ -364,6 +364,11 @@ So it would be better to get a list of urls and for each of those urls we take f
 
 ```{r}
 
+library(rvest)
+library(tidyverse)
+library(purrr)
+library(xml2)
+library(stringr)
 url<-"https://www.footywire.com/afl/footy/ft_players"
 
 
@@ -449,7 +454,14 @@ af_price<-page%>%
   str_extract(pattern =("(?<=Price:).*(?=AFL Fantasy Profile)"))%>%as.tibble()
 # af_price
 
-player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
+playerbirthday<-page%>%
+  html_nodes("#playerProfileData1")%>%
+  html_text()%>%
+  str_replace_all("[\r\n]" , "")%>%
+  str_squish()%>%
+  str_extract(pattern =("(?<=Born:).*(?=Origin:)"))%>%as.tibble()
+#
+player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price,playerbirthday)
 
 player_information <- as.tibble(player_information)
   
@@ -457,7 +469,9 @@ player_information <- as.tibble(player_information)
   
   
   #combine, name, and make it a tibble
-  player_information <- cbind.fill(player, playing.for, number, weight, height,draft_position, club_drafted, position, sc_price, af_price)
+  player_information <- cbind.fill(player, playing.for, number, 
+                                   weight, height,draft_position, club_drafted, position, 
+                                   sc_price, af_price,playerbirthday)
   
   player_information <- as.tibble(player_information)
 
@@ -467,11 +481,11 @@ player_information <- as.tibble(player_information)
 }
 footywire <- purrr::map_df(url_players, player_info)
 
-names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted", "position","sc_price", "af_price")
-
+names(footywire) <- c("player", "club", "number","weight","height",  "draft_position", "club_drafted",
+                      "position","sc_price", "af_price","playerbirthday")
 
 ```
 
-Some of you might notice that this post has been updated and that the script has changed. That is because footywire has changed structure. Luckily, thanks to selecter gadget all I had to change was what was in `html_nodes()`.
+Some of you might notice that this post has been updated and that the script has changed. That is because footywire has changed structure. Luckily, thanks to selecter gadget all I had to change was what was in `html_nodes()`. Have also updated for players birthdays.
 
 
