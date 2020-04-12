@@ -63,17 +63,20 @@ For example [Multicollinearity](https://en.wikipedia.org/wiki/Multicollinearity)
 
 To fit the models described in the paper, we would need a dataset that contains the game information joined with a binary indicator 1 if the team won and 0 if the team lost (in the paper draws were removed).
 
-To do this using [fitzRoy](https://github.com/jimmyday12/fitzRoy) would require joining `fitzRoy::match_results` onto `fitzRoy::player_stats`
+To do this using [fitzRoy](https://github.com/jimmyday12/fitzRoy) would require joining `fitzRoy::get_match_results` onto `fitzRoy::player_stats`
 
 ```{r}
 library(tidyverse)
 library(fitzRoy)
 library(knitr)
 library(broom)
-df1<-fitzRoy::match_results
-df2<-fitzRoy::player_stats
+df1<-fitzRoy::get_match_results()
+df2013<-fitzRoy::get_footywire_stats(5550:5756)
+df2014<-fitzRoy::get_footywire_stats(5757:5963)
+df2<-rbind(df2013, df2014)
+
 ```
-So once we have the box-score statistics from footywire, `fitzRoy::player_stats` we have to aggregate them to a match level. That is because the paper looked at team level statistics not player level. 
+So once we have the box-score statistics from footywire, `fitzRoy::get_footywire_stats` we have to aggregate them to a match level. That is because the paper looked at team level statistics not player level. 
 
 So to do that using the [tidyverse](https://www.tidyverse.org/learn/) we first have to come up with at what level we want to summarise our data by (team and game). To do this we use `group_by`.
 
@@ -96,7 +99,7 @@ teamdata<-df2%>%dplyr::select(-Player)%>%
 After that we would want to join on the score dataset so we can come up with win/loss column. 
 
 ```{r}
-dataset_scores1<-df1%>%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+dataset_scores1<-df1%>%dplyr::select(Date, Round, Home.Team, Home.Points,Game)
 dataset_scores2<-df1%>%dplyr::select(Date, Round, Away.Team, Away.Points,Game)
 #Sometimes when joining datasets together it helps to rename things for consistency
 
@@ -168,6 +171,52 @@ mylogit <- glm(win_loss ~ K_difference + M_difference + HB_difference+T_differen
                
                ,data = dataset_model, family ="binomial")
 summary(mylogit)
+
+
+```
+
+Another thing we can do is check the summary results given. These results are in table 1
+
+```{r}
+library(fitzRoy)
+df<-fitzRoy::get_afltables_stats(start_date = "1897-01-01", end_date = Sys.Date())
+
+library(tidyverse)
+df_home<-df%>%
+	select(Season, Round, Home.team, Away.team, Home.score,Playing.for, Away.score, Kicks)%>%
+	group_by(Season, Round, Home.team, Away.team,Playing.for, Home.score, Away.score)%>%
+	summarise(totalKicks=sum(Kicks))%>%
+	filter(Season %in% c(2013,2014))%>%
+	filter(!Round %in% c("SF","GF","EF","PF","QF"))%>%
+	filter(!Home.score==Away.score)%>%# 4 draws
+	ungroup()%>%
+group_by(Season, Round, Home.team, Away.team, Home.score, Away.score)%>%
+	mutate(diffKicks=c(-diff(totalKicks),diff(totalKicks)))%>%
+	filter(Home.team==Playing.for)%>%
+	mutate(win=if_else(Away.score<Home.score, 1,0))%>%
+	filter(win==1)
+
+	
+
+df_away<-df%>%
+	select(Season, Round, Home.team, Away.team, Home.score,Playing.for, Away.score, Kicks)%>%
+	group_by(Season, Round, Home.team, Away.team,Playing.for, Home.score, Away.score)%>%
+	summarise(totalKicks=sum(Kicks))%>%
+	filter(Season %in% c(2013,2014))%>%
+	filter(!Round %in% c("SF","GF","EF","PF","QF"))%>%
+	filter(!Home.score==Away.score)%>%# 4 draws
+	ungroup()%>%
+group_by(Season, Round, Home.team, Away.team, Home.score, Away.score)%>%
+	mutate(diffKicks=c(-diff(totalKicks),diff(totalKicks)))%>%
+	# filter(Home.team==Playing.for)%>%
+	filter(Away.team==Playing.for)%>%
+	mutate(win=if_else(Away.score>Home.score, 1,0))%>%
+	filter(win==1)
+
+	
+wins<-rbind(df_home,df_away)
+
+sd(wins$diffKicks)
 
 
 ```

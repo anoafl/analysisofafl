@@ -63,27 +63,34 @@ tags:
 ## [16] &quot;disposals&quot;                             
 ## [17] &quot;hit outs&quot;                              
 ## [18] &quot;Free kick differential&quot;</code></pre>
-<p>They then removed some variables from the model fitting process. For example <a href="https://en.wikipedia.org/wiki/Multicollinearity">Multicollinearity</a> is a typical problem in regression. It happens when there is a relationship between your predictor variables. In this case we know that essentially kicks + handballs = disposals which would be an example of multicollinearity.</p>
+<p>They then removed some variables from the model fitting process.
+For example <a href="https://en.wikipedia.org/wiki/Multicollinearity">Multicollinearity</a> is a typical problem in regression. It happens when there is a relationship between your predictor variables. In this case we know that essentially kicks + handballs = disposals which would be an example of multicollinearity.</p>
 </div>
 <div id="how-to-get-the-data-ready" class="section level1">
 <h1>How to get the data ready</h1>
 <p>To fit the models described in the paper, we would need a dataset that contains the game information joined with a binary indicator 1 if the team won and 0 if the team lost (in the paper draws were removed).</p>
-<p>To do this using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> would require joining <code>fitzRoy::match_results</code> onto <code>fitzRoy::player_stats</code></p>
+<p>To do this using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> would require joining <code>fitzRoy::get_match_results</code> onto <code>fitzRoy::player_stats</code></p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
-<pre><code>## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
-## ✔ tibble  1.4.2     ✔ dplyr   0.7.8
-## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
-## ✔ readr   1.3.1     ✔ forcats 0.3.0</code></pre>
-<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.0     ✓ purrr   0.3.3
+## ✓ tibble  3.0.0     ✓ dplyr   0.8.5
+## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.5.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(fitzRoy)
 library(knitr)
 library(broom)
-df1&lt;-fitzRoy::match_results
-df2&lt;-fitzRoy::player_stats</code></pre>
-<p>So once we have the box-score statistics from footywire, <code>fitzRoy::player_stats</code> we have to aggregate them to a match level. That is because the paper looked at team level statistics not player level.</p>
+df1&lt;-fitzRoy::get_match_results()
+df2013&lt;-fitzRoy::get_footywire_stats(5550:5756)</code></pre>
+<pre><code>## Getting data from https://www.footywire.com</code></pre>
+<pre><code>## Finished getting data</code></pre>
+<pre class="r"><code>df2014&lt;-fitzRoy::get_footywire_stats(5757:5963)</code></pre>
+<pre><code>## Getting data from https://www.footywire.com
+## Finished getting data</code></pre>
+<pre class="r"><code>df2&lt;-rbind(df2013, df2014)</code></pre>
+<p>So once we have the box-score statistics from footywire, <code>fitzRoy::get_footywire_stats</code> we have to aggregate them to a match level. That is because the paper looked at team level statistics not player level.</p>
 <p>So to do that using the <a href="https://www.tidyverse.org/learn/">tidyverse</a> we first have to come up with at what level we want to summarise our data by (team and game). To do this we use <code>group_by</code>.</p>
 <pre class="r"><code>library(tidyverse)
 teamdata&lt;-df2%&gt;%dplyr::select(-Player)%&gt;%
@@ -97,8 +104,22 @@ teamdata&lt;-df2%&gt;%dplyr::select(-Player)%&gt;%
          mutate_if(is.numeric, funs(difference=c(-diff(.), diff(.))))%&gt;%
   filter(!Round %in% c(&quot;Qualifying Final&quot;,&quot;Elimination Final&quot;,
                        &quot;Semi Final&quot;,&quot;Preliminary Final&quot;,&quot;Grand Final&quot;  ))</code></pre>
+<pre><code>## `mutate_if()` ignored the following grouping variables:
+## Column `Match_id`</code></pre>
+<pre><code>## Warning: funs() is soft deprecated as of dplyr 0.8.0
+## Please use a list of either functions or lambdas: 
+## 
+##   # Simple named list: 
+##   list(mean = mean, median = median)
+## 
+##   # Auto named with `tibble::lst()`: 
+##   tibble::lst(mean, median)
+## 
+##   # Using lambdas
+##   list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
+## This warning is displayed once per session.</code></pre>
 <p>After that we would want to join on the score dataset so we can come up with win/loss column.</p>
-<pre class="r"><code>dataset_scores1&lt;-df1%&gt;%dplyr::select (Date, Round, Home.Team, Home.Points,Game)
+<pre class="r"><code>dataset_scores1&lt;-df1%&gt;%dplyr::select(Date, Round, Home.Team, Home.Points,Game)
 dataset_scores2&lt;-df1%&gt;%dplyr::select(Date, Round, Away.Team, Away.Points,Game)
 #Sometimes when joining datasets together it helps to rename things for consistency
 
@@ -229,6 +250,51 @@ summary(mylogit)</code></pre>
 ## AIC: 284.91
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
+<p>Another thing we can do is check the summary results given. These results are in table 1</p>
+<pre class="r"><code>library(fitzRoy)
+df&lt;-fitzRoy::get_afltables_stats(start_date = &quot;1897-01-01&quot;, end_date = Sys.Date())</code></pre>
+<pre><code>## Returning data from 1897-01-01 to 2020-04-12</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre class="r"><code>library(tidyverse)
+df_home&lt;-df%&gt;%
+    select(Season, Round, Home.team, Away.team, Home.score,Playing.for, Away.score, Kicks)%&gt;%
+    group_by(Season, Round, Home.team, Away.team,Playing.for, Home.score, Away.score)%&gt;%
+    summarise(totalKicks=sum(Kicks))%&gt;%
+    filter(Season %in% c(2013,2014))%&gt;%
+    filter(!Round %in% c(&quot;SF&quot;,&quot;GF&quot;,&quot;EF&quot;,&quot;PF&quot;,&quot;QF&quot;))%&gt;%
+    filter(!Home.score==Away.score)%&gt;%# 4 draws
+    ungroup()%&gt;%
+group_by(Season, Round, Home.team, Away.team, Home.score, Away.score)%&gt;%
+    mutate(diffKicks=c(-diff(totalKicks),diff(totalKicks)))%&gt;%
+    filter(Home.team==Playing.for)%&gt;%
+    mutate(win=if_else(Away.score&lt;Home.score, 1,0))%&gt;%
+    filter(win==1)
+
+    
+
+df_away&lt;-df%&gt;%
+    select(Season, Round, Home.team, Away.team, Home.score,Playing.for, Away.score, Kicks)%&gt;%
+    group_by(Season, Round, Home.team, Away.team,Playing.for, Home.score, Away.score)%&gt;%
+    summarise(totalKicks=sum(Kicks))%&gt;%
+    filter(Season %in% c(2013,2014))%&gt;%
+    filter(!Round %in% c(&quot;SF&quot;,&quot;GF&quot;,&quot;EF&quot;,&quot;PF&quot;,&quot;QF&quot;))%&gt;%
+    filter(!Home.score==Away.score)%&gt;%# 4 draws
+    ungroup()%&gt;%
+group_by(Season, Round, Home.team, Away.team, Home.score, Away.score)%&gt;%
+    mutate(diffKicks=c(-diff(totalKicks),diff(totalKicks)))%&gt;%
+    # filter(Home.team==Playing.for)%&gt;%
+    filter(Away.team==Playing.for)%&gt;%
+    mutate(win=if_else(Away.score&gt;Home.score, 1,0))%&gt;%
+    filter(win==1)
+
+    
+wins&lt;-rbind(df_home,df_away)
+
+sd(wins$diffKicks)</code></pre>
+<pre><code>## [1] 30.24842</code></pre>
 <p>The question is why doesn’t our model here match the paper?</p>
 <ul>
 <li>I’m wrong (what should I do different thoughts feedback email me!)</li>
