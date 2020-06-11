@@ -1,0 +1,125 @@
+---
+title: More Data on fitzRoy - As featured on ABC
+author: Robert Nguyen
+date: '2020-06-11'
+tags : ["fitzRoy", "graphics","R","open science","statistics"]
+
+description: 'Thanks to @fryziggg'
+---
+
+Recently you might have seen an interesting [ABC](https://www.abc.net.au/news/2020-06-11/how-richmond-tigers-afl-player-dustin-martin-destroys-compeition/12335750?section=sport) piece on [Dustin Martin](https://en.wikipedia.org/wiki/Dustin_Martin)
+
+In it it features some graphs built using data that has just recently become available in [fitzRoy](https://github.com/jimmyday12/fitzRoy) thanks to [fryziggg](https://twitter.com/Fryzigg) who has kindly made it available for fans of afl statistics everywhere. 
+
+So what are the new things, and why is it cool. Well previously fitzRoy provided access to two pretty cool websites in [afltables](https://afltables.com/afl/stats/stats_idx.html) and [footywire](https://www.footywire.com/) if you are a fan of AFL statistics you might already know the differences, but basically footywire had a few more game statistics than afltables but afltables provided data all the way back to the first game in 1897 while footywire did not. 
+
+Now more of you might be thinking oh but the AFL website itself has some more data available, but its just a pain to use. Its UI is pretty horrid, so its a little off putting having to manually copy and paste data into spreadsheets or its too much of a hurdle to go and learn how to scrape a website using R or python. But thankfully fryzigg has heard your frustrations and come along and help us make it more accessible for all. 
+
+So you might have read the Dustin Martin article and thought oh that's cool but maybe I want to highlight some different players? While you can hover your mouse over the visualisation to label other players, that might not help you if you have no idea where your player of interest sits!
+
+So How would you go about it and what are some things I think might be cool to explore a little differently. 
+
+In saying that, I want to make 3 changes to the graphs. 
+
+1 - I want the players I am interested in to to stand out more visually
+
+2 - I want to be able to highlight players I am interested in
+
+3 - I want to add a Season element to the plots, that is I want to be able to compare 2017 Dusty to 2016 Dusty and so on.
+ 
+
+Lets first download the latest development version from github and create a Season column using `lubridate::year`
+
+```{r}
+# devtools::install_github("jimmyday12/fitzRoy")
+library(fitzRoy)
+library(tidyverse)
+df<-fitzRoy::get_fryzigg_stats(start=1897, end=2020)
+names(df)
+df$Season<-lubridate::year(df$match_date)
+
+```
+
+Next part, is we want to create the data to plot, to do this we want reproduce the plot that has the average number of centre clearances won on the x axis and the average number of stoppage clearances won on the y axis. The other things we want to do is filter our data by number of games played in season, I am going to set this number to 15
+
+We will do this and call that dataframe `p`
+
+
+```{r}
+p<-df%>%  
+group_by(Season,player_id, player_first_name, player_last_name)%>%
+  summarise(mean_centre_clearances=mean(centre_clearances, na.rm=TRUE), mean_clear=mean(stoppage_clearances,na.rm=TRUE),no_games=n())%>%
+  filter(Season>2011)%>%
+  filter(no_games>14)
+
+```
+
+
+Now if we were to take `p` and use `facet_wrap(~Season)` we get a heap of black dots `geom_point()`.
+
+```{r}
+p%>%
+   ggplot(aes(x=mean_clear, y=mean_centre_clearances,label=paste(player_first_name, player_last_name)))+geom_point() +facet_wrap(~Season)
+
+```
+
+Now we want to create a dataset with our players of interest one way to do this is using their unique player IDS which has been kindly provided by Fryzigg. These align to the official champion data IDS where possible, which is really cool, if you are so lucky it might mean you can append all the secret sauce AFL statistics that are withheld from fans to your insights. 
+
+```{r}
+p_subset<-p%>%
+  filter(player_id %in% c(11706, # Patrick Dangerfield
+                          11801, # Dustin Martin
+                          11844, # Nat Fyfe  
+                          12269, # Patrick Cripps
+                          12061, # Lachie Neale
+                          11813, # Luke Shuey
+                          12058, # Adam Treloar
+                          12223, # Brodie Grundie
+                          11506, # Scott Pendlebury
+                          12605, # Tim Kelly
+                          12277 , # Marcus Bontempelli
+                          11170   #Gary Ablett Jr
+                          ))
+
+p_subset_dusty<-p%>%
+  filter(player_id %in% c(11801))
+
+```
+
+
+So how do we make our players of interest pop out a bit more on the graph?
+
+Well lets plot all the relevant players in our dataset in a lighter colour say grey and over that, we plot our players of interest in a darker colour say black. 
+
+
+```{r}
+p%>%
+   ggplot(aes(x=mean_clear, y=mean_centre_clearances,label=paste(player_first_name, player_last_name)))+
+  geom_point(colour="grey", alpha=0.4)+ # all the data
+   geom_point(data=p_subset, colour="black")+ # subset of players of interest
+  geom_text(data=p_subset, size=2)+
+facet_wrap(~Season)
+
+
+```
+
+```{r}
+
+p%>%
+   ggplot(aes(x=mean_clear, y=mean_centre_clearances,label=paste(player_first_name, player_last_name)))+
+  geom_point(colour="grey", alpha=0.4)+ # all the data
+   geom_point(data=p_subset_dusty, colour="black")+ # subset of players of interest
+  geom_text(data=p_subset_dusty, size=2)+
+facet_wrap(~Season)
+
+```
+
+So I think that is a pretty handy template if you want to explore so what exactly can you explore?
+
+```{r}
+names(df)
+
+```
+
+So all this available in [fitzRoy](https://github.com/jimmyday12/fitzRoy). Now that you know and hopefully have some script to one, what would you as a fan like to explore?
+

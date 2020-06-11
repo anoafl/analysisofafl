@@ -1,0 +1,168 @@
+---
+title: More Data on fitzRoy - As featured on ABC
+author: Robert Nguyen
+date: '2020-06-11'
+tags : ["fitzRoy", "graphics","R","open science","statistics"]
+
+description: 'Thanks to @fryziggg'
+---
+
+
+
+<p>Recently you might have seen an interesting <a href="https://www.abc.net.au/news/2020-06-11/how-richmond-tigers-afl-player-dustin-martin-destroys-compeition/12335750?section=sport">ABC</a> piece on <a href="https://en.wikipedia.org/wiki/Dustin_Martin">Dustin Martin</a></p>
+<p>In it it features some graphs built using data that has just recently become available in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a> thanks to <a href="https://twitter.com/Fryzigg">fryziggg</a> who has kindly made it available for fans of afl statistics everywhere.</p>
+<p>So what are the new things, and why is it cool. Well previously fitzRoy provided access to two pretty cool websites in <a href="https://afltables.com/afl/stats/stats_idx.html">afltables</a> and <a href="https://www.footywire.com/">footywire</a> if you are a fan of AFL statistics you might already know the differences, but basically footywire had a few more game statistics than afltables but afltables provided data all the way back to the first game in 1897 while footywire did not.</p>
+<p>Now more of you might be thinking oh but the AFL website itself has some more data available, but its just a pain to use. Its UI is pretty horrid, so its a little off putting having to manually copy and paste data into spreadsheets or its too much of a hurdle to go and learn how to scrape a website using R or python. But thankfully fryzigg has heard your frustrations and come along and help us make it more accessible for all.</p>
+<p>So you might have read the Dustin Martin article and thought oh that’s cool but maybe I want to highlight some different players? While you can hover your mouse over the visualisation to label other players, that might not help you if you have no idea where your player of interest sits!</p>
+<p>So How would you go about it and what are some things I think might be cool to explore a little differently.</p>
+<p>In saying that, I want to make 3 changes to the graphs.</p>
+<p>1 - I want the players I am interested in to to stand out more visually</p>
+<p>2 - I want to be able to highlight players I am interested in</p>
+<p>3 - I want to add a Season element to the plots, that is I want to be able to compare 2017 Dusty to 2016 Dusty and so on.</p>
+<p>Lets first download the latest development version from github and create a Season column using <code>lubridate::year</code></p>
+<pre class="r"><code># devtools::install_github(&quot;jimmyday12/fitzRoy&quot;)
+library(fitzRoy)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.0     ✓ purrr   0.3.4
+## ✓ tibble  3.0.1     ✓ dplyr   1.0.0
+## ✓ tidyr   1.1.0     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.5.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>df&lt;-fitzRoy::get_fryzigg_stats(start=1897, end=2020)</code></pre>
+<pre><code>## Returning cached data from 1897 to 2020 
+##   This may take some time.</code></pre>
+<pre class="r"><code>names(df)</code></pre>
+<pre><code>##  [1] &quot;venue_name&quot;                     &quot;match_id&quot;                      
+##  [3] &quot;match_home_team&quot;                &quot;match_away_team&quot;               
+##  [5] &quot;match_date&quot;                     &quot;match_local_time&quot;              
+##  [7] &quot;match_attendance&quot;               &quot;match_round&quot;                   
+##  [9] &quot;match_home_team_goals&quot;          &quot;match_home_team_behinds&quot;       
+## [11] &quot;match_home_team_score&quot;          &quot;match_away_team_goals&quot;         
+## [13] &quot;match_away_team_behinds&quot;        &quot;match_away_team_score&quot;         
+## [15] &quot;match_margin&quot;                   &quot;match_winner&quot;                  
+## [17] &quot;match_weather_temp_c&quot;           &quot;match_weather_type&quot;            
+## [19] &quot;player_id&quot;                      &quot;player_first_name&quot;             
+## [21] &quot;player_last_name&quot;               &quot;player_height_cm&quot;              
+## [23] &quot;player_weight_kg&quot;               &quot;player_is_retired&quot;             
+## [25] &quot;player_team&quot;                    &quot;guernsey_number&quot;               
+## [27] &quot;kicks&quot;                          &quot;marks&quot;                         
+## [29] &quot;handballs&quot;                      &quot;disposals&quot;                     
+## [31] &quot;effective_disposals&quot;            &quot;disposal_efficiency_percentage&quot;
+## [33] &quot;goals&quot;                          &quot;behinds&quot;                       
+## [35] &quot;hitouts&quot;                        &quot;tackles&quot;                       
+## [37] &quot;rebounds&quot;                       &quot;inside_fifties&quot;                
+## [39] &quot;clearances&quot;                     &quot;clangers&quot;                      
+## [41] &quot;free_kicks_for&quot;                 &quot;free_kicks_against&quot;            
+## [43] &quot;brownlow_votes&quot;                 &quot;contested_possessions&quot;         
+## [45] &quot;uncontested_possessions&quot;        &quot;contested_marks&quot;               
+## [47] &quot;marks_inside_fifty&quot;             &quot;one_percenters&quot;                
+## [49] &quot;bounces&quot;                        &quot;goal_assists&quot;                  
+## [51] &quot;time_on_ground_percentage&quot;      &quot;afl_fantasy_score&quot;             
+## [53] &quot;supercoach_score&quot;               &quot;centre_clearances&quot;             
+## [55] &quot;stoppage_clearances&quot;            &quot;score_involvements&quot;            
+## [57] &quot;metres_gained&quot;                  &quot;turnovers&quot;                     
+## [59] &quot;intercepts&quot;                     &quot;tackles_inside_fifty&quot;          
+## [61] &quot;contest_def_losses&quot;             &quot;contest_def_one_on_ones&quot;       
+## [63] &quot;contest_off_one_on_ones&quot;        &quot;contest_off_wins&quot;              
+## [65] &quot;def_half_pressure_acts&quot;         &quot;effective_kicks&quot;               
+## [67] &quot;f50_ground_ball_gets&quot;           &quot;ground_ball_gets&quot;              
+## [69] &quot;hitouts_to_advantage&quot;           &quot;hitout_win_percentage&quot;         
+## [71] &quot;intercept_marks&quot;                &quot;marks_on_lead&quot;                 
+## [73] &quot;pressure_acts&quot;                  &quot;rating_points&quot;                 
+## [75] &quot;ruck_contests&quot;                  &quot;score_launches&quot;                
+## [77] &quot;shots_at_goal&quot;                  &quot;spoils&quot;                        
+## [79] &quot;subbed&quot;                         &quot;player_position&quot;</code></pre>
+<pre class="r"><code>df$Season&lt;-lubridate::year(df$match_date)</code></pre>
+<p>Next part, is we want to create the data to plot, to do this we want reproduce the plot that has the average number of centre clearances won on the x axis and the average number of stoppage clearances won on the y axis. The other things we want to do is filter our data by number of games played in season, I am going to set this number to 15</p>
+<p>We will do this and call that dataframe <code>p</code></p>
+<pre class="r"><code>p&lt;-df%&gt;%  
+group_by(Season,player_id, player_first_name, player_last_name)%&gt;%
+  summarise(mean_centre_clearances=mean(centre_clearances, na.rm=TRUE), mean_clear=mean(stoppage_clearances,na.rm=TRUE),no_games=n())%&gt;%
+  filter(Season&gt;2011)%&gt;%
+  filter(no_games&gt;14)</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;Season&#39;, &#39;player_id&#39;, &#39;player_first_name&#39; (override with `.groups` argument)</code></pre>
+<p>Now if we were to take <code>p</code> and use <code>facet_wrap(~Season)</code> we get a heap of black dots <code>geom_point()</code>.</p>
+<pre class="r"><code>p%&gt;%
+   ggplot(aes(x=mean_clear, y=mean_centre_clearances,label=paste(player_first_name, player_last_name)))+geom_point() +facet_wrap(~Season)</code></pre>
+<p><img src="/fitzRoy/2020-06-11-more-data-on-fitzroy-as-featured-on-abc_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Now we want to create a dataset with our players of interest one way to do this is using their unique player IDS which has been kindly provided by Fryzigg. These align to the official champion data IDS where possible, which is really cool, if you are so lucky it might mean you can append all the secret sauce AFL statistics that are withheld from fans to your insights.</p>
+<pre class="r"><code>p_subset&lt;-p%&gt;%
+  filter(player_id %in% c(11706, # Patrick Dangerfield
+                          11801, # Dustin Martin
+                          11844, # Nat Fyfe  
+                          12269, # Patrick Cripps
+                          12061, # Lachie Neale
+                          11813, # Luke Shuey
+                          12058, # Adam Treloar
+                          12223, # Brodie Grundie
+                          11506, # Scott Pendlebury
+                          12605, # Tim Kelly
+                          12277 , # Marcus Bontempelli
+                          11170   #Gary Ablett Jr
+                          ))
+
+p_subset_dusty&lt;-p%&gt;%
+  filter(player_id %in% c(11801))</code></pre>
+<p>So how do we make our players of interest pop out a bit more on the graph?</p>
+<p>Well lets plot all the relevant players in our dataset in a lighter colour say grey and over that, we plot our players of interest in a darker colour say black.</p>
+<pre class="r"><code>p%&gt;%
+   ggplot(aes(x=mean_clear, y=mean_centre_clearances,label=paste(player_first_name, player_last_name)))+
+  geom_point(colour=&quot;grey&quot;, alpha=0.4)+ # all the data
+   geom_point(data=p_subset, colour=&quot;black&quot;)+ # subset of players of interest
+  geom_text(data=p_subset, size=2)+
+facet_wrap(~Season)</code></pre>
+<p><img src="/fitzRoy/2020-06-11-more-data-on-fitzroy-as-featured-on-abc_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>p%&gt;%
+   ggplot(aes(x=mean_clear, y=mean_centre_clearances,label=paste(player_first_name, player_last_name)))+
+  geom_point(colour=&quot;grey&quot;, alpha=0.4)+ # all the data
+   geom_point(data=p_subset_dusty, colour=&quot;black&quot;)+ # subset of players of interest
+  geom_text(data=p_subset_dusty, size=2)+
+facet_wrap(~Season)</code></pre>
+<p><img src="/fitzRoy/2020-06-11-more-data-on-fitzroy-as-featured-on-abc_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>So I think that is a pretty handy template if you want to explore so what exactly can you explore?</p>
+<pre class="r"><code>names(df)</code></pre>
+<pre><code>##  [1] &quot;venue_name&quot;                     &quot;match_id&quot;                      
+##  [3] &quot;match_home_team&quot;                &quot;match_away_team&quot;               
+##  [5] &quot;match_date&quot;                     &quot;match_local_time&quot;              
+##  [7] &quot;match_attendance&quot;               &quot;match_round&quot;                   
+##  [9] &quot;match_home_team_goals&quot;          &quot;match_home_team_behinds&quot;       
+## [11] &quot;match_home_team_score&quot;          &quot;match_away_team_goals&quot;         
+## [13] &quot;match_away_team_behinds&quot;        &quot;match_away_team_score&quot;         
+## [15] &quot;match_margin&quot;                   &quot;match_winner&quot;                  
+## [17] &quot;match_weather_temp_c&quot;           &quot;match_weather_type&quot;            
+## [19] &quot;player_id&quot;                      &quot;player_first_name&quot;             
+## [21] &quot;player_last_name&quot;               &quot;player_height_cm&quot;              
+## [23] &quot;player_weight_kg&quot;               &quot;player_is_retired&quot;             
+## [25] &quot;player_team&quot;                    &quot;guernsey_number&quot;               
+## [27] &quot;kicks&quot;                          &quot;marks&quot;                         
+## [29] &quot;handballs&quot;                      &quot;disposals&quot;                     
+## [31] &quot;effective_disposals&quot;            &quot;disposal_efficiency_percentage&quot;
+## [33] &quot;goals&quot;                          &quot;behinds&quot;                       
+## [35] &quot;hitouts&quot;                        &quot;tackles&quot;                       
+## [37] &quot;rebounds&quot;                       &quot;inside_fifties&quot;                
+## [39] &quot;clearances&quot;                     &quot;clangers&quot;                      
+## [41] &quot;free_kicks_for&quot;                 &quot;free_kicks_against&quot;            
+## [43] &quot;brownlow_votes&quot;                 &quot;contested_possessions&quot;         
+## [45] &quot;uncontested_possessions&quot;        &quot;contested_marks&quot;               
+## [47] &quot;marks_inside_fifty&quot;             &quot;one_percenters&quot;                
+## [49] &quot;bounces&quot;                        &quot;goal_assists&quot;                  
+## [51] &quot;time_on_ground_percentage&quot;      &quot;afl_fantasy_score&quot;             
+## [53] &quot;supercoach_score&quot;               &quot;centre_clearances&quot;             
+## [55] &quot;stoppage_clearances&quot;            &quot;score_involvements&quot;            
+## [57] &quot;metres_gained&quot;                  &quot;turnovers&quot;                     
+## [59] &quot;intercepts&quot;                     &quot;tackles_inside_fifty&quot;          
+## [61] &quot;contest_def_losses&quot;             &quot;contest_def_one_on_ones&quot;       
+## [63] &quot;contest_off_one_on_ones&quot;        &quot;contest_off_wins&quot;              
+## [65] &quot;def_half_pressure_acts&quot;         &quot;effective_kicks&quot;               
+## [67] &quot;f50_ground_ball_gets&quot;           &quot;ground_ball_gets&quot;              
+## [69] &quot;hitouts_to_advantage&quot;           &quot;hitout_win_percentage&quot;         
+## [71] &quot;intercept_marks&quot;                &quot;marks_on_lead&quot;                 
+## [73] &quot;pressure_acts&quot;                  &quot;rating_points&quot;                 
+## [75] &quot;ruck_contests&quot;                  &quot;score_launches&quot;                
+## [77] &quot;shots_at_goal&quot;                  &quot;spoils&quot;                        
+## [79] &quot;subbed&quot;                         &quot;player_position&quot;               
+## [81] &quot;Season&quot;</code></pre>
+<p>So all this available in <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>. Now that you know and hopefully have some script to one, what would you as a fan like to explore?</p>
