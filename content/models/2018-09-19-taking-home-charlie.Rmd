@@ -123,7 +123,7 @@ Create ratios is important for the model, remember we are interested in their re
 
 Intuition  like this for kicks, handballs, clearances etc would lead us to believe that ratios are better predictors of polling votes over raw statistics. 
 
-```{r}
+```{r, warning=FALSE}
 complete_df_ratio<-complete_df%>%
   mutate(kick.ratio=Kicks/Kicks_sum,
          Marks.ratio=Marks/Marks_sum,
@@ -166,7 +166,7 @@ This will involve a few steps
 2. use `filter` to make sure we only have home and away games --this is a data knowledge step, we know that you can not get votes in finals, but the column instead of being left empty is filled with 0s so an easy way to make sure we only have home and away games is using Round as a filter.
 
 
-```{r}
+```{r, warning=FALSE}
 in.sample  <- subset(df, Season %in% c(2013:2016)) # our training data
 
 in.sample$Brownlow.Votes <- factor(in.sample$Brownlow.Votes)
@@ -202,7 +202,7 @@ But by all means, I am not saying this is the best way, I'm just getting to a re
 
 Ideally you might think about the variables and test them out for fit but moving on.
 
-```{r}
+```{r, warning=FALSE}
 fm2<- stepAIC(fm1, direction='backward',type=AIC)
 
 ```

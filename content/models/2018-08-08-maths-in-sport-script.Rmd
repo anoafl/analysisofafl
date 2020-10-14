@@ -10,7 +10,7 @@ tags : ["fitzRoy", "graphics","R","open science", "statistics"]
 
 ---
 
-```{r, eval=FALSE}
+```{r, eval=FALSE,, warning=FALSE}
 ############################################################################
 #BROWNLOW PREDICTION WITH FREE DATA!!!!
 

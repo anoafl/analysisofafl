@@ -22,7 +22,7 @@ library(ggplot2)
 library(knitr)
 library(ordinal)
 knitr::opts_chunk$set(echo = TRUE)
-brownlow_data <- read.csv("A:/OneDrive/rob_site/anoafl.github.io/data/brownlow_data.csv")
+# brownlow_data <- read.csv("A:/OneDrive/rob_site/anoafl.github.io/data/brownlow_data.csv")
 
 ```
 
@@ -35,7 +35,7 @@ I have uploaded the data that I personally use for my own predictions [here](htt
 
 
 First thing is first, lets read the data in and view it
-```{r,eval=FALSE}
+```{r,eval=FALSE, warning=FALSE}
 library(tidyr)
 library(ggplot2)
 library(dplyr)
