@@ -1,0 +1,17 @@
+---
+title: Datatest
+author: Robert Nguyen
+date: '2019-09-18'
+tags : ["data", "fitzRoy", "open science"]
+description: 'test'
+---
+
+test
+asdfalskdjflkasjf
+
+```{r}
+library(tidyverse)
+
+```
+
+work

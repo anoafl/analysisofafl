@@ -1,0 +1,48 @@
+---
+title: "First Fantasy Post Draft"
+author: "Robert Nguyen"
+date: "19/02/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Purpose
+
+You love fantasy, you read the blogs, the articles and listen to the podcasts. You follow your favourite people, their insights and their analysis. But you want more.
+
+You want to use the same insights but dive into more players and across more teams. You want to see if those same insights applied to more data your very own data helps you find players that no one else is thinking about. You want to find that diamond in the rough to get you over the line in your fantasy competition.
+
+Well you are in luck with this newsletter, it will serve 3 goals:
+
+1: Teach you how to get your own data for AFL fantasy, create your own rankings of players and importantly your own custom metrics. (I will also provide the data as googlesheet links for readily available download)
+
+2: Don't just read an article and wonder - " where does player X sit on this metric" - Apply that very same metric across all players. That's after all one of the best ways to find players of value.
+
+3: Weekly updated rankings on metrics that you want done through email and through accessible spreadsheets.
+
+## An Example sheet
+
+Something that has surprised me a bit with regards to AFL fantasy is how hard it is just to get your hands on AFL data. Thankfully the good people using [\#fitzRoy](https://cran.r-project.org/web/packages/fitzRoy/index.html) have made all that readily available.
+
+So something that is common among fantasy sports, is a breakdown of teams who give up the most points to a certain position. Maybe you are wondering, is this the week my ruckman should be captain? Or maybe I should trade out my value midfielder because they might not make breakeven. Well how would you do that? What can you expect to see with this newsletter?
+
+Lets say you are at round 13 2020
+
+```{r}
+library(tidyverse)
+df<-fitzRoy::get_fryzigg_stats(start=2020,end = 2020)%>%
+  filter(match_round %in% c(1,2,3,4,5,6,7,8,9,10,11,12))
+df%>%
+  mutate(opponent=if_else(player_team==match_home_team, match_away_team, match_home_team))%>%
+  group_by(opponent)%>%
+  filter(player_position=="RK")%>%
+  summarise(afl_fantasy=mean(afl_fantasy_score, na.rm=TRUE))%>%
+  arrange(desc(afl_fantasy))
+```
+
+So looking at this table and the [round13](http://foxsports.com.au/score-centre/afl/afl/season-2020!124/round-13!13) what we notice here is that the western bulldogs were playing melbourne. Where Western bulldogs at the time gave up the second most fantasy points and Melbourne conceded the least at the time. So how did each ruckman fair in this game? Surely it was a bad one for Western Bulldogs and a good one for Melbourne?
+
+Well looking at this [game](https://www.footywire.com/afl/footy/ft_match_statistics?mid=10270&advv=Y), what we see is that, Tim English had his second worst [fantasy score] of the year while Braydon Preuss picked up 85 which is pretty good for a bloke not named Gawn.
